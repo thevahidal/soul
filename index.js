@@ -11,6 +11,17 @@ app.use(bodyParser.json());
 // Activate wal mode
 db.pragma('journal_mode = WAL');
 
+// Add a request logger
+// including the method, url, status code and response time
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const delta = Date.now() - start;
+    console.log(`${req.method} ${req.url} ${res.statusCode} ${delta}ms`);
+  });
+  next();
+});
+
 app.get('/', (req, res) => {
   res.json({
     message: 'Soul is running!',
@@ -29,7 +40,8 @@ app.post('/tables', (req, res) => {
     id INTEGER PRIMARY KEY AUTOINCREMENT, 
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP, 
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP, 
-    ${fieldsString}`;
+    ${fieldsString}
+  `;
 
   const query = `CREATE TABLE ${name} (${fieldsString})`;
   try {
@@ -50,6 +62,7 @@ app.post('/tables', (req, res) => {
 app.get('/tables', (req, res) => {
   const query = `SELECT name FROM sqlite_master WHERE type='table'`;
   const tables = db.prepare(query).all();
+
   res.json({
     tables,
   });
@@ -60,8 +73,20 @@ app.get('/tables/:name', (req, res) => {
   const { name } = req.params;
   const query = `SELECT * FROM ${name}`;
   const rows = db.prepare(query).all();
+
   res.json({
     rows,
+  });
+});
+
+// Delete a table
+app.delete('/tables/:name', (req, res) => {
+  const { name } = req.params;
+  const query = `DROP TABLE ${name}`;
+  db.prepare(query).run();
+
+  res.json({
+    message: 'Table deleted',
   });
 });
 
@@ -83,17 +108,18 @@ app.post('/tables/:name', (req, res) => {
 
   const query = `INSERT INTO ${name} (${fieldsString}) VALUES (${valuesString})`;
   try {
-    db.prepare(query).run();
+    const row = db.prepare(query).run();
+
+    res.json({
+      message: 'Row inserted',
+      row,
+    });
   } catch (error) {
     res.status(400).json({
       message: error.message,
       error: error,
     });
   }
-
-  res.json({
-    message: 'Row inserted',
-  });
 });
 
 // Get a row by id
@@ -101,6 +127,7 @@ app.get('/tables/:name/:id', (req, res) => {
   const { name, id } = req.params;
   const query = `SELECT * FROM ${name} WHERE id = ${id}`;
   const row = db.prepare(query).get();
+
   res.json({
     row,
   });
@@ -135,6 +162,33 @@ app.put('/tables/:name/:id', (req, res) => {
   res.json({
     message: 'Row updated',
   });
+});
+
+// Delete a row by id
+app.delete('/tables/:name/:id', (req, res) => {
+  const { name, id } = req.params;
+  const query = `DELETE FROM ${name} WHERE id = ${id}`;
+  db.prepare(query).run();
+
+  res.json({
+    message: 'Row deleted',
+  });
+});
+
+// Run any query
+app.post('/query', (req, res) => {
+  const { query } = req.body;
+  try {
+    const result = db.prepare(query).run();
+    res.json({
+      result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+      error: error,
+    });
+  }
 });
 
 app.listen(8000, () => {
