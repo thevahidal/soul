@@ -102,3 +102,8 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Sqlite files
+*.db
+*.db-shm
+*.db-wal

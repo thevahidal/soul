@@ -1,0 +1,28 @@
+{
+  "name": "soul",
+  "version": "0.0.1",
+  "description": "A SQLite RESTful server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thevahidal/soul.git"
+  },
+  "author": "Vahid Al @thevahidal",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/thevahidal/soul/issues"
+  },
+  "homepage": "https://github.com/thevahidal/soul#readme",
+  "dependencies": {
+    "better-sqlite3": "^7.6.2",
+    "body-parser": "^1.20.0",
+    "express": "^4.18.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
