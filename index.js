@@ -30,20 +30,72 @@ app.get('/', (req, res) => {
 
 // Create a new table
 app.post('/tables', (req, res) => {
-  const { name, fields } = req.body;
-  let fieldsString = fields
-    .map((field) => `${field.name} ${field.type}`)
+  const { name, schema } = req.body;
+
+  // validate schema
+
+  let schemaString = schema
+    // support name, type, default, not null, unique, primary key, foreign key, index
+    // e.g. { name: 'id', type: 'INTEGER', primaryKey: true }
+
+    .map(
+      ({
+        name,
+        type,
+        default: defaultValue,
+        notNull,
+        unique,
+        primaryKey,
+        foreignKey,
+        index,
+      }) => {
+        let column = `${name} ${type}`;
+        if (defaultValue) {
+          column += ` DEFAULT ${defaultValue}`;
+        }
+        if (notNull) {
+          column += ' NOT NULL';
+        }
+        if (unique) {
+          column += ' UNIQUE';
+        }
+        if (primaryKey) {
+          column += ' PRIMARY KEY';
+        }
+        if (foreignKey) {
+          column += ` REFERENCES ${foreignKey.table}(${foreignKey.column})`;
+        }
+        if (foreignKey && foreignKey.onDelete) {
+          column += ` ON DELETE ${foreignKey.onDelete}`;
+        }
+        if (foreignKey && foreignKey.onUpdate) {
+          column += ` ON UPDATE ${foreignKey.onUpdate}`;
+        }
+        if (index) {
+          column += ` INDEX ${index}`;
+        }
+
+        return column;
+      }
+    )
     .join(', ');
 
-  // add id, createdAt and updatedAt fields to fieldsString
-  fieldsString = `
-    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+  // add id if primary key is not defined
+  if (!schema.find((field) => field.primaryKey)) {
+    schemaString = `
+      id INTEGER PRIMARY KEY AUTOINCREMENT, 
+      ${schemaString}
+    `;
+  }
+
+  // add createdAt and updatedAt fields to fieldsString
+  schemaString = `
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP, 
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP, 
-    ${fieldsString}
+    ${schemaString}
   `;
 
-  const query = `CREATE TABLE ${name} (${fieldsString})`;
+  const query = `CREATE TABLE ${name} (${schemaString})`;
   try {
     db.prepare(query).run();
   } catch (error) {
@@ -68,13 +120,22 @@ app.get('/tables', (req, res) => {
   });
 });
 
-// Return all rows of a table
+// Return paginated rows of a table
 app.get('/tables/:name', (req, res) => {
   const { name } = req.params;
-  const query = `SELECT * FROM ${name}`;
-  const rows = db.prepare(query).all();
+  const { page = 1, limit = 10 } = req.query;
+
+  // do the query using where instead of limit
+  // https://github.com/WiseLibs/better-sqlite3/issues/527#issuecomment-776959332
+  const query = `SELECT * FROM ${name} WHERE id > ? LIMIT ?`;
+  const rows = db.prepare(query).all((page - 1) * limit, limit);
 
   res.json({
+    next:
+      rows.length === parseInt(limit)
+        ? `/tables/${name}?page=${parseInt(page) + 1}`
+        : null,
+    count: db.prepare(`SELECT COUNT(*) as count FROM ${name}`).get().count,
     rows,
   });
 });
