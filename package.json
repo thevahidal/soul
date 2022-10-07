@@ -4,8 +4,8 @@
   "description": "A SQLite RESTful server",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node soul/index.js",
+    "dev": "nodemon soul/index.js"
   },
   "repository": {
     "type": "git",
