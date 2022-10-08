@@ -3,8 +3,6 @@ const db = require('../db/index');
 const createTable = async (req, res) => {
   const { name, schema } = req.body;
 
-  // validate schema
-
   let schemaString = schema
     // support name, type, default, not null, unique, primary key, foreign key, index
     // e.g. { name: 'id', type: 'INTEGER', primaryKey: true }
@@ -84,29 +82,60 @@ const createTable = async (req, res) => {
 // Return all tables
 const listTables = async (req, res) => {
   const query = `SELECT name FROM sqlite_master WHERE type='table'`;
-  const tables = db.prepare(query).all();
+  try {
+    const tables = db.prepare(query).all();
 
-  res.json({
-    tables,
-  });
+    res.json({
+      tables,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+      error: error,
+    });
+  }
 };
 
 // TODO: Return the schema of a table
-//
+const getTableSchema = async (req, res) => {
+  const { name } = req.params;
+  const query = `PRAGMA table_info(${name})`;
+  try {
+    const schema = db.prepare(query).all();
+
+    res.json({
+      data: schema,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+      error: error,
+    });
+  }
+};
 
 // Delete a table
 const deleteTable = async (req, res) => {
   const { name } = req.params;
   const query = `DROP TABLE ${name}`;
-  db.prepare(query).run();
 
-  res.json({
-    message: 'Table deleted',
-  });
+  try {
+    db.prepare(query).run();
+
+    res.json({
+      message: 'Table deleted',
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+      error: error,
+    });
+  }
 };
 
 module.exports = {
   listTables,
   createTable,
+  getTableSchema,
   deleteTable,
 };
