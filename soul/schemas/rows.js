@@ -13,18 +13,21 @@ const insertRowInTable = Joi.object({
 
 const getRowInTableByPK = Joi.object({
   name: Joi.string().min(3).max(30).required(),
-  id: Joi.number().integer().min(1).required(),
+  pk: Joi.string().required(),
+  _field: Joi.string().min(3).max(30),
 });
 
 const updateRowInTableByPK = Joi.object({
   name: Joi.string().min(3).max(30).required(),
-  id: Joi.number().integer().min(1).required(),
+  pk: Joi.string().required(),
   fields: Joi.object().required(),
+  _field: Joi.string().min(3).max(30),
 });
 
 const deleteRowInTableByPK = Joi.object({
   name: Joi.string().min(3).max(30).required(),
-  id: Joi.number().integer().min(1).required(),
+  pk: Joi.string().required(),
+  _field: Joi.string().min(3).max(30),
 });
 
 module.exports = {
