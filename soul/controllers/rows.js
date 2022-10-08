@@ -3,21 +3,89 @@ const db = require('../db/index');
 // Return paginated rows of a table
 const listTableRows = async (req, res) => {
   const { name } = req.params;
-  const { page = 1, limit = 10 } = req.query;
+  const { _page = 1, _limit = 10, _search, _ordering, ...filters } = req.query;
 
-  const query = `SELECT * FROM ${name} LIMIT ${limit} OFFSET ${
+  const page = parseInt(_page);
+  const limit = parseInt(_limit);
+
+  // filters consists of fields to filter by
+  // e.g. ?name=John&age=20
+  // will filter by name = 'John' and age = 20
+
+  // if filters are provided, filter rows by them
+  // filtering must be case insensitive
+  let whereString = '';
+  if (Object.keys(filters).length > 0) {
+    whereString += ' WHERE ';
+    whereString += Object.keys(filters)
+      .map((key) => `${key} LIKE '%${filters[key]}%'`)
+      .join(' AND ');
+  }
+
+  // if _search is provided, search rows by it
+  // e.g. ?_search=John will search for John in all fields of the table
+  // searching must be case insensitive
+  if (_search) {
+    if (whereString) {
+      whereString += ' AND ';
+    } else {
+      whereString += ' WHERE ';
+    }
+    try {
+      // get all fields of the table
+      const fields = db.prepare(`PRAGMA table_info(${name})`).all();
+      whereString += fields
+        .map((field) => `${field.name} LIKE '%${_search}%'`)
+        .join(' OR ');
+    } catch (error) {
+      res.status(400).json({
+        message: error.message,
+        error: error,
+      });
+    }
+  }
+
+  // if _ordering is provided, order rows by it
+  // e.g. ?_ordering=name will order by name
+  // e.g. ?_ordering=-name will order by name descending
+  let orderString = '';
+  if (_ordering) {
+    orderString += ` ORDER BY ${_ordering.replace('-', '')} ${
+      _ordering.startsWith('-') ? 'DESC' : 'ASC'
+    }`;
+  }
+
+  // get rows
+  const query = `SELECT * FROM ${name} ${whereString} ${orderString} LIMIT ${limit} OFFSET ${
     (page - 1) * limit
   }`;
-  const data = db.prepare(query).all();
 
-  res.json({
-    next:
-      data.length === parseInt(limit)
-        ? `/tables/${name}?page=${parseInt(page) + 1}`
-        : null,
-    count: db.prepare(`SELECT COUNT(*) as count FROM ${name}`).get().count,
-    data,
-  });
+  console.log({ query });
+
+  try {
+    const data = db.prepare(query).all();
+
+    // get total number of rows
+    const total = db
+      .prepare(`SELECT COUNT(*) as total FROM ${name} ${whereString}`)
+      .get().total;
+
+    const next =
+      data.length === limit ? `/tables/${name}?page=${page + 1}` : null;
+    const previous = page > 1 ? `/tables/${name}?page=${page - 1}` : null;
+
+    res.json({
+      data,
+      total,
+      next,
+      previous,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+      error: error,
+    });
+  }
 };
 
 // Insert a new row in a table
