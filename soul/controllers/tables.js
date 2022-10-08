@@ -96,7 +96,7 @@ const listTables = async (req, res) => {
   }
 };
 
-// TODO: Return the schema of a table
+// TODO: Return the schema of a table by name
 const getTableSchema = async (req, res) => {
   const { name } = req.params;
   const query = `PRAGMA table_info(${name})`;
@@ -114,11 +114,10 @@ const getTableSchema = async (req, res) => {
   }
 };
 
-// Delete a table
+// Delete a table by name
 const deleteTable = async (req, res) => {
   const { name } = req.params;
   const query = `DROP TABLE ${name}`;
-
   try {
     db.prepare(query).run();
 

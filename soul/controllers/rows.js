@@ -52,27 +52,48 @@ const insertRowInTable = async (req, res) => {
   }
 };
 
-// Get a row by id
+// Get a row by pk
 const getRowInTableByPK = async (req, res) => {
-  const { name, id } = req.params;
-  const query = `SELECT * FROM ${name} WHERE id = ${id}`;
-  const data = db.prepare(query).get();
+  const { name, pk } = req.params;
 
-  if (!data) {
-    res.status(404).json({
-      error: 'not_found',
-    });
-  } else {
-    res.json({
-      data,
+  // find the primary key of the table
+  const primaryKey = db
+    .prepare(`PRAGMA table_info(${name})`)
+    .all()
+    .find((field) => field.pk === 1).name;
+
+  const query = `SELECT * FROM ${name} WHERE ${primaryKey} = '${pk}'`;
+
+  try {
+    const data = db.prepare(query).get();
+
+    if (!data) {
+      res.status(404).json({
+        error: 'not_found',
+      });
+    } else {
+      res.json({
+        data,
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+      error: error,
     });
   }
 };
 
-// Update a row by id
+// Update a row by pk
 const updateRowInTableByPK = async (req, res) => {
-  const { name, id } = req.params;
+  const { name, pk } = req.params;
   const { fields } = req.body;
+
+  // find the primary key of the table
+  const primaryKey = db
+    .prepare(`PRAGMA table_info(${name})`)
+    .all()
+    .find((field) => field.pk === 1).name;
 
   // wrap text values in quotes
   const fieldsString = Object.keys(fields)
@@ -85,7 +106,7 @@ const updateRowInTableByPK = async (req, res) => {
     })
     .join(', ');
 
-  const query = `UPDATE ${name} SET ${fieldsString} WHERE id = ${id}`;
+  const query = `UPDATE ${name} SET ${fieldsString} WHERE ${primaryKey} = '${pk}'`;
   try {
     db.prepare(query).run();
 
@@ -102,8 +123,15 @@ const updateRowInTableByPK = async (req, res) => {
 
 // Delete a row by id
 const deleteRowInTableByPK = async (req, res) => {
-  const { name, id } = req.params;
-  const query = `DELETE FROM ${name} WHERE id = ${id}`;
+  const { name, pk } = req.params;
+
+  // find the primary key of the table
+  const primaryKey = db
+    .prepare(`PRAGMA table_info(${name})`)
+    .all()
+    .find((field) => field.pk === 1).name;
+
+  const query = `DELETE FROM ${name} WHERE ${primaryKey} = '${pk}'`;
   const data = db.prepare(query).run();
 
   if (data.changes === 0) {
