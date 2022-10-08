@@ -81,7 +81,38 @@ const createTable = async (req, res) => {
 
 // Return all tables
 const listTables = async (req, res) => {
-  const query = `SELECT name FROM sqlite_master WHERE type='table'`;
+  const { _search, _ordering, ...filters } = req.query;
+
+  // filters consist of fields to filter by
+  // e.g. ?name=users
+
+  // if filters are provided, filter the tables
+  // filtering must be case insensitive
+  // otherwise, return all tables
+
+  let query = `SELECT name FROM sqlite_master WHERE type = 'table'`;
+
+  if (Object.keys(filters).length) {
+    query += ' AND ';
+    query += Object.keys(filters)
+      .map((key) => `${key} LIKE '%${filters[key]}%'`)
+      .join(' AND ');
+  }
+
+  // if search is provided, search the tables
+  // e.g. ?_search=users
+  if (_search) {
+    query += ` AND name LIKE '%${_search}%'`;
+  }
+
+  // if ordering is provided, order the tables
+  // e.g. ?_ordering=name (ascending) or ?_ordering=-name (descending)
+  if (_ordering) {
+    query += ` ORDER BY ${_ordering.replace('-', '')} ${
+      _ordering.startsWith('-') ? 'DESC' : 'ASC'
+    }`;
+  }
+
   try {
     const tables = db.prepare(query).all();
 

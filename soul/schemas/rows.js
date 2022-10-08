@@ -1,10 +1,13 @@
 const Joi = require('joi');
 
+// allow other fields for filtering
 const listTableRows = Joi.object({
   name: Joi.string().min(3).max(30).required(),
-  page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).default(10),
-});
+  _page: Joi.number().integer().min(1).default(1),
+  _limit: Joi.number().integer().min(1).default(10),
+  _search: Joi.string(),
+  _ordering: Joi.string(),
+}).unknown(true);
 
 const insertRowInTable = Joi.object({
   name: Joi.string().min(3).max(30).required(),
