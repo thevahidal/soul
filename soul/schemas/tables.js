@@ -1,11 +1,11 @@
 const Joi = require('joi');
 
 const createTable = Joi.object({
-  name: Joi.string().min(3).max(30).required(),
+  name: Joi.string().min(2).max(30).required(),
   schema: Joi.array()
     .items(
       Joi.object({
-        name: Joi.string().min(3).max(30).required(),
+        name: Joi.string().min(2).max(30).required(),
         // type one of sqlite3 types
         type: Joi.string()
           .valid(
@@ -25,8 +25,8 @@ const createTable = Joi.object({
         unique: Joi.boolean(),
         primaryKey: Joi.boolean(),
         foreignKey: Joi.object({
-          table: Joi.string().min(3).max(30).required(),
-          column: Joi.string().min(3).max(30).required(),
+          table: Joi.string().min(2).max(30).required(),
+          column: Joi.string().min(2).max(30).required(),
           onDelete: Joi.string()
             .valid('CASCADE', 'SET NULL', 'SET DEFAULT', 'RESTRICT')
             .insensitive()
