@@ -136,8 +136,6 @@ const listTableRows = async (req, res) => {
     limit * (page - 1)
   }`;
 
-  console.log({ query });
-
   try {
     const data = db.prepare(query).all();
 
