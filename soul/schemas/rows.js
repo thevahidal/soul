@@ -7,6 +7,8 @@ const listTableRows = Joi.object({
   _limit: Joi.number().integer().min(1).default(10),
   _search: Joi.string(),
   _ordering: Joi.string(),
+  _schema: Joi.string(),
+  _extend: Joi.string(),
 }).unknown(true);
 
 const insertRowInTable = Joi.object({
@@ -18,6 +20,8 @@ const getRowInTableByPK = Joi.object({
   name: Joi.string().min(3).max(30).required(),
   pk: Joi.string().required(),
   _field: Joi.string().min(3).max(30),
+  _schema: Joi.string(),
+  _extend: Joi.string(),
 });
 
 const updateRowInTableByPK = Joi.object({

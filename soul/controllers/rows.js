@@ -3,17 +3,25 @@ const db = require('../db/index');
 // Return paginated rows of a table
 const listTableRows = async (req, res) => {
   const { name } = req.params;
-  const { _page = 1, _limit = 10, _search, _ordering, ...filters } = req.query;
+  const {
+    _page = 1,
+    _limit = 10,
+    _search,
+    _ordering,
+    _schema,
+    _extend,
+    ...filters
+  } = req.query;
 
   const page = parseInt(_page);
   const limit = parseInt(_limit);
 
-  // filters consists of fields to filter by
-  // e.g. ?name=John&age=20
-  // will filter by name = 'John' and age = 20
-
   // if filters are provided, filter rows by them
+  // filters consists of fields to filter by
   // filtering must be case insensitive
+  // e.g. ?name=John&age=20
+  // will filter by name like '%John%' and age like '%20%'
+
   let whereString = '';
   if (Object.keys(filters).length > 0) {
     whereString += ' WHERE ';
@@ -55,9 +63,77 @@ const listTableRows = async (req, res) => {
     }`;
   }
 
-  // get rows
-  const query = `SELECT * FROM ${name} ${whereString} ${orderString} LIMIT ${limit} OFFSET ${
-    (page - 1) * limit
+  // if _schema is provided, return only those fields
+  // e.g. ?_schema=name,age will return only name and age fields
+  // if _schema is not provided, return all fields
+
+  let schemaString = '';
+  if (_schema) {
+    const schemaFields = _schema.split(',');
+    schemaFields.forEach((field) => {
+      schemaString += `${name}.${field},`;
+    });
+  } else {
+    schemaString = `${name}.*`;
+  }
+
+  // if _extend is provided, extend rows with related data using joins
+  // e.g. ?_extend=author_id will extend rows with author data
+  // e.g. ?_extend=author_id,book_id will extend rows with author and book data
+  // considering that author_id and book_id are foreign keys to authors and books tables
+
+  // e.g. original row is
+  // {
+  //   id: 1,
+  //   name: 'John',
+  //   author_id: 1,
+  //   book_id: 2
+  // }
+
+  // e.g. extended row is
+  // {
+  //   id: 1,
+  //   name: 'John',
+  //   author_id: 1,
+  //   author_id_data: {
+  //     name: 'John Doe'
+  //   },
+  //   book_id: 2
+  //   book_id_data: {
+  //     name: 'The Book'
+  //   }
+  // }
+
+  let extendString = '';
+  if (_extend) {
+    const extendFields = _extend.split(',');
+    extendFields.forEach((field) => {
+      const { table, ...foreignKey } = db
+        .prepare(`PRAGMA foreign_key_list(${name})`)
+        .all()
+        .find((fk) => fk.from === field);
+
+      const fields = db.prepare(`PRAGMA table_info(${table})`).all();
+
+      extendString += ` LEFT JOIN ${table} as ${table} ON ${table}.${foreignKey.to} = ${name}.${field}`;
+
+      // joined fields will be returned in a new object called {field}_data e.g. author_id_data
+      const extendFieldsString =
+        'json_object( ' +
+        fields
+          .map((field) => `'${field.name}', ${table}.${field.name}`)
+          .join(', ') +
+        ' ) as ' +
+        field +
+        '_data';
+
+      schemaString += extendFieldsString;
+    });
+  }
+
+  // get paginated rows
+  const query = `SELECT ${schemaString} FROM ${name} ${extendString} ${whereString} ${orderString} LIMIT ${limit} OFFSET ${
+    limit * (page - 1)
   }`;
 
   console.log({ query });
@@ -123,7 +199,7 @@ const insertRowInTable = async (req, res) => {
 // Get a row by pk
 const getRowInTableByPK = async (req, res) => {
   const { name, pk } = req.params;
-  const { _field } = req.query;
+  const { _field, _schema, _extend } = req.query;
 
   let searchField = _field;
 
@@ -135,7 +211,75 @@ const getRowInTableByPK = async (req, res) => {
       .find((field) => field.pk === 1).name;
   }
 
-  const query = `SELECT * FROM ${name} WHERE ${searchField} = '${pk}'`;
+  // if _schema is provided, return only those fields
+  // e.g. ?_schema=name,age will return only name and age fields
+  // if _schema is not provided, return all fields
+
+  let schemaString = '';
+  if (_schema) {
+    const schemaFields = _schema.split(',');
+    schemaFields.forEach((field) => {
+      schemaString += `${name}.${field},`;
+    });
+  } else {
+    schemaString = `${name}.*`;
+  }
+
+  // if _extend is provided, extend rows with related data using joins
+  // e.g. ?_extend=author_id will extend rows with author data
+  // e.g. ?_extend=author_id,book_id will extend rows with author and book data
+  // considering that author_id and book_id are foreign keys to authors and books tables
+
+  // e.g. original row is
+  // {
+  //   id: 1,
+  //   name: 'John',
+  //   author_id: 1,
+  //   book_id: 2
+  // }
+
+  // e.g. extended row is
+  // {
+  //   id: 1,
+  //   name: 'John',
+  //   author_id: 1,
+  //   author_id_data: {
+  //     name: 'John Doe'
+  //   },
+  //   book_id: 2
+  //   book_id_data: {
+  //     name: 'The Book'
+  //   }
+  // }
+
+  let extendString = '';
+  if (_extend) {
+    const extendFields = _extend.split(',');
+    extendFields.forEach((field) => {
+      const { table, ...foreignKey } = db
+        .prepare(`PRAGMA foreign_key_list(${name})`)
+        .all()
+        .find((fk) => fk.from === field);
+
+      const fields = db.prepare(`PRAGMA table_info(${table})`).all();
+
+      extendString += ` LEFT JOIN ${table} as ${table} ON ${table}.${foreignKey.to} = ${name}.${field}`;
+
+      // joined fields will be returned in a new object called {field}_data e.g. author_id_data
+      const extendFieldsString =
+        'json_object( ' +
+        fields
+          .map((field) => `'${field.name}', ${table}.${field.name}`)
+          .join(', ') +
+        ' ) as ' +
+        field +
+        '_data';
+
+      schemaString += extendFieldsString;
+    });
+  }
+
+  const query = `SELECT ${schemaString} FROM ${name} ${extendString} WHERE ${name}.${searchField} = ${pk}`;
 
   try {
     const data = db.prepare(query).get();
