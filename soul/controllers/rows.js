@@ -46,7 +46,7 @@ const listTableRows = async (req, res) => {
         .map((field) => `${field.name} LIKE '%${_search}%'`)
         .join(' OR ');
     } catch (error) {
-      res.status(400).json({
+      return res.status(400).json({
         message: error.message,
         error: error,
       });
@@ -76,6 +76,9 @@ const listTableRows = async (req, res) => {
   } else {
     schemaString = `${name}.*`;
   }
+
+  // remove trailing comma
+  schemaString = schemaString.replace(/,\s*$/, '');
 
   // if _extend is provided, extend rows with related data using joins
   // e.g. ?_extend=author_id will extend rows with author data
@@ -108,26 +111,43 @@ const listTableRows = async (req, res) => {
   if (_extend) {
     const extendFields = _extend.split(',');
     extendFields.forEach((field) => {
-      const { table, ...foreignKey } = db
-        .prepare(`PRAGMA foreign_key_list(${name})`)
-        .all()
-        .find((fk) => fk.from === field);
+      try {
+        const foreignKey = db
+          .prepare(`PRAGMA foreign_key_list(${name})`)
+          .all()
+          .find((fk) => fk.from === field);
 
-      const fields = db.prepare(`PRAGMA table_info(${table})`).all();
+        if (!foreignKey) {
+          throw new Error('Foreign key not found');
+        }
 
-      extendString += ` LEFT JOIN ${table} as ${table} ON ${table}.${foreignKey.to} = ${name}.${field}`;
+        const { table } = foreignKey;
 
-      // joined fields will be returned in a new object called {field}_data e.g. author_id_data
-      const extendFieldsString =
-        'json_object( ' +
-        fields
-          .map((field) => `'${field.name}', ${table}.${field.name}`)
-          .join(', ') +
-        ' ) as ' +
-        field +
-        '_data';
+        const fields = db.prepare(`PRAGMA table_info(${table})`).all();
 
-      schemaString += extendFieldsString;
+        extendString += ` LEFT JOIN ${table} as ${table} ON ${table}.${foreignKey.to} = ${name}.${field}`;
+
+        // joined fields will be returned in a new object called {field}_data e.g. author_id_data
+        const extendFieldsString =
+          'json_object( ' +
+          fields
+            .map((field) => `'${field.name}', ${table}.${field.name}`)
+            .join(', ') +
+          ' ) as ' +
+          field +
+          '_data';
+
+        if (schemaString) {
+          schemaString += ', ';
+        }
+
+        schemaString += extendFieldsString;
+      } catch (error) {
+        return res.status(400).json({
+          message: error.message,
+          error: error,
+        });
+      }
     });
   }
 
@@ -135,6 +155,8 @@ const listTableRows = async (req, res) => {
   const query = `SELECT ${schemaString} FROM ${name} ${extendString} ${whereString} ${orderString} LIMIT ${limit} OFFSET ${
     limit * (page - 1)
   }`;
+
+  console.log({ query });
 
   try {
     const data = db.prepare(query).all();
@@ -223,6 +245,9 @@ const getRowInTableByPK = async (req, res) => {
     schemaString = `${name}.*`;
   }
 
+  // remove trailing comma
+  schemaString = schemaString.replace(/,\s*$/, '');
+
   // if _extend is provided, extend rows with related data using joins
   // e.g. ?_extend=author_id will extend rows with author data
   // e.g. ?_extend=author_id,book_id will extend rows with author and book data
@@ -254,26 +279,43 @@ const getRowInTableByPK = async (req, res) => {
   if (_extend) {
     const extendFields = _extend.split(',');
     extendFields.forEach((field) => {
-      const { table, ...foreignKey } = db
-        .prepare(`PRAGMA foreign_key_list(${name})`)
-        .all()
-        .find((fk) => fk.from === field);
+      try {
+        const foreignKey = db
+          .prepare(`PRAGMA foreign_key_list(${name})`)
+          .all()
+          .find((fk) => fk.from === field);
 
-      const fields = db.prepare(`PRAGMA table_info(${table})`).all();
+        if (!foreignKey) {
+          throw new Error('Foreign key not found');
+        }
 
-      extendString += ` LEFT JOIN ${table} as ${table} ON ${table}.${foreignKey.to} = ${name}.${field}`;
+        const { table } = foreignKey;
 
-      // joined fields will be returned in a new object called {field}_data e.g. author_id_data
-      const extendFieldsString =
-        'json_object( ' +
-        fields
-          .map((field) => `'${field.name}', ${table}.${field.name}`)
-          .join(', ') +
-        ' ) as ' +
-        field +
-        '_data';
+        const fields = db.prepare(`PRAGMA table_info(${table})`).all();
 
-      schemaString += extendFieldsString;
+        extendString += ` LEFT JOIN ${table} as ${table} ON ${table}.${foreignKey.to} = ${name}.${field}`;
+
+        // joined fields will be returned in a new object called {field}_data e.g. author_id_data
+        const extendFieldsString =
+          'json_object( ' +
+          fields
+            .map((field) => `'${field.name}', ${table}.${field.name}`)
+            .join(', ') +
+          ' ) as ' +
+          field +
+          '_data';
+
+        if (schemaString) {
+          schemaString += ', ';
+        }
+
+        schemaString += extendFieldsString;
+      } catch (error) {
+        return res.status(400).json({
+          message: error.message,
+          error: error,
+        });
+      }
     });
   }
 
