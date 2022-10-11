@@ -2,10 +2,13 @@
   "name": "soul",
   "version": "0.0.1",
   "description": "A SQLite RESTful server",
-  "main": "index.js",
+  "main": "soul/index.js",
+  "bin": {
+    "soul": "./soul/index.js"
+  },
   "scripts": {
     "start": "node soul/index.js",
-    "dev": "nodemon soul/index.js"
+    "dev": "NO_CLI=true nodemon soul/index.js"
   },
   "repository": {
     "type": "git",
@@ -26,7 +29,8 @@
     "express-rate-limit": "^6.6.0",
     "express-winston": "^4.2.0",
     "joi": "^17.6.2",
-    "winston": "^3.8.2"
+    "winston": "^3.8.2",
+    "yargs": "^17.6.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

@@ -1,9 +1,12 @@
+#! /usr/bin/env node
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const winston = require('winston');
 const expressWinston = require('express-winston');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const dotenv = require('dotenv');
 
 const config = require('./config/index');
 const db = require('./db/index');
@@ -43,8 +46,8 @@ if (config.rateLimit.enabled) {
   const limiter = rateLimit({
     windowMs: config.rateLimit.windowMs,
     max: config.rateLimit.max, // Limit each IP to {max} requests per `window`
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    standardHeaders: true, // Return rate limit info in the `RateLimit*` headers
+    legacyHeaders: false, // Disable the `XRateLimit*` headers
   });
 
   // Apply the rate limiting middleware to all requests
@@ -55,7 +58,7 @@ app.use('/', rootRoutes);
 app.use('/tables', tablesRoutes);
 app.use('/tables', rowsRoutes);
 
-const { port } = config;
+const port = config.port;
 app.listen(port, () => {
   console.log(`Soul is running on port ${port}...`);
 });
