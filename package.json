@@ -1,5 +1,5 @@
 {
-  "name": "soul",
+  "name": "soul-cli",
   "version": "0.0.1",
   "description": "A SQLite RESTful server",
   "main": "soul/index.js",
