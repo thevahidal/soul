@@ -1,11 +1,9 @@
-<div style='text-align: center'>
+<p align="center">
     <img src='docs/logo.png' height='150px' style="">
-    <div style='margin-bottom: 10px'>
-        A RESTful server for SQLite 
-    </div>
-
-[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/thevahidal/soul/blob/main/LICENSE)
-</div>
+    <p align="center">
+        A SQLite RESTful server 
+    </p>
+</p>
 
 
 ## Installation
