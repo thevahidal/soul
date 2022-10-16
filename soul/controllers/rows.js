@@ -2,6 +2,39 @@ const db = require('../db/index');
 
 // Return paginated rows of a table
 const listTableRows = async (req, res) => {
+  /* 	
+    #swagger.tags = ['Rows']
+    #swagger.summary = 'List Rows' 
+    #swagger.description = 'Endpoint to list rows of a table.'
+    #swagger.parameters['name'] = { 
+      description: 'Table name.',
+      in: 'path',
+    }
+    #swagger.parameters['_page'] = { 
+      description: 'Page number.' ,
+      in: 'query',
+      type: 'number',
+      default: 1
+    }
+    #swagger.parameters['_limit'] = {
+      description: 'Number of rows per page.',
+      in: 'query',
+      type: 'number',
+      default: 10
+    }
+    #swagger.parameters['_ordering'] = {
+      description: 'Ordering of rows. e.g. ?_ordering=-age will order rows by age descending.',
+      in: 'query',
+    }
+    #swagger.parameters['_schema'] = {
+      description: 'Schema of rows. e.g. ?_schema=name,age will return only name and age fields.',
+      in: 'query',
+    }
+    #swagger.parameters['_extend'] = {
+      description: 'Extend rows. e.g. ?_extend=user_id will return user data for each row.',
+      in: 'query',
+    }
+  */
   const { name } = req.params;
   const {
     _page = 1,
@@ -156,8 +189,6 @@ const listTableRows = async (req, res) => {
     limit * (page - 1)
   }`;
 
-  console.log({ query });
-
   try {
     const data = db.prepare(query).all();
 
@@ -186,6 +217,25 @@ const listTableRows = async (req, res) => {
 
 // Insert a new row in a table
 const insertRowInTable = async (req, res) => {
+  /*
+    #swagger.tags = ['Rows']
+    #swagger.summary = 'Insert Row'
+    #swagger.description = 'Insert a new row in a table'
+    #swagger.parameters['name'] = {
+      in: 'path',
+      description: 'Table name',
+      required: true,
+      type: 'string'
+    }
+
+    #swagger.parameters['body'] = {
+      in: 'body',
+      required: true,
+      type: 'object',
+      schema: { $ref: "#/definitions/InsertRowRequestBody" }
+    }
+  */
+
   const { name } = req.params;
   const { fields } = req.body;
   const fieldsString = Object.keys(fields).join(', ');
@@ -204,11 +254,27 @@ const insertRowInTable = async (req, res) => {
   try {
     const data = db.prepare(query).run();
 
-    res.json({
+    /*
+      #swagger.responses[201] = {
+        description: 'Row inserted successfully',
+        schema: {
+          $ref: "#/definitions/InsertRowSuccessResponse"
+        }
+      }
+    */
+    res.status(201).json({
       message: 'Row inserted',
       data,
     });
   } catch (error) {
+    /*
+      #swagger.responses[400] = {
+        description: 'Bad request',
+        schema: {
+          $ref: "#/definitions/InsertRowErrorResponse"
+        }
+      }
+    */
     res.status(400).json({
       message: error.message,
       error: error,
@@ -218,6 +284,45 @@ const insertRowInTable = async (req, res) => {
 
 // Get a row by pk
 const getRowInTableByPK = async (req, res) => {
+  /*
+    #swagger.tags = ['Rows']
+    #swagger.summary = 'Retrieve Row'
+    #swagger.description = 'Retrieve a row by primary key'
+    #swagger.parameters['name'] = {
+      in: 'path',
+      description: 'Table name',
+      required: true,
+      type: 'string'
+    }
+
+    #swagger.parameters['pk'] = {
+      in: 'path',
+      description: 'Primary key',
+      required: true,
+    }
+
+    #swagger.parameters['_schema'] = {
+      in: 'query',
+      description: 'Fields to return',
+      required: false,
+      type: 'string'
+    }
+
+    #swagger.parameters['_extend'] = {
+      in: 'query',
+      description: 'Foreign keys to extend',
+      required: false,
+      type: 'string'
+    }
+
+    #swagger.parameters['_field'] = {
+      in: 'query',
+      description: 'If you want to get field by any other field than primary key, use this parameter',
+      required: false,
+      type: 'string'
+    }
+
+  */
   const { name, pk } = req.params;
   const { _field, _schema, _extend } = req.query;
 
@@ -326,6 +431,7 @@ const getRowInTableByPK = async (req, res) => {
 
     if (!data) {
       res.status(404).json({
+        message: 'Row not found',
         error: 'not_found',
       });
     } else {
@@ -343,6 +449,37 @@ const getRowInTableByPK = async (req, res) => {
 
 // Update a row by pk
 const updateRowInTableByPK = async (req, res) => {
+  /*
+    #swagger.tags = ['Rows']
+    #swagger.summary = 'Update Row'
+    #swagger.description = 'Update a row by primary key'
+    #swagger.parameters['name'] = {
+      in: 'path',
+      description: 'Table name',
+      required: true,
+      type: 'string'
+    }
+    #swagger.parameters['pk'] = {
+      in: 'path',
+      description: 'Primary key',
+      required: true,
+    }
+
+    #swagger.parameters['body'] = {
+      in: 'body', 
+      required: true,
+      type: 'object',
+      schema: { $ref: "#/definitions/UpdateRowRequestBody" }
+    }
+
+    #swagger.parameters['_field'] = {
+      in: 'query',
+      description: 'If you want to update row by any other field than primary key, use this parameter',
+      required: false,
+      type: 'string'
+    }
+*/
+
   const { name, pk } = req.params;
   const { fields } = req.body;
   const { _field } = req.query;
@@ -385,6 +522,29 @@ const updateRowInTableByPK = async (req, res) => {
 
 // Delete a row by id
 const deleteRowInTableByPK = async (req, res) => {
+  /*
+    #swagger.tags = ['Rows']
+    #swagger.summary = 'Delete Row'
+    #swagger.description = 'Delete a row by primary key'
+    #swagger.parameters['name'] = {
+      in: 'path',
+      description: 'Table name',
+      required: true,
+      type: 'string'
+    }
+    #swagger.parameters['pk'] = {
+      in: 'path',
+      description: 'Primary key',
+      required: true,
+    }
+    #swagger.parameters['_field'] = {
+      in: 'query',
+      description: 'If you want to delete row by any other field than primary key, use this parameter',
+      required: false,
+      type: 'string'
+    }
+
+  */
   const { name, pk } = req.params;
   const { _field } = req.query;
 

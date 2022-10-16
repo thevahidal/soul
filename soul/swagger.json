@@ -1,0 +1,705 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "0.0.1",
+    "title": "Soul API",
+    "description": "API Documentation for <b>Soul</b>, a simple SQLite RESTful server. "
+  },
+  "host": "localhost:8000",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Root",
+      "description": "Root endpoints"
+    },
+    {
+      "name": "Tables",
+      "description": "Tables endpoints"
+    },
+    {
+      "name": "Rows",
+      "description": "Rows endpoints"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "securityDefinitions": {},
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/": {
+      "get": {
+        "tags": [
+          "Root"
+        ],
+        "summary": "Timestamp",
+        "description": "Endpoint to return server timestamp",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/transaction": {
+      "post": {
+        "tags": [
+          "Root"
+        ],
+        "summary": "Transaction",
+        "description": "Endpoint to run any transaction, e.g. [{ \"query\": \"\" }, { \"statement\": \"\", \"values\": {} }, { \"query\": \"\" }]",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TransactionRequestBody"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/tables/": {
+      "get": {
+        "tags": [
+          "Tables"
+        ],
+        "summary": "List Tables",
+        "description": "Endpoint to list all tables",
+        "parameters": [
+          {
+            "name": "_search",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Search term"
+          },
+          {
+            "name": "_ordering",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Ordering term"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tables"
+        ],
+        "summary": "Create Table",
+        "description": "Endpoint to create a table",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateTableRequestBody"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Table created",
+            "schema": {
+              "$ref": "#/definitions/CreateTableSuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/CreateTableErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/tables/{name}": {
+      "get": {
+        "tags": [
+          "Tables"
+        ],
+        "summary": "Get Table Schema",
+        "description": "Endpoint to get the schema of a table",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Name of the table"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tables"
+        ],
+        "summary": "Delete Table",
+        "description": "Endpoint to delete a table",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Name of the table"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/tables/{name}/rows": {
+      "get": {
+        "tags": [
+          "Rows"
+        ],
+        "summary": "List Rows",
+        "description": "Endpoint to list rows of a table.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Table name."
+          },
+          {
+            "name": "_page",
+            "description": "Page number.",
+            "in": "query",
+            "type": "number",
+            "default": 1
+          },
+          {
+            "name": "_limit",
+            "description": "Number of rows per page.",
+            "in": "query",
+            "type": "number",
+            "default": 10
+          },
+          {
+            "name": "_ordering",
+            "description": "Ordering of rows. e.g. ?_ordering=-age will order rows by age descending.",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "_schema",
+            "description": "Schema of rows. e.g. ?_schema=name,age will return only name and age fields.",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "_extend",
+            "description": "Extend rows. e.g. ?_extend=user_id will return user data for each row.",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "_search",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "filters",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Rows"
+        ],
+        "summary": "Insert Row",
+        "description": "Insert a new row in a table",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Table name"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/InsertRowRequestBody"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Row inserted successfully",
+            "schema": {
+              "$ref": "#/definitions/InsertRowSuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/definitions/InsertRowErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/tables/{name}/rows/{pk}": {
+      "get": {
+        "tags": [
+          "Rows"
+        ],
+        "summary": "Retrieve Row",
+        "description": "Retrieve a row by primary key",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Table name"
+          },
+          {
+            "name": "pk",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Primary key"
+          },
+          {
+            "name": "_schema",
+            "in": "query",
+            "description": "Fields to return",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "_extend",
+            "in": "query",
+            "description": "Foreign keys to extend",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "_field",
+            "in": "query",
+            "description": "If you want to get field by any other field than primary key, use this parameter",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Rows"
+        ],
+        "summary": "Update Row",
+        "description": "Update a row by primary key",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Table name"
+          },
+          {
+            "name": "pk",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Primary key"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateRowRequestBody"
+            }
+          },
+          {
+            "name": "_field",
+            "in": "query",
+            "description": "If you want to update row by any other field than primary key, use this parameter",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "in",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "required",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "schema",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Rows"
+        ],
+        "summary": "Delete Row",
+        "description": "Delete a row by primary key",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Table name"
+          },
+          {
+            "name": "pk",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Primary key"
+          },
+          {
+            "name": "_field",
+            "in": "query",
+            "description": "If you want to delete row by any other field than primary key, use this parameter",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Table": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "users"
+        }
+      }
+    },
+    "Row": {
+      "type": "object",
+      "properties": {}
+    },
+    "Query": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "example": "SELECT * FROM users"
+        }
+      }
+    },
+    "Statement": {
+      "type": "object",
+      "properties": {
+        "statement": {
+          "type": "string",
+          "example": "INSERT INTO users (id, firstName, lastName) VALUES (:id, :firstName, :lastName)"
+        },
+        "values": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "example": 1
+            },
+            "firstName": {
+              "type": "string",
+              "example": "John"
+            },
+            "lastName": {
+              "type": "string",
+              "example": "Doe"
+            }
+          }
+        }
+      }
+    },
+    "Transaction": {
+      "type": "object",
+      "properties": {
+        "transaction": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Statement"
+          }
+        }
+      }
+    },
+    "ForeignKey": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "type": "string",
+          "example": "users"
+        },
+        "column": {
+          "type": "string",
+          "example": "id"
+        },
+        "onDelete": {
+          "type": "string",
+          "example": "CASCADE"
+        },
+        "onUpdate": {
+          "type": "string",
+          "example": "CASCADE"
+        }
+      }
+    },
+    "Field": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "user_id"
+        },
+        "type": {
+          "type": "string",
+          "example": "INTEGER"
+        },
+        "default": {
+          "type": "number",
+          "example": 1
+        },
+        "notNull": {
+          "type": "boolean",
+          "example": true
+        },
+        "unique": {
+          "type": "boolean",
+          "example": false
+        },
+        "primaryKey": {
+          "type": "boolean",
+          "example": false
+        },
+        "foreignKey": {
+          "$ref": "#/definitions/ForeignKey"
+        },
+        "index": {
+          "type": "boolean",
+          "example": false
+        }
+      }
+    },
+    "Schema": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Field"
+      }
+    },
+    "CreateTableRequestBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "users"
+        },
+        "schema": {
+          "$ref": "#/definitions/Schema"
+        },
+        "autoAddCreatedAt": {
+          "type": "boolean",
+          "example": true
+        },
+        "autoAddUpdatedAt": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "CreateTableSuccessResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Table created"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "example": "users"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Field"
+              }
+            }
+          }
+        }
+      }
+    },
+    "CreateTableErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Table not created"
+        },
+        "error": {
+          "type": "string",
+          "example": "already_exists"
+        },
+        "data": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    "InsertRowRequestBody": {
+      "$ref": "#/definitions/Row"
+    },
+    "InsertRowSuccessResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Row inserted"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "example": 1
+            },
+            "createdAt": {
+              "type": "string",
+              "example": "2022-10-10 10:55:29"
+            },
+            "updatedAt": {
+              "type": "string",
+              "example": "2022-10-10 10:55:29"
+            },
+            "firstName": {
+              "type": "string",
+              "example": "John"
+            }
+          }
+        }
+      }
+    },
+    "InsertRowErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Row not inserted"
+        },
+        "error": {
+          "type": "string",
+          "example": "not_found"
+        }
+      }
+    },
+    "UpdateRowRequestBody": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Field"
+          }
+        }
+      }
+    },
+    "TransactionRequestBody": {
+      "$ref": "#/definitions/Transaction"
+    }
+  }
+}

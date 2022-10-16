@@ -1,7 +1,14 @@
 const Joi = require('joi');
 
+const listTables = Joi.object({
+  _search: Joi.string(),
+  _ordering: Joi.string(),
+}).unknown(true);
+
 const createTable = Joi.object({
   name: Joi.string().min(2).max(30).required(),
+  autoAddCreatedAt: Joi.boolean().default(true),
+  autoAddUpdatedAt: Joi.boolean().default(true),
   schema: Joi.array()
     .items(
       Joi.object({
@@ -47,6 +54,7 @@ const deleteTable = Joi.object({
 });
 
 module.exports = {
+  listTables,
   createTable,
   deleteTable,
 };

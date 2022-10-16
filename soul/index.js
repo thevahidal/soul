@@ -7,12 +7,14 @@ const expressWinston = require('express-winston');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
+const swaggerUi = require('swagger-ui-express');
 
 const config = require('./config/index');
 const db = require('./db/index');
 const rootRoutes = require('./routes/index');
 const tablesRoutes = require('./routes/tables');
 const rowsRoutes = require('./routes/rows');
+const swaggerFile = require('./swagger.json');
 
 const app = express();
 
@@ -54,9 +56,10 @@ if (config.rateLimit.enabled) {
   app.use(limiter);
 }
 
-app.use('/', rootRoutes);
-app.use('/tables', tablesRoutes);
-app.use('/tables', rowsRoutes);
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
+app.use('/api', rootRoutes);
+app.use('/api/tables', tablesRoutes);
+app.use('/api/tables', rowsRoutes);
 
 const port = config.port;
 app.listen(port, () => {
