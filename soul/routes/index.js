@@ -7,7 +7,6 @@ const schema = require('../schemas/index');
 const router = express.Router();
 
 router.get('/', controllers.root);
-router.post('/query', controllers.query);
 router.post(
   '/transaction',
   validator(schema.transaction),

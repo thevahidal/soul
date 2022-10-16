@@ -1,7 +1,23 @@
 const db = require('../db/index');
 
 const createTable = async (req, res) => {
-  const { name, schema } = req.body;
+  /*
+    #swagger.tags = ['Tables']
+    #swagger.summary = 'Create Table'
+    #swagger.description = 'Endpoint to create a table'
+    #swagger.parameters['body'] = {
+      in: 'body',
+      required: true,
+      type: 'object',
+      schema: { $ref: "#/definitions/CreateTableRequestBody" }
+    }
+  */
+  const {
+    name,
+    schema,
+    autoAddCreatedAt = true,
+    autoAddUpdatedAt = true,
+  } = req.body;
 
   let schemaString = schema
     // support name, type, default, not null, unique, primary key, foreign key, index
@@ -57,21 +73,48 @@ const createTable = async (req, res) => {
       `;
   }
 
-  // add createdAt and updatedAt fields to fieldsString
-  schemaString = `
-      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP, 
-      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP, 
-      ${schemaString}
-    `;
+  // add created at and updated at
+  if (autoAddCreatedAt) {
+    schemaString = `
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        ${schemaString}
+      `;
+  }
+
+  if (autoAddUpdatedAt) {
+    schemaString = `
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        ${schemaString}
+      `;
+  }
 
   const query = `CREATE TABLE ${name} (${schemaString})`;
   try {
     db.prepare(query).run();
-
-    res.json({
+    /*
+      #swagger.responses[201] = {
+        description: 'Table created',
+        schema: {
+          $ref: "#/definitions/CreateTableSuccessResponse"
+        }
+      }
+    */
+    res.status(201).json({
       message: 'Table created',
+      data: {
+        name,
+        fields: schema,
+      },
     });
   } catch (error) {
+    /*
+      #swagger.responses[400] = {
+        description: 'Bad request',
+        schema: {
+          $ref: "#/definitions/CreateTableErrorResponse"
+        }
+      }
+    */
     res.status(400).json({
       message: error.message,
       error: error,
@@ -81,23 +124,27 @@ const createTable = async (req, res) => {
 
 // Return all tables
 const listTables = async (req, res) => {
-  const { _search, _ordering, ...filters } = req.query;
+  /*
+    #swagger.tags = ['Tables']
+    #swagger.summary = 'List Tables'
+    #swagger.description = 'Endpoint to list all tables'
 
-  // filters consist of fields to filter by
-  // e.g. ?name=users
-
-  // if filters are provided, filter the tables
-  // filtering must be case insensitive
-  // otherwise, return all tables
+    #swagger.parameters['_search'] = {
+      in: 'query',
+      required: false,
+      type: 'string',
+      description: 'Search term'
+    }
+    #swagger.parameters['_ordering'] = {
+      in: 'query',
+      required: false,
+      type: 'string',
+      description: 'Ordering term'
+    }
+  */
+  const { _search, _ordering } = req.query;
 
   let query = `SELECT name FROM sqlite_master WHERE type = 'table'`;
-
-  if (Object.keys(filters).length) {
-    query += ' AND ';
-    query += Object.keys(filters)
-      .map((key) => `${key} LIKE '%${filters[key]}%'`)
-      .join(' AND ');
-  }
 
   // if search is provided, search the tables
   // e.g. ?_search=users
@@ -129,6 +176,18 @@ const listTables = async (req, res) => {
 
 // TODO: Return the schema of a table by name
 const getTableSchema = async (req, res) => {
+  /*
+    #swagger.tags = ['Tables']
+    #swagger.summary = 'Get Table Schema'
+    #swagger.description = 'Endpoint to get the schema of a table'
+    #swagger.parameters['name'] = {
+      in: 'path',
+      required: true,
+      type: 'string',
+      description: 'Name of the table'
+    }
+
+  */
   const { name } = req.params;
   const query = `PRAGMA table_info(${name})`;
   try {
@@ -147,6 +206,18 @@ const getTableSchema = async (req, res) => {
 
 // Delete a table by name
 const deleteTable = async (req, res) => {
+  /*
+    #swagger.tags = ['Tables']
+    #swagger.summary = 'Delete Table'
+    #swagger.description = 'Endpoint to delete a table'
+    #swagger.parameters['name'] = {
+      in: 'path',
+      required: true,
+      type: 'string',
+      description: 'Name of the table'
+    }
+    
+  */
   const { name } = req.params;
   const query = `DROP TABLE ${name}`;
   try {

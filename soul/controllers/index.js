@@ -1,27 +1,21 @@
-const e = require('express');
 const db = require('../db/index');
+const version = require('../../package.json').version;
 
 // Root endpoint
 const root = async (req, res) => {
+  /* 	
+    #swagger.tags = ['Root']
+    #swagger.summary = 'Timestamp' 
+    #swagger.description = 'Endpoint to return server timestamp' 
+  */
+
   res.json({
     message: 'Soul is running...',
+    data: {
+      version,
+      timestamp: new Date().toISOString(),
+    },
   });
-};
-
-// Run any query
-const query = async (req, res) => {
-  const { query } = req.body;
-  try {
-    const data = db.prepare(query).all();
-    res.json({
-      data,
-    });
-  } catch (error) {
-    res.status(400).json({
-      message: error.message,
-      error: error,
-    });
-  }
 };
 
 // Run any query transactions
@@ -56,6 +50,16 @@ const query = async (req, res) => {
 //
 
 const transaction = async (req, res) => {
+  /* 	
+    #swagger.tags = ['Root']
+    #swagger.summary = 'Transaction' 
+    #swagger.description = 'Endpoint to run any transaction, e.g. [{ "query": "" }, { "statement": "", "values": {} }, { "query": "" }]',
+    #swagger.parameters['body'] = {
+      in: 'body',
+      required: true,
+      schema: { $ref: "#/definitions/TransactionRequestBody" }
+    }
+  */
   const { transaction } = req.body;
   const results = [];
   try {
@@ -72,6 +76,7 @@ const transaction = async (req, res) => {
         }
       });
     })();
+
     res.json({
       data: results,
     });
@@ -85,6 +90,5 @@ const transaction = async (req, res) => {
 
 module.exports = {
   root,
-  query,
   transaction,
 };

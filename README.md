@@ -32,7 +32,7 @@ Options:
 
 ## Documentation
 
-API documentation is available while running the project at [/docs](http://localhost:8000/docs)
+API documentation is available while running the project at [/api/docs](http://localhost:8000/api/docs)
 ## Development
 
 ```bash

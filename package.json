@@ -8,7 +8,8 @@
   },
   "scripts": {
     "start": "node soul/index.js",
-    "dev": "NO_CLI=true nodemon soul/index.js"
+    "dev": "npm run swagger-autogen && NO_CLI=true nodemon soul/index.js",
+    "swagger-autogen": "NO_CLI=true node soul/swagger.js"
   },
   "repository": {
     "type": "git",
@@ -29,10 +30,12 @@
     "express-rate-limit": "^6.6.0",
     "express-winston": "^4.2.0",
     "joi": "^17.6.2",
+    "swagger-ui-express": "^4.5.0",
     "winston": "^3.8.2",
     "yargs": "^17.6.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.20"
+    "nodemon": "^2.0.20",
+    "swagger-autogen": "^2.22.0"
   }
 }
