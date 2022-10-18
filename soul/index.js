@@ -30,19 +30,22 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Log requests
-app.use(
-  expressWinston.logger({
-    transports: [new winston.transports.Console()],
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.json()
-    ),
-    meta: false,
-    msg: 'HTTP {{req.method}} {{req.url}}',
-    expressFormat: true,
-    colorize: false,
-  })
-);
+
+if (config.verbose !== null) {
+  app.use(
+    expressWinston.logger({
+      transports: [new winston.transports.Console()],
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.json()
+      ),
+      meta: false,
+      msg: 'HTTP {{req.method}} {{req.url}}',
+      expressFormat: true,
+      colorize: false,
+    })
+  );
+}
 
 if (config.rateLimit.enabled) {
   const limiter = rateLimit({
@@ -61,7 +64,4 @@ app.use('/api', rootRoutes);
 app.use('/api/tables', tablesRoutes);
 app.use('/api/tables', rowsRoutes);
 
-const port = config.port;
-app.listen(port, () => {
-  console.log(`Soul is running on port ${port}...`);
-});
+module.exports = app;

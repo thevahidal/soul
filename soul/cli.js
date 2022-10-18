@@ -27,6 +27,13 @@ if (process.env.NO_CLI !== 'true') {
       type: 'boolean',
       demandOption: false,
     })
+    .option('V', {
+      alias: 'verbose',
+      describe: 'Enable verbose logging',
+      type: 'string',
+      demandOption: false,
+      choices: ['console', null],
+    })
     .help(true).argv;
 }
 

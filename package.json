@@ -2,14 +2,16 @@
   "name": "soul-cli",
   "version": "0.0.1",
   "description": "A SQLite RESTful server",
-  "main": "soul/index.js",
+  "main": "soul/server.js",
   "bin": {
-    "soul": "./soul/index.js"
+    "soul": "./soul/server.js"
   },
   "scripts": {
-    "start": "node soul/index.js",
-    "dev": "npm run swagger-autogen && NO_CLI=true nodemon soul/index.js",
-    "swagger-autogen": "NO_CLI=true node soul/swagger.js"
+    "start": "node soul/server.js",
+    "dev": "npm run swagger-autogen && cross-env NO_CLI=true nodemon soul/server.js",
+    "cli": "nodemon soul/server.js --database foobar.db",
+    "swagger-autogen": "cross-env NO_CLI=true node soul/swagger.js",
+    "test": "cross-env NODE_ENV=test NO_CLI=true DB=test.db PORT=8001 jest --testTimeout=10000"
   },
   "repository": {
     "type": "git",
@@ -35,7 +37,18 @@
     "yargs": "^17.6.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
+    "jest": "^29.2.0",
     "nodemon": "^2.0.20",
+    "supertest": "^6.3.0",
     "swagger-autogen": "^2.22.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "globalSetup": "./soul/tests/setup.js",
+    "globalTeardown": "./soul/tests/globalTeardown.js"
   }
 }
