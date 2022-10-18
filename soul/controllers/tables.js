@@ -91,6 +91,9 @@ const createTable = async (req, res) => {
   const query = `CREATE TABLE ${name} (${schemaString})`;
   try {
     db.prepare(query).run();
+
+    const generatedSchema = db.prepare(`PRAGMA table_info(${name})`).all();
+
     /*
       #swagger.responses[201] = {
         description: 'Table created',
@@ -103,7 +106,7 @@ const createTable = async (req, res) => {
       message: 'Table created',
       data: {
         name,
-        fields: schema,
+        schema: generatedSchema,
       },
     });
   } catch (error) {
@@ -164,7 +167,7 @@ const listTables = async (req, res) => {
     const tables = db.prepare(query).all();
 
     res.json({
-      tables,
+      data: tables,
     });
   } catch (error) {
     res.status(400).json({

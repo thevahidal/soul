@@ -4,14 +4,23 @@ const config = require('../config/index');
 
 class Database {
   constructor(filename, options) {
-    this.db = new BS3Database(filename, { verbose: console.log, ...options });
+    this.db = new BS3Database(filename, {
+      verbose: this.getVerbose(),
+      ...options,
+    });
+  }
+
+  getVerbose() {
+    if (config.verbose === 'console') {
+      return console.log;
+    } else if (config.verbose === null) {
+      return null;
+    }
   }
 
   get() {
     return this.db;
   }
 }
-
-console.log(config.db);
 
 module.exports = new Database(config.db.filename).get();

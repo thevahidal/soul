@@ -8,13 +8,14 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const envVarsSchema = Joi.object()
   .keys({
-    PORT: Joi.number().positive().required(),
+    PORT: Joi.number().positive().default(8000),
 
     NODE_ENV: Joi.string()
       .valid('production', 'development', 'test')
       .required(),
 
     DB: Joi.string().required(),
+    VERBOSE: Joi.string().valid('console', null).default(null),
 
     CORS_ORIGIN_WHITELIST: Joi.string().required(),
 
@@ -37,11 +38,12 @@ const { argv } = yargs;
 module.exports = {
   env: envVars.NODE_ENV,
 
-  production: envVars.NODE_ENV === 'production',
-  development: envVars.NODE_ENV === 'development',
-  test: envVars.NODE_ENV === 'test',
+  isProduction: envVars.NODE_ENV === 'production',
+  isDevelopment: envVars.NODE_ENV === 'development',
+  isTest: envVars.NODE_ENV === 'test',
 
   port: argv.port || envVars.PORT,
+  verbose: argv['verbose'] || envVars.VERBOSE,
 
   db: {
     filename: argv.database || envVars.DB || ':memory:',
