@@ -1,12 +1,22 @@
 {
-	"name": "studio",
+	"name": "soul-studio",
 	"version": "0.0.1",
-	"private": true,
+	"description": "GUI for Soul: A SQLite RESTful server",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview"
 	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/thevahidal/soul.git"
+	},
+	"author": "Vahid Al @thevahidal",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/thevahidal/soul/issues"
+	},
+	"homepage": "https://github.com/thevahidal/soul#readme",
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "next",
 		"@sveltejs/adapter-node": "^1.0.0-next.98",

@@ -11,8 +11,7 @@
     "dev": "npm run swagger-autogen && cross-env NO_CLI=true nodemon src/server.js",
     "cli": "nodemon src/server.js --database foobar.db",
     "swagger-autogen": "cross-env NO_CLI=true node src/swagger/index.js",
-    "test": "cross-env NODE_ENV=test NO_CLI=true DB=test.db PORT=8001 jest --testTimeout=10000",
-    "studio": "node studio/build/index.js"
+    "test": "cross-env NODE_ENV=test NO_CLI=true DB=test.db PORT=8001 jest --testTimeout=10000"
   },
   "repository": {
     "type": "git",
