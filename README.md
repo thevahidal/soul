@@ -36,16 +36,30 @@ API documentation is available while running the project at [/api/docs](http://l
 ## Development
 
 ```bash
-  git clone https://github.com/thevahidal/soul # Clone project
-  cd soul # Move into the soul directory
-
-  cp .env.sample .env # Duplicate sample environment variables
-  nano .env # Update the environment variables
-
-  npm install # Install dependencies
-  npm run dev # Start the dev server
+git clone https://github.com/thevahidal/soul # Clone project
 ```
 
+### Core API
+```bash
+cd core # Move into the core directory
+
+cp .env.sample .env # Duplicate sample environment variables
+nano .env # Update the environment variables
+
+npm install # Install dependencies
+npm run dev # Start the dev server
+```
+
+### Studio
+```bash
+cd studio # Move into the studio directory
+
+cp .env.sample .env # Duplicate sample environment variables
+nano .env # Update the environment variables
+
+npm install # Install dependencies
+npm run dev # Start the dev server
+```
 
 ## Contributing
 

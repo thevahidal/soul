@@ -1,15 +1,10 @@
 const swaggerAutogen = require('swagger-autogen')();
 
-const config = require('./config/index');
-const version = require('../package.json').version;
+const config = require('../config/index');
+const version = require('../../package.json').version;
 
 const outputFile = './swagger.json';
-const endpointsFiles = [
-  './index.js',
-  //   './routes/index.js',
-  //   './routes/rows.js',
-  //   './routes/tables.js',
-];
+const endpointsFiles = ['../index.js'];
 
 const doc = {
   info: {

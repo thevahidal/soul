@@ -6,7 +6,6 @@ const winston = require('winston');
 const expressWinston = require('express-winston');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const dotenv = require('dotenv');
 const swaggerUi = require('swagger-ui-express');
 
 const config = require('./config/index');
@@ -14,7 +13,7 @@ const db = require('./db/index');
 const rootRoutes = require('./routes/index');
 const tablesRoutes = require('./routes/tables');
 const rowsRoutes = require('./routes/rows');
-const swaggerFile = require('./swagger.json');
+const swaggerFile = require('./swagger/swagger.json');
 
 const app = express();
 
