@@ -68,10 +68,6 @@ Contributions are always welcome!
 See `contributing.md` for ways to get started and please adhere to `code of conduct`.
 
 
-## Acknowledgements
-
- - Ghost Icon by Mr. Minuvi from [Noun Project](https://thenounproject.com/browse/icons/term/ghost/)
-
 ## Authors
 
 - [@thevahidal](https://www.github.com/thevahidal)
