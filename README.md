@@ -29,10 +29,15 @@ Options:
 
 ```
 
+Then to test Soul is working run the following command
+```bash
+curl http://localhost:8000/api/tables
+```
+It should return a list of the tables inside `sqlite.db` database.
 
 ## Documentation
 
-API documentation is available while running the project at [/api/docs](http://localhost:8000/api/docs)
+API documentation is available while the project is running at [http://localhost:8000/api/docs](http://localhost:8000/api/docs)
 ## Development
 
 ```bash
@@ -51,6 +56,7 @@ npm run dev # Start the dev server
 ```
 
 ### Studio
+Make sure that Soul Core API is up and running and then
 ```bash
 cd studio # Move into the studio directory
 
