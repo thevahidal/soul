@@ -4,6 +4,8 @@ const path = require('path');
 
 const { yargs, usage, options } = require('../cli');
 
+const { argv } = yargs;
+
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const envVarsSchema = Joi.object()
@@ -19,7 +21,7 @@ const envVarsSchema = Joi.object()
 
     CORS_ORIGIN_WHITELIST: Joi.string().required(),
 
-    RATE_LIMIT_ENABLED: Joi.boolean().required(),
+    RATE_LIMIT_ENABLED: Joi.boolean().default(false),
     RATE_LIMIT_WINDOW_MS: Joi.number().positive().required(),
     RATE_LIMIT_MAX_REQUESTS: Joi.number().positive().required(),
   })
@@ -27,13 +29,19 @@ const envVarsSchema = Joi.object()
 
 const { value: envVars, error } = envVarsSchema
   .prefs({ errors: { label: 'key' } })
-  .validate(process.env);
+  .validate({
+    ...process.env,
+
+    // Allow overriding of config with CLI args
+    PORT: argv.port,
+    VERBOSE: argv['verbose'],
+    DB: argv.database,
+    RATE_LIMIT_ENABLED: argv['rate-limit-enabled'],
+  });
 
 if (error) {
   throw new Error(`Config validation error: ${error.message}`);
 }
-
-const { argv } = yargs;
 
 module.exports = {
   env: envVars.NODE_ENV,
