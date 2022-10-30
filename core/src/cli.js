@@ -7,7 +7,7 @@ Usage: soul [options]
 
 let options = undefined;
 if (process.env.NO_CLI !== 'true') {
-  yargs
+  options = yargs
     .usage(usage)
     .option('d', {
       alias: 'database',

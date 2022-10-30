@@ -39,7 +39,7 @@ if (argv.verbose) {
   env.VERBOSE = argv.verbose;
 }
 
-if (argv.db) {
+if (argv.database) {
   env.DB = argv.database;
 }
 
