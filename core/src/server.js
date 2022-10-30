@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const app = require('./index');
 const config = require('./config/index');
 
