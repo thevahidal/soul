@@ -14,30 +14,42 @@ const envVarsSchema = Joi.object()
 
     NODE_ENV: Joi.string()
       .valid('production', 'development', 'test')
-      .required(),
+      .default('production'),
 
     DB: Joi.string().required(),
     VERBOSE: Joi.string().valid('console', null).default(null),
 
-    CORS_ORIGIN_WHITELIST: Joi.string().required(),
+    CORS_ORIGIN_WHITELIST: Joi.string().default('*'),
 
     RATE_LIMIT_ENABLED: Joi.boolean().default(false),
-    RATE_LIMIT_WINDOW_MS: Joi.number().positive().required(),
-    RATE_LIMIT_MAX_REQUESTS: Joi.number().positive().required(),
+    RATE_LIMIT_WINDOW_MS: Joi.number().positive().default(1000),
+    RATE_LIMIT_MAX_REQUESTS: Joi.number().positive().default(10),
   })
   .unknown();
 
+const env = {
+  ...process.env,
+};
+
+if (argv.port) {
+  env.PORT = argv.port;
+}
+
+if (argv.verbose) {
+  env.VERBOSE = argv.verbose;
+}
+
+if (argv.db) {
+  env.DB = argv.database;
+}
+
+if (argv['rate-limit-enabled']) {
+  env.RATE_LIMIT_ENABLED = argv['rate-limit-enabled'];
+}
+
 const { value: envVars, error } = envVarsSchema
   .prefs({ errors: { label: 'key' } })
-  .validate({
-    ...process.env,
-
-    // Allow overriding of config with CLI args
-    PORT: argv.port,
-    VERBOSE: argv['verbose'],
-    DB: argv.database,
-    RATE_LIMIT_ENABLED: argv['rate-limit-enabled'],
-  });
+  .validate(env);
 
 if (error) {
   throw new Error(`Config validation error: ${error.message}`);
