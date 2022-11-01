@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.0.1",
+    "version": "0.0.6",
     "title": "Soul API",
     "description": "API Documentation for <b>Soul</b>, a simple SQLite RESTful server. "
   },

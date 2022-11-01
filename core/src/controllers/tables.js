@@ -13,12 +13,13 @@ const createTable = async (req, res) => {
     }
   */
   const {
-    name,
+    name: tableName,
     schema,
     autoAddCreatedAt = true,
     autoAddUpdatedAt = true,
   } = req.body;
 
+  let indices = [];
   let schemaString = schema
     // support name, type, default, not null, unique, primary key, foreign key, index
     // e.g. { name: 'id', type: 'INTEGER', primaryKey: true }
@@ -57,7 +58,7 @@ const createTable = async (req, res) => {
           column += ` ON UPDATE ${foreignKey.onUpdate}`;
         }
         if (index) {
-          column += ` INDEX ${index}`;
+          indices.push(name);
         }
 
         return column;
@@ -88,11 +89,25 @@ const createTable = async (req, res) => {
       `;
   }
 
-  const query = `CREATE TABLE ${name} (${schemaString})`;
+  let indicesString = indices
+    .map((field) => {
+      return `
+      CREATE INDEX ${tableName}_${field}_index 
+      ON ${tableName} (${field})
+    `;
+    })
+    .join(';');
+
+  const query = `CREATE TABLE ${tableName} (${schemaString})`;
+
   try {
     db.prepare(query).run();
 
-    const generatedSchema = db.prepare(`PRAGMA table_info(${name})`).all();
+    if (indicesString) {
+      db.prepare(indicesString).run();
+    }
+
+    const generatedSchema = db.prepare(`PRAGMA table_info(${tableName})`).all();
 
     /*
       #swagger.responses[201] = {
@@ -105,7 +120,7 @@ const createTable = async (req, res) => {
     res.status(201).json({
       message: 'Table created',
       data: {
-        name,
+        name: tableName,
         schema: generatedSchema,
       },
     });
