@@ -4,7 +4,7 @@ Soul is consist of 3 main namespaces: `/tables`, `/rows` and `/`. In this docume
 
 ## Setup Environment
 
-To follow the below examples run Soul with `sample.db` provided in `examples/` directory:
+To follow the below examples we need to download a sample database and also install Soul CLI.
 
 ### Download Sample Database
 
