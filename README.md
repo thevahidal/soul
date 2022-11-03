@@ -73,7 +73,7 @@ npm run dev # Start the dev server
 
 Contributions are always welcome!
 
-See `contributing.md` for ways to get started and please adhere to `code of conduct`.
+See `CONTRIBUTING.md` for ways to get started and please adhere to `CODE OF CONDUCT`.
 
 
 ## Authors
