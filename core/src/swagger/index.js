@@ -110,6 +110,15 @@ const doc = {
       fields: [{ $ref: '#/definitions/Field' }],
     },
 
+    BulkUpdateRowsRequestBody: {
+      pks: [1, 2, 3],
+      fields: [{ $ref: '#/definitions/Field' }],
+    },
+
+    BulkDeleteRowsRequestBody: {
+      pks: [1, 2, 3],
+    },
+
     TransactionRequestBody: {
       $ref: '#/definitions/Transaction',
     },

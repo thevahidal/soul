@@ -459,6 +459,129 @@
           }
         }
       }
+    },
+    "/api/tables/{name}/rows/bulk": {
+      "put": {
+        "tags": [
+          "Rows"
+        ],
+        "summary": "Bulk Update Rows",
+        "description": "Bulk Update rows by primary key",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Table name"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BulkUpdateRowsRequestBody"
+            }
+          },
+          {
+            "name": "_lookup_field",
+            "in": "query",
+            "description": "If you want to update row by any other field than primary key, use this parameter",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "in",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "required",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "schema",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Rows"
+        ],
+        "summary": "Bulk Delete Rows",
+        "description": "Bulks Delete rows by primary key",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Table name"
+          },
+          {
+            "name": "_lookup_field",
+            "in": "query",
+            "description": "If you want to delete row by any other field than primary key, use this parameter",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BulkDeleteRowsRequestBody"
+            }
+          },
+          {
+            "name": "in",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "required",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "schema",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -698,6 +821,44 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/Field"
+          }
+        }
+      }
+    },
+    "BulkUpdateRowsRequestBody": {
+      "type": "object",
+      "properties": {
+        "pks": {
+          "type": "array",
+          "example": [
+            1,
+            2,
+            3
+          ],
+          "items": {
+            "type": "number"
+          }
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Field"
+          }
+        }
+      }
+    },
+    "BulkDeleteRowsRequestBody": {
+      "type": "object",
+      "properties": {
+        "pks": {
+          "type": "array",
+          "example": [
+            1,
+            2,
+            3
+          ],
+          "items": {
+            "type": "number"
           }
         }
       }
