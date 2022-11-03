@@ -38,6 +38,8 @@ It should return a list of the tables inside `sqlite.db` database.
 ## Documentation
 
 API documentation is available while the project is running at [http://localhost:8000/api/docs](http://localhost:8000/api/docs)
+
+There's also a list of all endpoints examples at [docs/api-examples.md](docs/api-examples.md)
 ## Development
 
 ```bash
