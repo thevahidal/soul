@@ -578,10 +578,94 @@ const updateRowInTableByPK = async (req, res) => {
 
   const query = `UPDATE ${tableName} SET ${fieldsString} WHERE ${lookupField} = '${pk}'`;
   try {
-    db.prepare(query).run();
+    const data = db.prepare(query).run();
 
     res.json({
       message: 'Row updated',
+      data,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+      error: error,
+    });
+  }
+};
+
+// Update a row by pk
+const bulkUpdateRowsInTableByPK = async (req, res) => {
+  /*
+    #swagger.tags = ['Rows']
+    #swagger.summary = 'Bulk Update Rows'
+    #swagger.description = 'Bulk Update rows by primary key'
+    #swagger.parameters['name'] = {
+      in: 'path',
+      description: 'Table name',
+      required: true,
+      type: 'string'
+    }
+
+    #swagger.parameters['body'] = {
+      in: 'body', 
+      required: true,
+      type: 'object',
+      schema: { $ref: "#/definitions/BulkUpdateRowsRequestBody" }
+    }
+
+    #swagger.parameters['_lookup_field'] = {
+      in: 'query',
+      description: 'If you want to update row by any other field than primary key, use this parameter',
+      required: false,
+      type: 'string'
+    }
+*/
+
+  const { name: tableName } = req.params;
+  const { pks, fields } = req.body;
+  const { _lookup_field } = req.query;
+
+  let lookupField = _lookup_field;
+
+  if (!_lookup_field) {
+    // find the primary key of the table
+    try {
+      lookupField = db
+        .prepare(`PRAGMA table_info(${tableName})`)
+        .all()
+        .find((field) => field.pk === 1).name;
+    } catch (error) {
+      return res.status(400).json({
+        message: error.message,
+        error: error,
+      });
+    }
+  }
+
+  // wrap text values in quotes
+  const fieldsString = Object.keys(fields)
+    .map((key) => {
+      let value = fields[key];
+      if (typeof value === 'string') {
+        value = `'${value}'`;
+      }
+      return `${key} = ${value}`;
+    })
+    .join(', ');
+
+  if (fieldsString === '') {
+    return res.status(400).json({
+      message: 'No fields provided',
+      error: 'no_fields_provided',
+    });
+  }
+
+  const query = `UPDATE ${tableName} SET ${fieldsString} WHERE ${lookupField} in (${pks})`;
+  try {
+    const data = db.prepare(query).run();
+
+    res.json({
+      message: 'Rows updated',
+      data,
     });
   } catch (error) {
     res.status(400).json({
@@ -659,10 +743,82 @@ const deleteRowInTableByPK = async (req, res) => {
   }
 };
 
+// Bulk Delete rows by id
+const bulkDeleteRowsInTableByPK = async (req, res) => {
+  /*
+    #swagger.tags = ['Rows']
+    #swagger.summary = 'Bulk Delete Rows'
+    #swagger.description = 'Bulks Delete rows by primary key'
+    #swagger.parameters['name'] = {
+      in: 'path',
+      description: 'Table name',
+      required: true,
+      type: 'string'
+    }
+    #swagger.parameters['_lookup_field'] = {
+      in: 'query',
+      description: 'If you want to delete row by any other field than primary key, use this parameter',
+      required: false,
+      type: 'string'
+    }
+
+    #swagger.parameters['body'] = {
+      in: 'body', 
+      required: true,
+      type: 'object',
+      schema: { $ref: "#/definitions/BulkDeleteRowsRequestBody" }
+    }
+  */
+  const { name: tableName } = req.params;
+  const { _lookup_field } = req.query;
+  const { pks } = req.body;
+
+  let lookupField = _lookup_field;
+
+  if (!_lookup_field) {
+    // find the primary key of the table
+    try {
+      lookupField = db
+        .prepare(`PRAGMA table_info(${tableName})`)
+        .all()
+        .find((field) => field.pk === 1).name;
+    } catch (error) {
+      return res.status(400).json({
+        message: error.message,
+        error: error,
+      });
+    }
+  }
+
+  const query = `DELETE FROM ${tableName} WHERE ${lookupField} in (${pks})`;
+
+  try {
+    const data = db.prepare(query).run();
+
+    if (data.changes === 0) {
+      res.status(404).json({
+        error: 'not_found',
+      });
+    } else {
+      res.json({
+        message: 'Rows deleted',
+        data,
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+      error: error,
+    });
+  }
+};
+
 module.exports = {
   listTableRows,
   insertRowInTable,
   getRowInTableByPK,
   updateRowInTableByPK,
+  bulkUpdateRowsInTableByPK,
   deleteRowInTableByPK,
+  bulkDeleteRowsInTableByPK,
 };
