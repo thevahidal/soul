@@ -206,8 +206,8 @@ const getTableSchema = async (req, res) => {
     }
 
   */
-  const { name } = req.params;
-  const query = `PRAGMA table_info(${name})`;
+  const { name: tableName } = req.params;
+  const query = `PRAGMA table_info(${tableName})`;
   try {
     const schema = db.prepare(query).all();
 
@@ -236,8 +236,8 @@ const deleteTable = async (req, res) => {
     }
     
   */
-  const { name } = req.params;
-  const query = `DROP TABLE ${name}`;
+  const { name: tableName } = req.params;
+  const query = `DROP TABLE ${tableName}`;
   try {
     db.prepare(query).run();
 

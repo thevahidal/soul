@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.0.6",
+    "version": "0.0.7",
     "title": "Soul API",
     "description": "API Documentation for <b>Soul</b>, a simple SQLite RESTful server. "
   },
@@ -237,12 +237,13 @@
             "type": "string"
           },
           {
-            "name": "_search",
+            "name": "_filters",
+            "description": "Filter rows. e.g. ?_filters=name:John,age:20 will return rows where name is John and age is 20.",
             "in": "query",
             "type": "string"
           },
           {
-            "name": "filters",
+            "name": "_search",
             "in": "query",
             "type": "string"
           }
@@ -332,7 +333,7 @@
             "type": "string"
           },
           {
-            "name": "_field",
+            "name": "_lookup_field",
             "in": "query",
             "description": "If you want to get field by any other field than primary key, use this parameter",
             "required": false,
@@ -381,7 +382,7 @@
             }
           },
           {
-            "name": "_field",
+            "name": "_lookup_field",
             "in": "query",
             "description": "If you want to update row by any other field than primary key, use this parameter",
             "required": false,
@@ -439,7 +440,7 @@
             "description": "Primary key"
           },
           {
-            "name": "_field",
+            "name": "_lookup_field",
             "in": "query",
             "description": "If you want to delete row by any other field than primary key, use this parameter",
             "required": false,
@@ -449,6 +450,9 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "404": {
             "description": "Not Found"

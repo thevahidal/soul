@@ -1,6 +1,5 @@
 const Joi = require('joi');
 
-// allow other fields for filtering
 const listTableRows = Joi.object({
   name: Joi.string().min(3).max(30).required(),
   _page: Joi.number().integer().min(1).default(1),
@@ -9,6 +8,7 @@ const listTableRows = Joi.object({
   _ordering: Joi.string(),
   _schema: Joi.string(),
   _extend: Joi.string(),
+  _filters: Joi.string(),
 }).unknown(true);
 
 const insertRowInTable = Joi.object({
@@ -19,7 +19,7 @@ const insertRowInTable = Joi.object({
 const getRowInTableByPK = Joi.object({
   name: Joi.string().min(3).max(30).required(),
   pk: Joi.string().required(),
-  _field: Joi.string().min(3).max(30),
+  _lookup_field: Joi.string().min(3).max(30),
   _schema: Joi.string(),
   _extend: Joi.string(),
 });
@@ -28,13 +28,13 @@ const updateRowInTableByPK = Joi.object({
   name: Joi.string().min(3).max(30).required(),
   pk: Joi.string().required(),
   fields: Joi.object().required(),
-  _field: Joi.string().min(3).max(30),
+  _lookup_field: Joi.string().min(3).max(30),
 });
 
 const deleteRowInTableByPK = Joi.object({
   name: Joi.string().min(3).max(30).required(),
   pk: Joi.string().required(),
-  _field: Joi.string().min(3).max(30),
+  _lookup_field: Joi.string().min(3).max(30),
 });
 
 module.exports = {

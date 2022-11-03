@@ -34,8 +34,12 @@ const listTableRows = async (req, res) => {
       description: 'Extend rows. e.g. ?_extend=user_id will return user data for each row.',
       in: 'query',
     }
+    #swagger.parameters['_filters'] = {
+      description: 'Filter rows. e.g. ?_filters=name:John,age:20 will return rows where name is John and age is 20.',
+      in: 'query',
+    }
   */
-  const { name } = req.params;
+  const { name: tableName } = req.params;
   const {
     _page = 1,
     _limit = 10,
@@ -43,41 +47,48 @@ const listTableRows = async (req, res) => {
     _ordering,
     _schema,
     _extend,
-    ...filters
+    _filters = '',
   } = req.query;
 
   const page = parseInt(_page);
   const limit = parseInt(_limit);
 
-  // if filters are provided, filter rows by them
-  // filters consists of fields to filter by
-  // filtering must be case insensitive
-  // e.g. ?name=John&age=20
+  // if _filters are provided, filter rows by them
+  // _filters consists of fields to filter by
+  // filtering is case insensitive
+  // e.g. ?_filters=name:John,age:20
   // will filter by name like '%John%' and age like '%20%'
 
+  const filters = _filters.split(',').map((filter) => {
+    const [field, value] = filter.split(':');
+    return { field, value };
+  });
+
   let whereString = '';
-  if (Object.keys(filters).length > 0) {
+  if (_filters !== '') {
     whereString += ' WHERE ';
-    whereString += Object.keys(filters)
-      .map((key) => `${key} LIKE '%${filters[key]}%'`)
+    whereString += filters
+      .map((filter) => `${tableName}.${filter.field} LIKE '%${filter.value}%'`)
       .join(' AND ');
   }
 
   // if _search is provided, search rows by it
   // e.g. ?_search=John will search for John in all fields of the table
-  // searching must be case insensitive
+  // searching is case insensitive
   if (_search) {
-    if (whereString) {
+    if (whereString !== '') {
       whereString += ' AND ';
     } else {
       whereString += ' WHERE ';
     }
     try {
       // get all fields of the table
-      const fields = db.prepare(`PRAGMA table_info(${name})`).all();
+      const fields = db.prepare(`PRAGMA table_info(${tableName})`).all();
+      whereString += '(';
       whereString += fields
-        .map((field) => `${field.name} LIKE '%${_search}%'`)
+        .map((field) => `${tableName}.${field.name} LIKE '%${_search}%'`)
         .join(' OR ');
+      whereString += ')';
     } catch (error) {
       return res.status(400).json({
         message: error.message,
@@ -104,10 +115,10 @@ const listTableRows = async (req, res) => {
   if (_schema) {
     const schemaFields = _schema.split(',');
     schemaFields.forEach((field) => {
-      schemaString += `${name}.${field},`;
+      schemaString += `${tableName}.${field},`;
     });
   } else {
-    schemaString = `${name}.*`;
+    schemaString = `${tableName}.*`;
   }
 
   // remove trailing comma
@@ -143,31 +154,36 @@ const listTableRows = async (req, res) => {
   let extendString = '';
   if (_extend) {
     const extendFields = _extend.split(',');
-    extendFields.forEach((field) => {
+    extendFields.forEach((extendedField) => {
       try {
         const foreignKey = db
-          .prepare(`PRAGMA foreign_key_list(${name})`)
+          .prepare(`PRAGMA foreign_key_list(${tableName})`)
           .all()
-          .find((fk) => fk.from === field);
+          .find((fk) => fk.from === extendedField);
 
         if (!foreignKey) {
           throw new Error('Foreign key not found');
         }
 
-        const { table } = foreignKey;
+        const { table: joinedTableName } = foreignKey;
 
-        const fields = db.prepare(`PRAGMA table_info(${table})`).all();
+        const joinedTableFields = db
+          .prepare(`PRAGMA table_info(${joinedTableName})`)
+          .all();
 
-        extendString += ` LEFT JOIN ${table} as ${table} ON ${table}.${foreignKey.to} = ${name}.${field}`;
+        extendString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${extendedField}`;
 
         // joined fields will be returned in a new object called {field}_data e.g. author_id_data
         const extendFieldsString =
           'json_object( ' +
-          fields
-            .map((field) => `'${field.name}', ${table}.${field.name}`)
+          joinedTableFields
+            .map(
+              (joinedTableField) =>
+                `'${joinedTableField.name}', ${joinedTableName}.${joinedTableField.name}`
+            )
             .join(', ') +
           ' ) as ' +
-          field +
+          extendedField +
           '_data';
 
         if (schemaString) {
@@ -185,21 +201,34 @@ const listTableRows = async (req, res) => {
   }
 
   // get paginated rows
-  const query = `SELECT ${schemaString} FROM ${name} ${extendString} ${whereString} ${orderString} LIMIT ${limit} OFFSET ${
+  const query = `SELECT ${schemaString} FROM ${tableName} ${extendString} ${whereString} ${orderString} LIMIT ${limit} OFFSET ${
     limit * (page - 1)
   }`;
 
   try {
-    const data = db.prepare(query).all();
+    let data = db.prepare(query).all();
+
+    // parse json extended files
+    if (_extend) {
+      const extendFields = _extend.split(',');
+      data = data.map((row) => {
+        Object.keys(row).forEach((key) => {
+          if (extendFields.includes(key.replace('_data', ''))) {
+            row[key] = JSON.parse(row[key]);
+          }
+        });
+        return row;
+      });
+    }
 
     // get total number of rows
     const total = db
-      .prepare(`SELECT COUNT(*) as total FROM ${name} ${whereString}`)
+      .prepare(`SELECT COUNT(*) as total FROM ${tableName} ${whereString}`)
       .get().total;
 
     const next =
-      data.length === limit ? `/tables/${name}?page=${page + 1}` : null;
-    const previous = page > 1 ? `/tables/${name}?page=${page - 1}` : null;
+      data.length === limit ? `/tables/${tableName}?page=${page + 1}` : null;
+    const previous = page > 1 ? `/tables/${tableName}?page=${page - 1}` : null;
 
     res.json({
       data,
@@ -236,7 +265,7 @@ const insertRowInTable = async (req, res) => {
     }
   */
 
-  const { name } = req.params;
+  const { name: tableName } = req.params;
   const { fields } = req.body;
   const fieldsString = Object.keys(fields).join(', ');
 
@@ -250,7 +279,13 @@ const insertRowInTable = async (req, res) => {
     })
     .join(', ');
 
-  const query = `INSERT INTO ${name} (${fieldsString}) VALUES (${valuesString})`;
+  let values = `(${fieldsString}) VALUES (${valuesString})`;
+
+  if (valuesString === '') {
+    values = 'DEFAULT VALUES';
+  }
+
+  const query = `INSERT INTO ${tableName} ${values}`;
   try {
     const data = db.prepare(query).run();
 
@@ -315,7 +350,7 @@ const getRowInTableByPK = async (req, res) => {
       type: 'string'
     }
 
-    #swagger.parameters['_field'] = {
+    #swagger.parameters['_lookup_field'] = {
       in: 'query',
       description: 'If you want to get field by any other field than primary key, use this parameter',
       required: false,
@@ -323,17 +358,24 @@ const getRowInTableByPK = async (req, res) => {
     }
 
   */
-  const { name, pk } = req.params;
-  const { _field, _schema, _extend } = req.query;
+  const { name: tableName, pk } = req.params;
+  const { _lookup_field, _schema, _extend } = req.query;
 
-  let searchField = _field;
+  let lookupField = _lookup_field;
 
-  if (!_field) {
+  if (!_lookup_field) {
     // find the primary key of the table
-    searchField = db
-      .prepare(`PRAGMA table_info(${name})`)
-      .all()
-      .find((field) => field.pk === 1).name;
+    try {
+      lookupField = db
+        .prepare(`PRAGMA table_info(${tableName})`)
+        .all()
+        .find((field) => field.pk === 1).name;
+    } catch (error) {
+      return res.status(400).json({
+        message: error.message,
+        error: error,
+      });
+    }
   }
 
   // if _schema is provided, return only those fields
@@ -344,10 +386,10 @@ const getRowInTableByPK = async (req, res) => {
   if (_schema) {
     const schemaFields = _schema.split(',');
     schemaFields.forEach((field) => {
-      schemaString += `${name}.${field},`;
+      schemaString += `${tableName}.${field},`;
     });
   } else {
-    schemaString = `${name}.*`;
+    schemaString = `${tableName}.*`;
   }
 
   // remove trailing comma
@@ -383,31 +425,36 @@ const getRowInTableByPK = async (req, res) => {
   let extendString = '';
   if (_extend) {
     const extendFields = _extend.split(',');
-    extendFields.forEach((field) => {
+    extendFields.forEach((extendedField) => {
       try {
         const foreignKey = db
-          .prepare(`PRAGMA foreign_key_list(${name})`)
+          .prepare(`PRAGMA foreign_key_list(${tableName})`)
           .all()
-          .find((fk) => fk.from === field);
+          .find((fk) => fk.from === extendedField);
 
         if (!foreignKey) {
           throw new Error('Foreign key not found');
         }
 
-        const { table } = foreignKey;
+        const { table: joinedTableName } = foreignKey;
 
-        const fields = db.prepare(`PRAGMA table_info(${table})`).all();
+        const joinedTableFields = db
+          .prepare(`PRAGMA table_info(${joinedTableName})`)
+          .all();
 
-        extendString += ` LEFT JOIN ${table} as ${table} ON ${table}.${foreignKey.to} = ${name}.${field}`;
+        extendString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${extendedField}`;
 
         // joined fields will be returned in a new object called {field}_data e.g. author_id_data
         const extendFieldsString =
           'json_object( ' +
-          fields
-            .map((field) => `'${field.name}', ${table}.${field.name}`)
+          joinedTableFields
+            .map(
+              (joinedTableField) =>
+                `'${joinedTableField.name}', ${joinedTableName}.${joinedTableField.name}`
+            )
             .join(', ') +
           ' ) as ' +
-          field +
+          extendedField +
           '_data';
 
         if (schemaString) {
@@ -424,13 +471,23 @@ const getRowInTableByPK = async (req, res) => {
     });
   }
 
-  const query = `SELECT ${schemaString} FROM ${name} ${extendString} WHERE ${name}.${searchField} = ${pk}`;
+  const query = `SELECT ${schemaString} FROM ${tableName} ${extendString} WHERE ${tableName}.${lookupField} = '${pk}'`;
 
   try {
-    const data = db.prepare(query).get();
+    let data = db.prepare(query).get();
+    // parse json extended files
+    if (_extend) {
+      const extendFields = _extend.split(',');
+
+      Object.keys(data)
+        .filter((key) => extendFields.includes(key.replace('_data', '')))
+        .forEach((key) => {
+          data[key] = JSON.parse(data[key]);
+        });
+    }
 
     if (!data) {
-      res.status(404).json({
+      return res.status(404).json({
         message: 'Row not found',
         error: 'not_found',
       });
@@ -440,7 +497,7 @@ const getRowInTableByPK = async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(400).json({
+    return res.status(400).json({
       message: error.message,
       error: error,
     });
@@ -472,7 +529,7 @@ const updateRowInTableByPK = async (req, res) => {
       schema: { $ref: "#/definitions/UpdateRowRequestBody" }
     }
 
-    #swagger.parameters['_field'] = {
+    #swagger.parameters['_lookup_field'] = {
       in: 'query',
       description: 'If you want to update row by any other field than primary key, use this parameter',
       required: false,
@@ -480,18 +537,25 @@ const updateRowInTableByPK = async (req, res) => {
     }
 */
 
-  const { name, pk } = req.params;
+  const { name: tableName, pk } = req.params;
   const { fields } = req.body;
-  const { _field } = req.query;
+  const { _lookup_field } = req.query;
 
-  let searchField = _field;
+  let lookupField = _lookup_field;
 
-  if (!_field) {
+  if (!_lookup_field) {
     // find the primary key of the table
-    searchField = db
-      .prepare(`PRAGMA table_info(${name})`)
-      .all()
-      .find((field) => field.pk === 1).name;
+    try {
+      lookupField = db
+        .prepare(`PRAGMA table_info(${tableName})`)
+        .all()
+        .find((field) => field.pk === 1).name;
+    } catch (error) {
+      return res.status(400).json({
+        message: error.message,
+        error: error,
+      });
+    }
   }
 
   // wrap text values in quotes
@@ -505,7 +569,14 @@ const updateRowInTableByPK = async (req, res) => {
     })
     .join(', ');
 
-  const query = `UPDATE ${name} SET ${fieldsString} WHERE ${searchField} = '${pk}'`;
+  if (fieldsString === '') {
+    return res.status(400).json({
+      message: 'No fields provided',
+      error: 'no_fields_provided',
+    });
+  }
+
+  const query = `UPDATE ${tableName} SET ${fieldsString} WHERE ${lookupField} = '${pk}'`;
   try {
     db.prepare(query).run();
 
@@ -537,7 +608,7 @@ const deleteRowInTableByPK = async (req, res) => {
       description: 'Primary key',
       required: true,
     }
-    #swagger.parameters['_field'] = {
+    #swagger.parameters['_lookup_field'] = {
       in: 'query',
       description: 'If you want to delete row by any other field than primary key, use this parameter',
       required: false,
@@ -545,30 +616,45 @@ const deleteRowInTableByPK = async (req, res) => {
     }
 
   */
-  const { name, pk } = req.params;
-  const { _field } = req.query;
+  const { name: tableName, pk } = req.params;
+  const { _lookup_field } = req.query;
 
-  let searchField = _field;
+  let lookupField = _lookup_field;
 
-  if (!_field) {
+  if (!_lookup_field) {
     // find the primary key of the table
-    searchField = db
-      .prepare(`PRAGMA table_info(${name})`)
-      .all()
-      .find((field) => field.pk === 1).name;
+    try {
+      lookupField = db
+        .prepare(`PRAGMA table_info(${tableName})`)
+        .all()
+        .find((field) => field.pk === 1).name;
+    } catch (error) {
+      return res.status(400).json({
+        message: error.message,
+        error: error,
+      });
+    }
   }
 
-  const query = `DELETE FROM ${name} WHERE ${searchField} = '${pk}'`;
-  const data = db.prepare(query).run();
+  const query = `DELETE FROM ${tableName} WHERE ${lookupField} = '${pk}'`;
 
-  if (data.changes === 0) {
-    res.status(404).json({
-      error: 'not_found',
-    });
-  } else {
-    res.json({
-      message: 'Row deleted',
-      data,
+  try {
+    const data = db.prepare(query).run();
+
+    if (data.changes === 0) {
+      res.status(404).json({
+        error: 'not_found',
+      });
+    } else {
+      res.json({
+        message: 'Row deleted',
+        data,
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+      error: error,
     });
   }
 };
