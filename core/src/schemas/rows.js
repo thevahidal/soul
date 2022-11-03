@@ -31,9 +31,22 @@ const updateRowInTableByPK = Joi.object({
   _lookup_field: Joi.string().min(3).max(30),
 });
 
+const bulkUpdateRowsInTableByPK = Joi.object({
+  name: Joi.string().min(3).max(30).required(),
+  pks: Joi.array().items(Joi.required()).required(),
+  fields: Joi.object().required(),
+  _lookup_field: Joi.string().min(3).max(30),
+});
+
 const deleteRowInTableByPK = Joi.object({
   name: Joi.string().min(3).max(30).required(),
   pk: Joi.string().required(),
+  _lookup_field: Joi.string().min(3).max(30),
+});
+
+const bulkDeleteRowsInTableByPK = Joi.object({
+  name: Joi.string().min(3).max(30).required(),
+  pks: Joi.array().items(Joi.required()).required(),
   _lookup_field: Joi.string().min(3).max(30),
 });
 
@@ -42,5 +55,7 @@ module.exports = {
   insertRowInTable,
   getRowInTableByPK,
   updateRowInTableByPK,
+  bulkUpdateRowsInTableByPK,
   deleteRowInTableByPK,
+  bulkDeleteRowsInTableByPK,
 };

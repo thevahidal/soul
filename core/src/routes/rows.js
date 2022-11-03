@@ -22,9 +22,19 @@ router.get(
   controllers.getRowInTableByPK
 );
 router.put(
+  '/:name/rows/bulk',
+  validator(schema.bulkUpdateRowsInTableByPK),
+  controllers.bulkUpdateRowsInTableByPK
+);
+router.put(
   '/:name/rows/:pk',
   validator(schema.updateRowInTableByPK),
   controllers.updateRowInTableByPK
+);
+router.delete(
+  '/:name/rows/bulk',
+  validator(schema.bulkDeleteRowsInTableByPK),
+  controllers.bulkDeleteRowsInTableByPK
 );
 router.delete(
   '/:name/rows/:pk',
