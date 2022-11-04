@@ -239,10 +239,11 @@ const deleteTable = async (req, res) => {
   const { name: tableName } = req.params;
   const query = `DROP TABLE ${tableName}`;
   try {
-    db.prepare(query).run();
+    const data = db.prepare(query).run();
 
     res.json({
       message: 'Table deleted',
+      data,
     });
   } catch (error) {
     res.status(400).json({

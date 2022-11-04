@@ -17,27 +17,17 @@ router.post(
   controllers.insertRowInTable
 );
 router.get(
-  '/:name/rows/:pk',
+  '/:name/rows/:pks',
   validator(schema.getRowInTableByPK),
   controllers.getRowInTableByPK
 );
 router.put(
-  '/:name/rows/bulk',
-  validator(schema.bulkUpdateRowsInTableByPK),
-  controllers.bulkUpdateRowsInTableByPK
-);
-router.put(
-  '/:name/rows/:pk',
+  '/:name/rows/:pks',
   validator(schema.updateRowInTableByPK),
   controllers.updateRowInTableByPK
 );
 router.delete(
-  '/:name/rows/bulk',
-  validator(schema.bulkDeleteRowsInTableByPK),
-  controllers.bulkDeleteRowsInTableByPK
-);
-router.delete(
-  '/:name/rows/:pk',
+  '/:name/rows/:pks',
   validator(schema.deleteRowInTableByPK),
   controllers.deleteRowInTableByPK
 );

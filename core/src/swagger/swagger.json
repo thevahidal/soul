@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.0.8",
+    "version": "0.0.9",
     "title": "Soul API",
     "description": "API Documentation for <b>Soul</b>, a simple SQLite RESTful server. "
   },
@@ -296,7 +296,7 @@
         }
       }
     },
-    "/api/tables/{name}/rows/{pk}": {
+    "/api/tables/{name}/rows/{pks}": {
       "get": {
         "tags": [
           "Rows"
@@ -312,11 +312,11 @@
             "description": "Table name"
           },
           {
-            "name": "pk",
+            "name": "pks",
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "Primary key"
+            "description": "Primary key (comma-separated for bulk retrieve)"
           },
           {
             "name": "_schema",
@@ -367,11 +367,11 @@
             "description": "Table name"
           },
           {
-            "name": "pk",
+            "name": "pks",
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "Primary key"
+            "description": "Primary key (comma-separated for bulk update)"
           },
           {
             "name": "body",
@@ -433,140 +433,17 @@
             "description": "Table name"
           },
           {
-            "name": "pk",
+            "name": "pks",
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "Primary key"
+            "description": "Primary key (comma-separated for bulk delete)"
           },
           {
             "name": "_lookup_field",
             "in": "query",
             "description": "If you want to delete row by any other field than primary key, use this parameter",
             "required": false,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/api/tables/{name}/rows/bulk": {
-      "put": {
-        "tags": [
-          "Rows"
-        ],
-        "summary": "Bulk Update Rows",
-        "description": "Bulk Update rows by primary key",
-        "parameters": [
-          {
-            "name": "name",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": "Table name"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/BulkUpdateRowsRequestBody"
-            }
-          },
-          {
-            "name": "_lookup_field",
-            "in": "query",
-            "description": "If you want to update row by any other field than primary key, use this parameter",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "in",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "required",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "type",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "schema",
-            "in": "query",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Rows"
-        ],
-        "summary": "Bulk Delete Rows",
-        "description": "Bulks Delete rows by primary key",
-        "parameters": [
-          {
-            "name": "name",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": "Table name"
-          },
-          {
-            "name": "_lookup_field",
-            "in": "query",
-            "description": "If you want to delete row by any other field than primary key, use this parameter",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/BulkDeleteRowsRequestBody"
-            }
-          },
-          {
-            "name": "in",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "required",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "type",
-            "in": "query",
-            "type": "string"
-          },
-          {
-            "name": "schema",
-            "in": "query",
             "type": "string"
           }
         ],

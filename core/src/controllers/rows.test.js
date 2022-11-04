@@ -25,17 +25,17 @@ describe('Rows Endpoints', () => {
     expect(res.body).toHaveProperty('data');
   });
 
-  it('GET /tables/:name/rows/:pk should return a row by its primary key', async () => {
+  it('GET /tables/:name/rows/:pks should return a row by its primary key', async () => {
     const res = await requestWithSupertest.get('/api/tables/users/rows/1');
     expect(res.status).toEqual(200);
     expect(res.type).toEqual(expect.stringContaining('json'));
     expect(res.body).toHaveProperty('data');
-    expect(res.body.data).toHaveProperty('id');
-    expect(res.body.data).toHaveProperty('firstName');
-    expect(res.body.data).toHaveProperty('lastName');
+    expect(res.body.data[0]).toHaveProperty('id');
+    expect(res.body.data[0]).toHaveProperty('firstName');
+    expect(res.body.data[0]).toHaveProperty('lastName');
   });
 
-  it('PUT /tables/:name/rows/:pk should update a row by its primary key and return the number of changes', async () => {
+  it('PUT /tables/:name/rows/:pks should update a row by its primary key and return the number of changes', async () => {
     const res = await requestWithSupertest
       .put('/api/tables/users/rows/1')
       .send({ fields: { firstName: 'Jane', lastName: 'Doe' } });
@@ -43,7 +43,7 @@ describe('Rows Endpoints', () => {
     expect(res.type).toEqual(expect.stringContaining('json'));
   });
 
-  it('DELETE /tables/:name/rows/:pk should delete a row by its primary key and return the number of changes', async () => {
+  it('DELETE /tables/:name/rows/:pks should delete a row by its primary key and return the number of changes', async () => {
     const res = await requestWithSupertest.delete('/api/tables/users/rows/1');
     expect(res.status).toEqual(200);
     expect(res.type).toEqual(expect.stringContaining('json'));

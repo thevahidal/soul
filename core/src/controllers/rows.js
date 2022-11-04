@@ -330,9 +330,9 @@ const getRowInTableByPK = async (req, res) => {
       type: 'string'
     }
 
-    #swagger.parameters['pk'] = {
+    #swagger.parameters['pks'] = {
       in: 'path',
-      description: 'Primary key',
+      description: 'Primary key (comma-separated for bulk retrieve)',
       required: true,
     }
 
@@ -358,7 +358,7 @@ const getRowInTableByPK = async (req, res) => {
     }
 
   */
-  const { name: tableName, pk } = req.params;
+  const { name: tableName, pks } = req.params;
   const { _lookup_field, _schema, _extend } = req.query;
 
   let lookupField = _lookup_field;
@@ -471,22 +471,25 @@ const getRowInTableByPK = async (req, res) => {
     });
   }
 
-  const query = `SELECT ${schemaString} FROM ${tableName} ${extendString} WHERE ${tableName}.${lookupField} = '${pk}'`;
+  const query = `SELECT ${schemaString} FROM ${tableName} ${extendString} WHERE ${tableName}.${lookupField} in (${pks})`;
 
   try {
-    let data = db.prepare(query).get();
+    let data = db.prepare(query).all();
+
     // parse json extended files
     if (_extend) {
       const extendFields = _extend.split(',');
-
-      Object.keys(data)
-        .filter((key) => extendFields.includes(key.replace('_data', '')))
-        .forEach((key) => {
-          data[key] = JSON.parse(data[key]);
+      data = data.map((row) => {
+        Object.keys(row).forEach((key) => {
+          if (extendFields.includes(key.replace('_data', ''))) {
+            row[key] = JSON.parse(row[key]);
+          }
         });
+        return row;
+      });
     }
 
-    if (!data) {
+    if (data.length === 0) {
       return res.status(404).json({
         message: 'Row not found',
         error: 'not_found',
@@ -516,9 +519,9 @@ const updateRowInTableByPK = async (req, res) => {
       required: true,
       type: 'string'
     }
-    #swagger.parameters['pk'] = {
+    #swagger.parameters['pks'] = {
       in: 'path',
-      description: 'Primary key',
+      description: 'Primary key (comma-separated for bulk update)',
       required: true,
     }
 
@@ -537,91 +540,8 @@ const updateRowInTableByPK = async (req, res) => {
     }
 */
 
-  const { name: tableName, pk } = req.params;
+  const { name: tableName, pks } = req.params;
   const { fields } = req.body;
-  const { _lookup_field } = req.query;
-
-  let lookupField = _lookup_field;
-
-  if (!_lookup_field) {
-    // find the primary key of the table
-    try {
-      lookupField = db
-        .prepare(`PRAGMA table_info(${tableName})`)
-        .all()
-        .find((field) => field.pk === 1).name;
-    } catch (error) {
-      return res.status(400).json({
-        message: error.message,
-        error: error,
-      });
-    }
-  }
-
-  // wrap text values in quotes
-  const fieldsString = Object.keys(fields)
-    .map((key) => {
-      let value = fields[key];
-      if (typeof value === 'string') {
-        value = `'${value}'`;
-      }
-      return `${key} = ${value}`;
-    })
-    .join(', ');
-
-  if (fieldsString === '') {
-    return res.status(400).json({
-      message: 'No fields provided',
-      error: 'no_fields_provided',
-    });
-  }
-
-  const query = `UPDATE ${tableName} SET ${fieldsString} WHERE ${lookupField} = '${pk}'`;
-  try {
-    const data = db.prepare(query).run();
-
-    res.json({
-      message: 'Row updated',
-      data,
-    });
-  } catch (error) {
-    res.status(400).json({
-      message: error.message,
-      error: error,
-    });
-  }
-};
-
-// Update a row by pk
-const bulkUpdateRowsInTableByPK = async (req, res) => {
-  /*
-    #swagger.tags = ['Rows']
-    #swagger.summary = 'Bulk Update Rows'
-    #swagger.description = 'Bulk Update rows by primary key'
-    #swagger.parameters['name'] = {
-      in: 'path',
-      description: 'Table name',
-      required: true,
-      type: 'string'
-    }
-
-    #swagger.parameters['body'] = {
-      in: 'body', 
-      required: true,
-      type: 'object',
-      schema: { $ref: "#/definitions/BulkUpdateRowsRequestBody" }
-    }
-
-    #swagger.parameters['_lookup_field'] = {
-      in: 'query',
-      description: 'If you want to update row by any other field than primary key, use this parameter',
-      required: false,
-      type: 'string'
-    }
-*/
-
-  const { name: tableName } = req.params;
-  const { pks, fields } = req.body;
   const { _lookup_field } = req.query;
 
   let lookupField = _lookup_field;
@@ -664,7 +584,7 @@ const bulkUpdateRowsInTableByPK = async (req, res) => {
     const data = db.prepare(query).run();
 
     res.json({
-      message: 'Rows updated',
+      message: 'Row updated',
       data,
     });
   } catch (error) {
@@ -687,9 +607,9 @@ const deleteRowInTableByPK = async (req, res) => {
       required: true,
       type: 'string'
     }
-    #swagger.parameters['pk'] = {
+    #swagger.parameters['pks'] = {
       in: 'path',
-      description: 'Primary key',
+      description: 'Primary key (comma-separated for bulk delete)',
       required: true,
     }
     #swagger.parameters['_lookup_field'] = {
@@ -700,78 +620,8 @@ const deleteRowInTableByPK = async (req, res) => {
     }
 
   */
-  const { name: tableName, pk } = req.params;
+  const { name: tableName, pks } = req.params;
   const { _lookup_field } = req.query;
-
-  let lookupField = _lookup_field;
-
-  if (!_lookup_field) {
-    // find the primary key of the table
-    try {
-      lookupField = db
-        .prepare(`PRAGMA table_info(${tableName})`)
-        .all()
-        .find((field) => field.pk === 1).name;
-    } catch (error) {
-      return res.status(400).json({
-        message: error.message,
-        error: error,
-      });
-    }
-  }
-
-  const query = `DELETE FROM ${tableName} WHERE ${lookupField} = '${pk}'`;
-
-  try {
-    const data = db.prepare(query).run();
-
-    if (data.changes === 0) {
-      res.status(404).json({
-        error: 'not_found',
-      });
-    } else {
-      res.json({
-        message: 'Row deleted',
-        data,
-      });
-    }
-  } catch (error) {
-    res.status(400).json({
-      message: error.message,
-      error: error,
-    });
-  }
-};
-
-// Bulk Delete rows by id
-const bulkDeleteRowsInTableByPK = async (req, res) => {
-  /*
-    #swagger.tags = ['Rows']
-    #swagger.summary = 'Bulk Delete Rows'
-    #swagger.description = 'Bulks Delete rows by primary key'
-    #swagger.parameters['name'] = {
-      in: 'path',
-      description: 'Table name',
-      required: true,
-      type: 'string'
-    }
-    #swagger.parameters['_lookup_field'] = {
-      in: 'query',
-      description: 'If you want to delete row by any other field than primary key, use this parameter',
-      required: false,
-      type: 'string'
-    }
-
-    #swagger.parameters['body'] = {
-      in: 'body', 
-      required: true,
-      type: 'object',
-      schema: { $ref: "#/definitions/BulkDeleteRowsRequestBody" }
-    }
-  */
-  const { name: tableName } = req.params;
-  const { _lookup_field } = req.query;
-  const { pks } = req.body;
 
   let lookupField = _lookup_field;
 
@@ -801,7 +651,7 @@ const bulkDeleteRowsInTableByPK = async (req, res) => {
       });
     } else {
       res.json({
-        message: 'Rows deleted',
+        message: 'Row deleted',
         data,
       });
     }
@@ -818,7 +668,5 @@ module.exports = {
   insertRowInTable,
   getRowInTableByPK,
   updateRowInTableByPK,
-  bulkUpdateRowsInTableByPK,
   deleteRowInTableByPK,
-  bulkDeleteRowsInTableByPK,
 };

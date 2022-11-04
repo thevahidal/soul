@@ -103,9 +103,9 @@ Response
 }
 ```
 
-### 3. Get a Row
+### 3. Get Row(s) by ID
 
-To get a row call `/tables/<table-name>/rows/<lookup-value>/` endpoint with `GET` method.
+To get a row call `/tables/<table-name>/rows/<lookup-values>/` endpoint with `GET` method.
 
 ```bash
 curl http://localhost:8000/api/tables/Album/rows/1/
@@ -122,6 +122,10 @@ Response
 	}
 }
 ```
+
+#### Path Params
+
+- `lookup-values` e.g. `1`, to get the row with the AlbumId 1. or comma-separated values e.g. `1,2`, to get the row with the AlbumId 1 and ArtistId 2. (Bulk Retrieve)
 
 #### Query Params
 
@@ -150,9 +154,9 @@ Response
 ```
 
 
-### 4. Update a Row
+### 4. Update Row(s) by ID
 
-To update a row call `/tables/<table-name>/rows/<lookup-value>/` endpoint with `PUT` method.
+To update a row call `/tables/<table-name>/rows/<lookup-values>/` endpoint with `PUT` method.
 
 ```bash
 curl --request PUT \
@@ -173,11 +177,16 @@ Response
 }
 ```
 
+#### Path Params
+
+- `lookup-values` e.g. `1`, to update the row with the AlbumId 1. or comma-separated values e.g. `1,2`, to update the row with the AlbumId 1 and ArtistId 2. (Bulk Update)
+
 #### Query Params
 
 - `_lookup_field` e.g. `?_lookup_field=ArtistId`, to update the row by the ArtistId field. If not provided, the default lookup field is the primary key of the table.
 
 #### Body Params
+
 - `fields` e.g.
 
 ```json
@@ -187,9 +196,9 @@ Response
 ```
 
 
-### 5. Delete a Row
+### 5. Delete Row(s) by ID
 
-To delete a row call `/tables/<table-name>/rows/<lookup-value>/` endpoint with `DELETE` method.
+To delete a row call `/tables/<table-name>/rows/<lookup-values>/` endpoint with `DELETE` method.
 
 ```bash
 curl --request DELETE \
@@ -208,92 +217,11 @@ Response
 }
 ```
 
-#### Query Params
+#### Path Params
 
-- `_lookup_field` e.g. `?_lookup_field=ArtistId`, to delete the row by the ArtistId field. If not provided, the default lookup field is the primary key of the table.
+- `lookup-values` e.g. `1`, to delete the row with the AlbumId 1. or comma-separated values e.g. `1,2`, to delete the row with the AlbumId 1 and ArtistId 2. (Bulk Delete)
 
-
-## Bulk Endpoints
-
-### 6. Bulk Update Rows
-
-To update a row call `/tables/<table-name>/rows/bulk/` endpoint with `PUT` method.
-
-```bash
-curl --request PUT \
-  --url http://localhost:8000/api/tables/Album/rows/bulk \
-  --header 'Content-Type: application/json' \
-  --data '{
-	"pks": [1, 2, 3],
-	"fields": {
-		"Title": "FaceElevate"
-	}
-}'
-```
-
-Response
-
-```json
-{
-	"message": "Rows updated",
-	"data": {
-		"changes": 3,
-		"lastInsertRowid": 0
-	}
-}
-```
-
-#### Query Params
-
-- `_lookup_field` e.g. `?_lookup_field=ArtistId`, to update the row by the ArtistId field. If not provided, the default lookup field is the primary key of the table.
-
-#### Body Params
-- `pks` e.g.
-
-```json
-"pks": [1, 2, 3]
-```
-- `fields` e.g.
-
-```json
-"fields": {
-    // fields values to update
-}
-```
-
-### 7. Bulk Delete Rows
-
-To delete a row call `/tables/<table-name>/rows/bulk/` endpoint with `DELETE` method.
-
-```bash
-curl --request DELETE \
-  --url http://localhost:8000/api/tables/PlaylistTrack/rows/bulk \
-  --header 'Content-Type: application/json' \
-  --data '{
-	"pks": [5, 6, 7]
-}'
-```
-
-Response
-
-```json
-{
-	"message": "Rows deleted",
-	"data": {
-		"changes": 1477,
-		"lastInsertRowid": 0
-	}
-}
-```
 
 #### Query Params
 
 - `_lookup_field` e.g. `?_lookup_field=ArtistId`, to delete the row by the ArtistId field. If not provided, the default lookup field is the primary key of the table.
-
-
-#### Body Params
-- `pks` e.g.
-
-```json
-"pks": [1, 2, 3]
-```
