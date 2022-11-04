@@ -18,7 +18,7 @@ const insertRowInTable = Joi.object({
 
 const getRowInTableByPK = Joi.object({
   name: Joi.string().min(3).max(30).required(),
-  pk: Joi.string().required(),
+  pks: Joi.string().required(),
   _lookup_field: Joi.string().min(3).max(30),
   _schema: Joi.string(),
   _extend: Joi.string(),
@@ -26,27 +26,14 @@ const getRowInTableByPK = Joi.object({
 
 const updateRowInTableByPK = Joi.object({
   name: Joi.string().min(3).max(30).required(),
-  pk: Joi.string().required(),
-  fields: Joi.object().required(),
-  _lookup_field: Joi.string().min(3).max(30),
-});
-
-const bulkUpdateRowsInTableByPK = Joi.object({
-  name: Joi.string().min(3).max(30).required(),
-  pks: Joi.array().items(Joi.required()).required(),
+  pks: Joi.string().required(),
   fields: Joi.object().required(),
   _lookup_field: Joi.string().min(3).max(30),
 });
 
 const deleteRowInTableByPK = Joi.object({
   name: Joi.string().min(3).max(30).required(),
-  pk: Joi.string().required(),
-  _lookup_field: Joi.string().min(3).max(30),
-});
-
-const bulkDeleteRowsInTableByPK = Joi.object({
-  name: Joi.string().min(3).max(30).required(),
-  pks: Joi.array().items(Joi.required()).required(),
+  pks: Joi.string().required(),
   _lookup_field: Joi.string().min(3).max(30),
 });
 
@@ -55,7 +42,5 @@ module.exports = {
   insertRowInTable,
   getRowInTableByPK,
   updateRowInTableByPK,
-  bulkUpdateRowsInTableByPK,
   deleteRowInTableByPK,
-  bulkDeleteRowsInTableByPK,
 };
