@@ -11,7 +11,7 @@ const doc = {
     version: version,
     title: 'Soul API',
     description:
-      'API Documentation for <b>Soul</b>, a simple SQLite RESTful server. ',
+      'API Documentation for <b>Soul</b>, a SQLite REST and realtime server. ',
   },
   host: `localhost:${config.port}`,
   basePath: '/',

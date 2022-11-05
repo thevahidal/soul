@@ -1,7 +1,7 @@
 <p align="center">
     <img src='docs/logo.png' height='150px' style="">
     <p align="center">
-        A SQLite RESTful server 
+        A SQLite REST and Realtime server 
     </p>
 </p>
 
@@ -15,7 +15,7 @@ Install Soul CLI with npm
     
 ## Usage
 Soul is command line tool, after installing it,
-Run ```soul -d sqlite.db -p 8000``` and it'll start a RESTful API on [localhost:8000](http://localhost:8000).
+Run ```soul -d sqlite.db -p 8000``` and it'll start a REST API on [http://localhost:8000](http://localhost:8000) and a Websocket server on [ws://localhost:8000](ws://localhost:8000).
 ```bash
 Usage: soul [options]
 
@@ -40,6 +40,9 @@ It should return a list of the tables inside `sqlite.db` database.
 API documentation is available while the project is running at [http://localhost:8000/api/docs](http://localhost:8000/api/docs)
 
 There's also a list of all endpoints examples at [docs/api-examples.md](docs/api-examples.md)
+
+For websocket examples, check [docs/ws-examples.md](docs/ws-examples.md)
+
 ## Development
 
 ```bash

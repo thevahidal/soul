@@ -1,7 +1,7 @@
 const yargs = require('yargs');
 
 const usage = `
-Soul | RESTful server for SQLite
+Soul | REST and realtime server for SQLite
 Usage: soul [options]
 `;
 

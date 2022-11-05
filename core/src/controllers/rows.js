@@ -245,7 +245,7 @@ const listTableRows = async (req, res) => {
 };
 
 // Insert a new row in a table
-const insertRowInTable = async (req, res) => {
+const insertRowInTable = async (req, res, next) => {
   /*
     #swagger.tags = ['Rows']
     #swagger.summary = 'Insert Row'
@@ -301,6 +301,14 @@ const insertRowInTable = async (req, res) => {
       message: 'Row inserted',
       data,
     });
+    req.broadcast = {
+      type: 'INSERT',
+      data: {
+        pk: data.lastInsertRowid,
+        ...fields,
+      },
+    };
+    next();
   } catch (error) {
     /*
       #swagger.responses[400] = {
@@ -508,7 +516,7 @@ const getRowInTableByPK = async (req, res) => {
 };
 
 // Update a row by pk
-const updateRowInTableByPK = async (req, res) => {
+const updateRowInTableByPK = async (req, res, next) => {
   /*
     #swagger.tags = ['Rows']
     #swagger.summary = 'Update Row'
@@ -587,6 +595,15 @@ const updateRowInTableByPK = async (req, res) => {
       message: 'Row updated',
       data,
     });
+    req.broadcast = {
+      type: 'UPDATE',
+      _lookup_field: lookupField,
+      data: {
+        pks: pks.split(','),
+        ...fields,
+      },
+    };
+    next();
   } catch (error) {
     res.status(400).json({
       message: error.message,
@@ -596,7 +613,7 @@ const updateRowInTableByPK = async (req, res) => {
 };
 
 // Delete a row by id
-const deleteRowInTableByPK = async (req, res) => {
+const deleteRowInTableByPK = async (req, res, next) => {
   /*
     #swagger.tags = ['Rows']
     #swagger.summary = 'Delete Row'
@@ -654,6 +671,14 @@ const deleteRowInTableByPK = async (req, res) => {
         message: 'Row deleted',
         data,
       });
+      req.broadcast = {
+        type: 'DELETE',
+        _lookup_field: lookupField,
+        data: {
+          pks: pks.split(','),
+        },
+      };
+      next();
     }
   } catch (error) {
     res.status(400).json({
