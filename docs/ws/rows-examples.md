@@ -3,7 +3,7 @@
 ### 1. Rows realtime changes
 
 To subscribe to realtime changes (Insert, Update and Delete) in rows of a certain table,
-use `tables/<table-name>/rows` endpoint.
+use `tables/<table-name>` endpoint.
 
 ```bash
 wscat -c ws://localhost:8000/ws/tables/Employee
