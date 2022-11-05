@@ -6,7 +6,7 @@ To subscribe to realtime changes (Insert, Update and Delete) in rows of a certai
 use `tables/<table-name>/rows` endpoint.
 
 ```bash
-wscat -c ws://localhost:8000/api/tables/Employee/rows
+wscat -c ws://localhost:8000/ws/tables/Employee
 ```
 
 It should respond with the following message:
