@@ -40,4 +40,4 @@ soul -d ./Chinook_Sqlite.sqlite -p 8000
 
 ## Namespaces
 
-1. [/ws/rows](/docs/ws/rows-examples.md) Examples for Rows websockets
+1. [/ws/tables](/docs/ws/rows-examples.md) Examples for Rows websockets
