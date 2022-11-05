@@ -1,7 +1,7 @@
 {
   "name": "soul-cli",
-  "version": "0.0.9",
-  "description": "A SQLite RESTful server",
+  "version": "0.1.0",
+  "description": "A SQLite REST and Realtime server",
   "main": "src/server.js",
   "bin": {
     "soul": "./src/server.js"
@@ -34,6 +34,7 @@
     "joi": "^17.6.2",
     "swagger-ui-express": "^4.5.0",
     "winston": "^3.8.2",
+    "ws": "^8.10.0",
     "yargs": "^17.6.0"
   },
   "devDependencies": {

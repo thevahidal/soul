@@ -1,6 +1,7 @@
 const express = require('express');
 
 const controllers = require('../controllers/rows');
+const { broadcast } = require('../middlewares/broadcast');
 const { validator } = require('../middlewares/validation');
 const schema = require('../schemas/rows');
 
@@ -14,7 +15,8 @@ router.get(
 router.post(
   '/:name/rows',
   validator(schema.insertRowInTable),
-  controllers.insertRowInTable
+  controllers.insertRowInTable,
+  broadcast
 );
 router.get(
   '/:name/rows/:pks',
@@ -24,12 +26,14 @@ router.get(
 router.put(
   '/:name/rows/:pks',
   validator(schema.updateRowInTableByPK),
-  controllers.updateRowInTableByPK
+  controllers.updateRowInTableByPK,
+  broadcast
 );
 router.delete(
   '/:name/rows/:pks',
   validator(schema.deleteRowInTableByPK),
-  controllers.deleteRowInTableByPK
+  controllers.deleteRowInTableByPK,
+  broadcast
 );
 
 module.exports = router;

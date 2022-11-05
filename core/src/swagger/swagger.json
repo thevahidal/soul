@@ -1,9 +1,9 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.0.9",
+    "version": "0.1.0",
     "title": "Soul API",
-    "description": "API Documentation for <b>Soul</b>, a simple SQLite RESTful server. "
+    "description": "API Documentation for <b>Soul</b>, a simple REST and realtime server. "
   },
   "host": "localhost:8000",
   "basePath": "/",
