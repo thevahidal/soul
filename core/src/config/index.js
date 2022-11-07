@@ -24,6 +24,8 @@ const envVarsSchema = Joi.object()
     RATE_LIMIT_ENABLED: Joi.boolean().default(false),
     RATE_LIMIT_WINDOW_MS: Joi.number().positive().default(1000),
     RATE_LIMIT_MAX_REQUESTS: Joi.number().positive().default(10),
+
+    EXTENSIONS: Joi.string().default(null),
   })
   .unknown();
 
@@ -75,5 +77,9 @@ module.exports = {
     enabled: argv['rate-limit-enabled'] || envVars.RATE_LIMIT_ENABLED,
     windowMs: envVars.RATE_LIMIT_WINDOW,
     max: envVars.RATE_LIMIT_MAX,
+  },
+
+  extensions: {
+    path: argv.extensions || envVars.EXTENSIONS,
   },
 };

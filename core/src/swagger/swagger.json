@@ -1,9 +1,9 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.1.0",
+    "version": "0.2.0",
     "title": "Soul API",
-    "description": "API Documentation for <b>Soul</b>, a simple REST and realtime server. "
+    "description": "API Documentation for <b>Soul</b>, a SQLite REST and realtime server. "
   },
   "host": "localhost:8000",
   "basePath": "/",
@@ -33,6 +33,17 @@
     "application/json"
   ],
   "paths": {
+    "/health": {
+      "get": {
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/": {
       "get": {
         "tags": [

@@ -34,6 +34,12 @@ if (process.env.NO_CLI !== 'true') {
       demandOption: false,
       choices: ['console', null],
     })
+    .options('e', {
+      alias: 'extensions',
+      describe: 'Extensions directory path to load',
+      type: 'string',
+      demandOption: false,
+    })
     .help(true).argv;
 }
 
