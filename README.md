@@ -77,6 +77,11 @@ npm install # Install dependencies
 npm run dev # Start the dev server
 ```
 
+## Community
+
+[Join](https://bit.ly/soul-discord) the discussion in our Discord server and help making Soul together.
+
+
 ## Contributing
 
 Contributions are always welcome!
