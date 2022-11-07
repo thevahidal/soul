@@ -43,6 +43,11 @@ There's also a list of all endpoints examples at [docs/api-examples.md](docs/api
 
 For websocket examples, check [docs/ws-examples.md](docs/ws-examples.md)
 
+## Extending Soul
+
+Soul is able to be extended (e.g. Adding custom APIs) via extensions, you can find a list of extensions at [docs/extensions-examples.md](docs/extensions-examples.md)
+
+
 ## Development
 
 ```bash

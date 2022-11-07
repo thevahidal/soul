@@ -14,8 +14,13 @@ const rootRoutes = require('./routes/index');
 const tablesRoutes = require('./routes/tables');
 const rowsRoutes = require('./routes/rows');
 const swaggerFile = require('./swagger/swagger.json');
+const { setupExtensions } = require('./extensions');
 
 const app = express();
+
+app.get('/health', (req, res) => {
+  res.send('OK');
+});
 
 app.use(bodyParser.json());
 
@@ -62,5 +67,7 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 app.use('/api', rootRoutes);
 app.use('/api/tables', tablesRoutes);
 app.use('/api/tables', rowsRoutes);
+
+setupExtensions(app, db);
 
 module.exports = app;
