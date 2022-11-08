@@ -98,3 +98,6 @@ See `CONTRIBUTING.md` for ways to get started and please adhere to `CODE OF COND
 
 [MIT](https://choosealicense.com/licenses/mit/)
 
+<a href="https://trackgit.com">
+<img src="https://us-central1-trackgit-analytics.cloudfunctions.net/token/ping/la8rmyedi6oogy87pxla" alt="trackgit-views" />
+</a>
