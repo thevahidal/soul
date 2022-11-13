@@ -8,7 +8,11 @@ const router = express.Router();
 
 router.get('/', validator(schema.listTables), controllers.listTables);
 router.post('/', validator(schema.createTable), controllers.createTable);
-router.get('/:name', controllers.getTableSchema);
+router.get(
+  '/:name',
+  validator(schema.getTableSchema),
+  controllers.getTableSchema
+);
 router.delete('/:name', validator(schema.deleteTable), controllers.deleteTable);
 
 module.exports = router;

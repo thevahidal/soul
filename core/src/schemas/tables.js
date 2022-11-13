@@ -6,7 +6,11 @@ const listTables = Joi.object({
 }).unknown(true);
 
 const createTable = Joi.object({
-  name: Joi.string().min(2).max(30).required(),
+  name: Joi.string()
+    .regex(/^[\w-]+$/)
+    .min(2)
+    .max(30)
+    .required(),
   autoAddCreatedAt: Joi.boolean().default(true),
   autoAddUpdatedAt: Joi.boolean().default(true),
   schema: Joi.array()
@@ -49,12 +53,25 @@ const createTable = Joi.object({
     .required(),
 });
 
+const getTableSchema = Joi.object({
+  name: Joi.string()
+    .regex(/^[\w-]+$/)
+    .min(3)
+    .max(30)
+    .required(),
+});
+
 const deleteTable = Joi.object({
-  name: Joi.string().min(3).max(30).required(),
+  name: Joi.string()
+    .regex(/^[\w-]+$/)
+    .min(3)
+    .max(30)
+    .required(),
 });
 
 module.exports = {
   listTables,
   createTable,
+  getTableSchema,
   deleteTable,
 };
