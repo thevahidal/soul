@@ -101,9 +101,11 @@ const createTable = async (req, res) => {
   const query = `CREATE TABLE ${tableName} (${schemaString})`;
 
   try {
+    console.log(query);
     db.prepare(query).run();
 
     if (indicesString) {
+      console.log({ indicesString });
       db.prepare(indicesString).run();
     }
 
@@ -167,19 +169,23 @@ const listTables = async (req, res) => {
   // if search is provided, search the tables
   // e.g. ?_search=users
   if (_search) {
-    query += ` AND name LIKE '%${_search}%'`;
+    query += ` AND name LIKE $searchQuery`;
   }
 
   // if ordering is provided, order the tables
   // e.g. ?_ordering=name (ascending) or ?_ordering=-name (descending)
   if (_ordering) {
-    query += ` ORDER BY ${_ordering.replace('-', '')} ${
-      _ordering.startsWith('-') ? 'DESC' : 'ASC'
-    }`;
+    query += ` ORDER BY $ordering`;
   }
 
   try {
-    const tables = db.prepare(query).all();
+    console.log(query);
+    const tables = db.prepare(query).all({
+      searchQuery: `%${_search}%`,
+      ordering: `${_ordering?.replace('-', '')} ${
+        _ordering?.startsWith('-') ? 'DESC' : 'ASC'
+      }`,
+    });
 
     res.json({
       data: tables,
@@ -209,6 +215,7 @@ const getTableSchema = async (req, res) => {
   const { name: tableName } = req.params;
   const query = `PRAGMA table_info(${tableName})`;
   try {
+    console.log(query);
     const schema = db.prepare(query).all();
 
     res.json({
@@ -239,6 +246,7 @@ const deleteTable = async (req, res) => {
   const { name: tableName } = req.params;
   const query = `DROP TABLE ${tableName}`;
   try {
+    console.log(query);
     const data = db.prepare(query).run();
 
     res.json({
