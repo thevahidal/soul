@@ -167,19 +167,22 @@ const listTables = async (req, res) => {
   // if search is provided, search the tables
   // e.g. ?_search=users
   if (_search) {
-    query += ` AND name LIKE '%${_search}%'`;
+    query += ` AND name LIKE $searchQuery`;
   }
 
   // if ordering is provided, order the tables
   // e.g. ?_ordering=name (ascending) or ?_ordering=-name (descending)
   if (_ordering) {
-    query += ` ORDER BY ${_ordering.replace('-', '')} ${
-      _ordering.startsWith('-') ? 'DESC' : 'ASC'
-    }`;
+    query += ` ORDER BY $ordering`;
   }
 
   try {
-    const tables = db.prepare(query).all();
+    const tables = db.prepare(query).all({
+      searchQuery: `%${_search}%`,
+      ordering: `${_ordering?.replace('-', '')} ${
+        _ordering?.startsWith('-') ? 'DESC' : 'ASC'
+      }`,
+    });
 
     res.json({
       data: tables,
