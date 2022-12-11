@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"description": "GUI for Soul: A SQLite REST and realtime server",
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "vite dev --port 3000",
 		"build": "vite build",
 		"preview": "vite preview"
 	},

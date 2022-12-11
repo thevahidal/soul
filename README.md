@@ -47,6 +47,15 @@ For websocket examples, check [docs/ws-examples.md](docs/ws-examples.md)
 
 Soul is able to be extended (e.g. Adding custom APIs) via extensions, you can find a list of extensions at [docs/extensions-examples.md](docs/extensions-examples.md)
 
+## Soul Studio
+
+Soul Studio provides a GUI to work with your database.
+
+Right now Soul Studio is in early stages of development and not useful to work with.
+
+<p align="center">
+    <img src='docs/soul-studio.png' style="">
+</p>
 
 ## Development
 
@@ -55,6 +64,7 @@ git clone https://github.com/thevahidal/soul # Clone project
 ```
 
 ### Core API
+
 ```bash
 cd core # Move into the core directory
 
@@ -66,6 +76,7 @@ npm run dev # Start the dev server
 ```
 
 ### Studio
+
 Make sure that Soul Core API is up and running and then
 ```bash
 cd studio # Move into the studio directory
