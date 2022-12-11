@@ -20,7 +20,7 @@ wget https://raw.githubusercontent.com/lerocha/chinook-database/master/ChinookDa
 ### Using Soul CLI
 ```bash
 npm install -g soul-cli
-soul -d ./Chinook_Sqlite.sqlite -p 8000 -e "/path/to/_extensions/"
+soul -d ./Chinook_Sqlite.sqlite -p 8000 -e "/absolute/path/to/_extensions/"
 ```
 
 <details>
@@ -31,7 +31,7 @@ git clone https://github.com/thevahidal/soul # Clone project
 cd core/
 npm install # Install dependencies
 npm link # might need `sudo` 
-soul -d ./Chinook_Sqlite.sqlite -p 8000 -e "/path/to/_extensions/"
+soul -d ./Chinook_Sqlite.sqlite -p 8000 -e "/absolute/path/to/_extensions/"
 ```
 </details>
 
