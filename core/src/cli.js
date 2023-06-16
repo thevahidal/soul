@@ -27,6 +27,12 @@ if (process.env.NO_CLI !== 'true') {
       type: 'boolean',
       demandOption: false,
     })
+    .option('c', {
+      alias: 'cors',
+      describe: 'CORS white list URLs',
+      type: 'string',
+      demandOption: false,
+    })
     .option('V', {
       alias: 'verbose',
       describe: 'Enable verbose logging',

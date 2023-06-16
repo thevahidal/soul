@@ -45,6 +45,10 @@ if (argv.database) {
   env.DB = argv.database;
 }
 
+if (argv.cors) {
+  env.CORS_ORIGIN_WHITELIST = argv.cors;
+}
+
 if (argv['rate-limit-enabled']) {
   env.RATE_LIMIT_ENABLED = argv['rate-limit-enabled'];
 }
@@ -71,7 +75,7 @@ module.exports = {
     filename: argv.database || envVars.DB || ':memory:',
   },
   cors: {
-    origin: envVars.CORS_ORIGIN_WHITELIST.split(','),
+    origin: argv.cors || envVars.CORS_ORIGIN_WHITELIST.split(','),
   },
   rateLimit: {
     enabled: argv['rate-limit-enabled'] || envVars.RATE_LIMIT_ENABLED,
