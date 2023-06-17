@@ -8,15 +8,18 @@
 [![justforfunnoreally.dev badge](https://img.shields.io/badge/justforfunnoreally-dev-9ff)](https://justforfunnoreally.dev)
 
 ## Installation
+
 Install Soul CLI with npm
 
 ```bash
   npm install -g soul-cli
 ```
-    
+
 ## Usage
+
 Soul is command line tool, after installing it,
-Run ```soul -d sqlite.db -p 8000``` and it'll start a REST API on [http://localhost:8000](http://localhost:8000) and a Websocket server on [ws://localhost:8000](ws://localhost:8000).
+Run `soul -d sqlite.db -p 8000` and it'll start a REST API on [http://localhost:8000](http://localhost:8000) and a Websocket server on [ws://localhost:8000](ws://localhost:8000).
+
 ```bash
 Usage: soul [options]
 
@@ -26,14 +29,17 @@ Options:
   -d, --database            SQLite database file or :memory: [string] [required]
   -p, --port                Port to listen on                           [number]
   -r, --rate-limit-enabled  Enable rate limiting                       [boolean]
+  -c, --cors                CORS whitelist origins                [string]
       --help                Show help                                  [boolean]
 
 ```
 
 Then to test Soul is working run the following command
+
 ```bash
 curl http://localhost:8000/api/tables
 ```
+
 It should return a list of the tables inside `sqlite.db` database.
 
 ## Documentation
@@ -79,6 +85,7 @@ npm run dev # Start the dev server
 ### Studio
 
 Make sure that Soul Core API is up and running and then
+
 ```bash
 cd studio # Move into the studio directory
 
@@ -93,18 +100,15 @@ npm run dev # Start the dev server
 
 [Join](https://bit.ly/soul-discord) the discussion in our Discord server and help making Soul together.
 
-
 ## Contributing
 
 Contributions are always welcome!
 
 See `CONTRIBUTING.md` for ways to get started and please adhere to `CODE OF CONDUCT`.
 
-
 ## Authors
 
 - [@thevahidal](https://www.github.com/thevahidal)
-
 
 ## License
 
