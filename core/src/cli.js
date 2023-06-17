@@ -29,7 +29,7 @@ if (process.env.NO_CLI !== 'true') {
     })
     .option('c', {
       alias: 'cors',
-      describe: 'CORS white list URLs',
+      describe: 'CORS whitelist origins',
       type: 'string',
       demandOption: false,
     })
