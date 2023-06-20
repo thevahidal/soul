@@ -28,9 +28,11 @@ app.use(bodyParser.json());
 db.pragma('journal_mode = WAL');
 
 // Enable CORS
+const corsOrigin = config.cors.origin;
 const corsOptions = {
-  origin: config.cors.origin,
+  origin: corsOrigin[0] === '*' ? '*' : corsOrigin,
 };
+
 app.use(cors(corsOptions));
 
 // Log requests
