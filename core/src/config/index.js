@@ -75,7 +75,8 @@ module.exports = {
     filename: argv.database || envVars.DB || ':memory:',
   },
   cors: {
-    origin: argv.cors.split(',') || envVars.CORS_ORIGIN_WHITELIST.split(','),
+    origin: argv.cors?.split(',') ||
+      envVars.CORS_ORIGIN_WHITELIST?.split(',') || ['*'],
   },
   rateLimit: {
     enabled: argv['rate-limit-enabled'] || envVars.RATE_LIMIT_ENABLED,
