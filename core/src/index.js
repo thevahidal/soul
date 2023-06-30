@@ -28,15 +28,19 @@ app.use(bodyParser.json());
 db.pragma('journal_mode = WAL');
 
 // Enable CORS
-const corsOrigin = config.cors.origin;
+let corsOrigin = config.cors.origin;
+
+if (corsOrigin.includes('*')) {
+  corsOrigin = '*';
+}
+
 const corsOptions = {
-  origin: corsOrigin[0] === '*' ? '*' : corsOrigin,
+  origin: corsOrigin,
 };
 
 app.use(cors(corsOptions));
 
 // Log requests
-
 if (config.verbose !== null) {
   app.use(
     expressWinston.logger({

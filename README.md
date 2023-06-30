@@ -18,7 +18,7 @@ Install Soul CLI with npm
 ## Usage
 
 Soul is command line tool, after installing it,
-Run `soul -d sqlite.db -p 8000 -c "*"` and it'll start a REST API on [http://localhost:8000](http://localhost:8000) and a Websocket server on [ws://localhost:8000](ws://localhost:8000).
+Run `soul -d sqlite.db -p 8000` and it'll start a REST API on [http://localhost:8000](http://localhost:8000) and a Websocket server on [ws://localhost:8000](ws://localhost:8000).
 
 ```bash
 Usage: soul [options]
