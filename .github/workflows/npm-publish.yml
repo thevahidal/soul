@@ -8,20 +8,6 @@ on:
     types: [created]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          
-      - run: npm ci
-        working-directory: ./core
-
-      - run: npm test
-        working-directory: ./core
-
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
@@ -34,8 +20,18 @@ jobs:
 
       - run: npm ci
         working-directory: ./core
+      - run: npm ci
+        working-directory: ./studio
+
+      - name: Build soul studio
+        run: npm run build
+        working-directory: ./studio
 
       - run: npm publish
         working-directory: ./core
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - run: npm publish
+        working-directory: ./studio
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
