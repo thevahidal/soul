@@ -15,8 +15,12 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
+          
       - run: npm ci
+        working-directory: ./core
+
       - run: npm test
+        working-directory: ./core
 
   publish-npm:
     needs: build
