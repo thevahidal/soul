@@ -26,6 +26,8 @@ const envVarsSchema = Joi.object()
     RATE_LIMIT_MAX_REQUESTS: Joi.number().positive().default(10),
 
     EXTENSIONS: Joi.string().default(null),
+
+    START_WITH_STUDIO: Joi.boolean().default(false)
   })
   .unknown();
 
@@ -87,4 +89,6 @@ module.exports = {
   extensions: {
     path: argv.extensions || envVars.EXTENSIONS,
   },
+
+  startWithStudio: envVars.START_WITH_STUDIO
 };
