@@ -25,5 +25,8 @@
 		"svelte": "^3.55.1",
 		"vite": "^4.1.4"
 	},
-	"type": "module"
+	"type": "module",
+	"files": [
+		"build/"
+	]
 }
