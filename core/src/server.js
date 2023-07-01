@@ -11,6 +11,11 @@ const server = http.createServer(app);
 const port = config.port;
 server.listen(port, () => {
   console.log(`Soul is running on port ${port}...`);
+
+  if (config.startWithStudio) {
+    // Importing this would do the job.
+    const SoulStudio = require('soul-studio');
+  }
 });
 
 server.on('upgrade', (request, socket, head) => {
