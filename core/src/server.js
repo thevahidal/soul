@@ -14,7 +14,7 @@ server.listen(port, () => {
 
   if (config.startWithStudio) {
     // Importing this would do the job.
-    const SoulStudio = require('soul-studio');
+    const SoulStudio = import('soul-studio/build/index.js');
   }
 });
 
