@@ -90,5 +90,5 @@ module.exports = {
     path: argv.extensions || envVars.EXTENSIONS,
   },
 
-  startWithStudio: envVars.START_WITH_STUDIO
+  startWithStudio: argv.studio || envVars.START_WITH_STUDIO
 };
