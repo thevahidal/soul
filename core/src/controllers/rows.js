@@ -1,16 +1,22 @@
 const db = require('../db/index');
 
+const quotePrimaryKeys = (pks) => {
+  const primaryKeys = pks.split(',');
+  const quotedPks = primaryKeys.map((id) => `'${id}'`).join(',');
+  return quotedPks;
+};
+
 // Return paginated rows of a table
 const listTableRows = async (req, res) => {
-  /* 	
+  /*
     #swagger.tags = ['Rows']
-    #swagger.summary = 'List Rows' 
+    #swagger.summary = 'List Rows'
     #swagger.description = 'Endpoint to list rows of a table.'
-    #swagger.parameters['name'] = { 
+    #swagger.parameters['name'] = {
       description: 'Table name.',
       in: 'path',
     }
-    #swagger.parameters['_page'] = { 
+    #swagger.parameters['_page'] = {
       description: 'Page number.' ,
       in: 'query',
       type: 'number',
@@ -479,7 +485,9 @@ const getRowInTableByPK = async (req, res) => {
     });
   }
 
-  const query = `SELECT ${schemaString} FROM ${tableName} ${extendString} WHERE ${tableName}.${lookupField} in (${pks})`;
+  const query = `SELECT ${schemaString} FROM ${tableName} ${extendString} WHERE ${tableName}.${lookupField} in (${quotePrimaryKeys(
+    pks
+  )})`;
 
   try {
     let data = db.prepare(query).all();
@@ -534,7 +542,7 @@ const updateRowInTableByPK = async (req, res, next) => {
     }
 
     #swagger.parameters['body'] = {
-      in: 'body', 
+      in: 'body',
       required: true,
       type: 'object',
       schema: { $ref: "#/definitions/UpdateRowRequestBody" }
@@ -587,7 +595,10 @@ const updateRowInTableByPK = async (req, res, next) => {
     });
   }
 
-  const query = `UPDATE ${tableName} SET ${fieldsString} WHERE ${lookupField} in (${pks})`;
+  const query = `UPDATE ${tableName} SET ${fieldsString} WHERE ${lookupField} in (${quotePrimaryKeys(
+    pks
+  )})`;
+
   try {
     const data = db.prepare(query).run();
 
@@ -657,7 +668,9 @@ const deleteRowInTableByPK = async (req, res, next) => {
     }
   }
 
-  const query = `DELETE FROM ${tableName} WHERE ${lookupField} in (${pks})`;
+  const query = `DELETE FROM ${tableName} WHERE ${lookupField} in (${quotePrimaryKeys(
+    pks
+  )})`;
 
   try {
     const data = db.prepare(query).run();
