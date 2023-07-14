@@ -74,7 +74,7 @@ const listTableRows = async (req, res) => {
   if (_filters !== '') {
     whereString += ' WHERE ';
     whereString += filters
-      .map((filter) => `${tableName}.${filter.field} LIKE '%${filter.value}%'`)
+      .map((filter) => `${tableName}.${filter.field} = '${filter.value}'`)
       .join(' AND ');
   }
 
