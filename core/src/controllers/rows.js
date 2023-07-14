@@ -2,15 +2,15 @@ const db = require('../db/index');
 
 // Return paginated rows of a table
 const listTableRows = async (req, res) => {
-  /* 	
+  /*
     #swagger.tags = ['Rows']
-    #swagger.summary = 'List Rows' 
+    #swagger.summary = 'List Rows'
     #swagger.description = 'Endpoint to list rows of a table.'
-    #swagger.parameters['name'] = { 
+    #swagger.parameters['name'] = {
       description: 'Table name.',
       in: 'path',
     }
-    #swagger.parameters['_page'] = { 
+    #swagger.parameters['_page'] = {
       description: 'Page number.' ,
       in: 'query',
       type: 'number',
@@ -68,7 +68,7 @@ const listTableRows = async (req, res) => {
   if (_filters !== '') {
     whereString += ' WHERE ';
     whereString += filters
-      .map((filter) => `${tableName}.${filter.field} LIKE '%${filter.value}%'`)
+      .map((filter) => `${tableName}.${filter.field} = '${filter.value}'`)
       .join(' AND ');
   }
 
@@ -534,7 +534,7 @@ const updateRowInTableByPK = async (req, res, next) => {
     }
 
     #swagger.parameters['body'] = {
-      in: 'body', 
+      in: 'body',
       required: true,
       type: 'object',
       schema: { $ref: "#/definitions/UpdateRowRequestBody" }
