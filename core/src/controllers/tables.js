@@ -162,9 +162,7 @@ const listTables = async (req, res) => {
   */
   const { _search, _ordering } = req.query;
 
-  let query = `SELECT name FROM sqlite_master WHERE type = 'table'
-     UNION
-     SELECT name FROM sqlite_master WHERE type = 'view'`;
+  let query = `SELECT name FROM sqlite_master WHERE type IN ('table', 'view')`;
 
   // if search is provided, search the tables
   // e.g. ?_search=users
