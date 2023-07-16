@@ -69,7 +69,7 @@ const createTable = async (req, res) => {
   // add id if primary key is not defined
   if (!schema.find((field) => field.primaryKey)) {
     schemaString = `
-        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         ${schemaString}
       `;
   }
@@ -92,7 +92,7 @@ const createTable = async (req, res) => {
   let indicesString = indices
     .map((field) => {
       return `
-      CREATE INDEX ${tableName}_${field}_index 
+      CREATE INDEX ${tableName}_${field}_index
       ON ${tableName} (${field})
     `;
     })
@@ -162,7 +162,7 @@ const listTables = async (req, res) => {
   */
   const { _search, _ordering } = req.query;
 
-  let query = `SELECT name FROM sqlite_master WHERE type = 'table'`;
+  let query = `SELECT name FROM sqlite_master WHERE type IN ('table', 'view')`;
 
   // if search is provided, search the tables
   // e.g. ?_search=users
@@ -237,7 +237,7 @@ const deleteTable = async (req, res) => {
       type: 'string',
       description: 'Name of the table'
     }
-    
+
   */
   const { name: tableName } = req.params;
   const query = `DROP TABLE ${tableName}`;
