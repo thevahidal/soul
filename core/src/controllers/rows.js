@@ -6,6 +6,15 @@ const quotePrimaryKeys = (pks) => {
   return quotedPks;
 };
 
+const operators = {
+  eq: '=',
+  lt: '<',
+  gt: '>',
+  lte: '<=',
+  gte: '>=',
+  neq: '!=',
+};
+
 // Return paginated rows of a table
 const listTableRows = async (req, res) => {
   /*
@@ -66,15 +75,23 @@ const listTableRows = async (req, res) => {
   // will filter by name like '%John%' and age like '%20%'
 
   const filters = _filters.split(',').map((filter) => {
-    const [field, value] = filter.split(':');
-    return { field, value };
+    let [key, value] = filter.split(':');
+
+    let field = key.split('__')[0];
+    let fieldOperator = key.split('__')[1];
+    let operator = operators[fieldOperator ? fieldOperator : 'eq'];
+
+    return { field, operator, value };
   });
 
   let whereString = '';
   if (_filters !== '') {
     whereString += ' WHERE ';
     whereString += filters
-      .map((filter) => `${tableName}.${filter.field} = '${filter.value}'`)
+      .map(
+        (filter) =>
+          `${tableName}.${filter.field} ${filter.operator} '${filter.value}'`
+      )
       .join(' AND ');
   }
 
