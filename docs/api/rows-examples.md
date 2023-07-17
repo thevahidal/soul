@@ -36,6 +36,7 @@ Response
 - `_schema` e.g. `?_schema=Title,ArtistId`, to get only the Title and ArtistId columns.
 - `_extend` e.g. `?_extend=ArtistId`, to get the Artist object related to the Album.
 - `_filters` e.g. `?_filters=ArtistId:1,Title:Rock`, to get only the rows where the ArtistId is 1 and the Title is Rock.
+  NOTE: If you want to use comparison operators in the filter, you can use these operators after the field: `__eq, __neq, __lt, __gt, __lte, __gte` . For example, you can use `/invoices/rows?_filters=InvoiceId__neq:1,Total__gte:5`
 
 Example with query params
 
@@ -115,11 +116,11 @@ Response
 
 ```json
 {
-	"data": {
-		"AlbumId": 1,
-		"Title": "For Those About To Rock We Salute You",
-		"ArtistId": 1
-	}
+  "data": {
+    "AlbumId": 1,
+    "Title": "For Those About To Rock We Salute You",
+    "ArtistId": 1
+  }
 }
 ```
 
@@ -143,16 +144,15 @@ Response
 
 ```json
 {
-	"data": {
-		"Title": "Facelift",
-		"ArtistId_data": {
-			"ArtistId": 5,
-			"Name": "Alice In Chains"
-		}
-	}
+  "data": {
+    "Title": "Facelift",
+    "ArtistId_data": {
+      "ArtistId": 5,
+      "Name": "Alice In Chains"
+    }
+  }
 }
 ```
-
 
 ### 4. Update Row(s) by ID
 
@@ -173,7 +173,7 @@ Response
 
 ```json
 {
-	"message": "Row updated"
+  "message": "Row updated"
 }
 ```
 
@@ -195,7 +195,6 @@ Response
 }
 ```
 
-
 ### 5. Delete Row(s) by ID
 
 To delete a row call `/tables/<table-name>/rows/<lookup-values>/` endpoint with `DELETE` method.
@@ -209,18 +208,17 @@ Response
 
 ```json
 {
-	"message": "Row deleted",
-	"data": {
-		"changes": 3290,
-		"lastInsertRowid": 0
-	}
+  "message": "Row deleted",
+  "data": {
+    "changes": 3290,
+    "lastInsertRowid": 0
+  }
 }
 ```
 
 #### Path Params
 
 - `lookup-values` e.g. `1`, to delete the row with the AlbumId 1. or comma-separated values e.g. `1,2`, to delete the row with the AlbumId 1 and ArtistId 2. (Bulk Delete)
-
 
 #### Query Params
 
