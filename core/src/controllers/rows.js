@@ -45,6 +45,7 @@ const listTableRows = async (req, res) => {
       in: 'query',
     }
   */
+  let params = '';
   const { name: tableName } = req.params;
   const {
     _page = 1,
@@ -76,6 +77,7 @@ const listTableRows = async (req, res) => {
     whereString += filters
       .map((filter) => `${tableName}.${filter.field} = '${filter.value}'`)
       .join(' AND ');
+    params = `_filters=${_filters}&`;
   }
 
   // if _search is provided, search rows by it
@@ -95,6 +97,7 @@ const listTableRows = async (req, res) => {
         .map((field) => `${tableName}.${field.name} LIKE '%${_search}%'`)
         .join(' OR ');
       whereString += ')';
+      params += `_search=${_search}&`;
     } catch (error) {
       return res.status(400).json({
         message: error.message,
@@ -111,6 +114,7 @@ const listTableRows = async (req, res) => {
     orderString += ` ORDER BY ${_ordering.replace('-', '')} ${
       _ordering.startsWith('-') ? 'DESC' : 'ASC'
     }`;
+    params += `_ordering=${_ordering}&`;
   }
 
   // if _schema is provided, return only those fields
@@ -123,6 +127,7 @@ const listTableRows = async (req, res) => {
     schemaFields.forEach((field) => {
       schemaString += `${tableName}.${field},`;
     });
+    params += `_schema=${_schema}&`;
   } else {
     schemaString = `${tableName}.*`;
   }
@@ -204,6 +209,7 @@ const listTableRows = async (req, res) => {
         });
       }
     });
+    params += `_extend=${_extend}&`;
   }
 
   // get paginated rows
@@ -233,8 +239,17 @@ const listTableRows = async (req, res) => {
       .get().total;
 
     const next =
-      data.length === limit ? `/tables/${tableName}?page=${page + 1}` : null;
-    const previous = page > 1 ? `/tables/${tableName}?page=${page - 1}` : null;
+      data.length === limit
+        ? `/tables/${tableName}/rows?${params}_limit=${_limit}&_page=${
+            page + 1
+          }`
+        : null;
+    const previous =
+      page > 1
+        ? `/tables/${tableName}/rows?${params}_limit=${_limit}&_page=${
+            page - 1
+          }`
+        : null;
 
     res.json({
       data,
