@@ -157,7 +157,9 @@ const listTableRows = async (req, res) => {
   //   }
   // }
 
+  let foreignKeyError = { error: '', message: '' };
   let extendString = '';
+
   if (_extend) {
     const extendFields = _extend.split(',');
     extendFields.forEach((extendedField) => {
@@ -168,7 +170,9 @@ const listTableRows = async (req, res) => {
           .find((fk) => fk.from === extendedField);
 
         if (!foreignKey) {
-          throw new Error('Foreign key not found');
+          throw new Error(
+            `Foreign key not found for extended field '${extendedField}'`
+          );
         }
 
         const { table: joinedTableName } = foreignKey;
@@ -198,12 +202,17 @@ const listTableRows = async (req, res) => {
 
         schemaString += extendFieldsString;
       } catch (error) {
-        return res.status(400).json({
-          message: error.message,
-          error: error,
-        });
+        foreignKeyError.error = error;
+        foreignKeyError.message = error.message;
       }
     });
+
+    if (foreignKeyError.error) {
+      return res.status(400).json({
+        message: foreignKeyError.message,
+        error: foreignKeyError.error,
+      });
+    }
   }
 
   // get paginated rows
