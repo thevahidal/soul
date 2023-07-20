@@ -6,6 +6,15 @@ const quotePrimaryKeys = (pks) => {
   return quotedPks;
 };
 
+const operators = {
+  eq: '=',
+  lt: '<',
+  gt: '>',
+  lte: '<=',
+  gte: '>=',
+  neq: '!=',
+};
+
 // Return paginated rows of a table
 const listTableRows = async (req, res) => {
   /*
@@ -64,17 +73,40 @@ const listTableRows = async (req, res) => {
   // filtering is case insensitive
   // e.g. ?_filters=name:John,age:20
   // will filter by name like '%John%' and age like '%20%'
+  let filters = [];
+  try {
+    filters = _filters.split(',').map((filter) => {
+      let [key, value] = filter.split(':');
 
-  const filters = _filters.split(',').map((filter) => {
-    const [field, value] = filter.split(':');
-    return { field, value };
-  });
+      let field = key.split('__')[0];
+      let fieldOperator = key.split('__')[1];
+
+      if (!fieldOperator) {
+        fieldOperator = 'eq';
+      } else if (!operators[fieldOperator]) {
+        throw new Error(
+          `Invalid field operator "${fieldOperator}" for field "${field}". You can only use the following operators after the "${field}" field: __lt, __gt, __lte, __gte, __eq, __neq.`
+        );
+      }
+
+      let operator = operators[fieldOperator];
+      return { field, operator, value };
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+      error: error,
+    });
+  }
 
   let whereString = '';
   if (_filters !== '') {
     whereString += ' WHERE ';
     whereString += filters
-      .map((filter) => `${tableName}.${filter.field} = '${filter.value}'`)
+      .map(
+        (filter) =>
+          `${tableName}.${filter.field} ${filter.operator} '${filter.value}'`
+      )
       .join(' AND ');
   }
 
