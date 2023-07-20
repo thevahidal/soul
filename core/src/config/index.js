@@ -10,7 +10,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const envVarsSchema = Joi.object()
   .keys({
-    PORT: Joi.number().positive().default(8000),
+    CORE_PORT: Joi.number().positive().default(8000),
 
     NODE_ENV: Joi.string()
       .valid('production', 'development', 'test')
@@ -36,7 +36,7 @@ const env = {
 };
 
 if (argv.port) {
-  env.PORT = argv.port;
+  env.CORE_PORT = argv.port;
 }
 
 if (argv.verbose) {
@@ -70,7 +70,7 @@ module.exports = {
   isDevelopment: envVars.NODE_ENV === 'development',
   isTest: envVars.NODE_ENV === 'test',
 
-  port: argv.port || envVars.PORT,
+  port: argv.port || envVars.CORE_PORT,
   verbose: argv['verbose'] || envVars.VERBOSE,
 
   db: {

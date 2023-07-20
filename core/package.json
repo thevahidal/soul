@@ -1,6 +1,6 @@
 {
   "name": "soul-cli",
-  "version": "0.3.6",
+  "version": "0.5.2",
   "description": "A SQLite REST and Realtime server",
   "main": "src/server.js",
   "bin": {
@@ -11,7 +11,7 @@
     "dev": "npm run swagger-autogen && cross-env NO_CLI=true nodemon src/server.js",
     "cli": "nodemon src/server.js --database foobar.db",
     "swagger-autogen": "cross-env NO_CLI=true node src/swagger/index.js",
-    "test": "cross-env NODE_ENV=test NO_CLI=true DB=test.db PORT=8001 jest --testTimeout=10000"
+    "test": "cross-env NODE_ENV=test NO_CLI=true DB=test.db CORE_PORT=8001 jest --testTimeout=10000"
   },
   "repository": {
     "type": "git",
@@ -32,11 +32,11 @@
     "express-rate-limit": "^6.7.0",
     "express-winston": "^4.2.0",
     "joi": "^17.8.3",
+    "soul-studio": "^0.0.1",
     "swagger-ui-express": "^4.6.1",
     "winston": "^3.8.2",
     "ws": "^8.12.1",
-    "yargs": "^17.7.1",
-    "soul-studio": "^0.0.1"
+    "yargs": "^17.7.1"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
