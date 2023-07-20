@@ -6,6 +6,15 @@ const quotePrimaryKeys = (pks) => {
   return quotedPks;
 };
 
+const operators = {
+  eq: '=',
+  lt: '<',
+  gt: '>',
+  lte: '<=',
+  gte: '>=',
+  neq: '!=',
+};
+
 // Return paginated rows of a table
 const listTableRows = async (req, res) => {
   /*
@@ -45,6 +54,7 @@ const listTableRows = async (req, res) => {
       in: 'query',
     }
   */
+  let params = '';
   const { name: tableName } = req.params;
   const {
     _page = 1,
@@ -64,18 +74,42 @@ const listTableRows = async (req, res) => {
   // filtering is case insensitive
   // e.g. ?_filters=name:John,age:20
   // will filter by name like '%John%' and age like '%20%'
+  let filters = [];
+  try {
+    filters = _filters.split(',').map((filter) => {
+      let [key, value] = filter.split(':');
 
-  const filters = _filters.split(',').map((filter) => {
-    const [field, value] = filter.split(':');
-    return { field, value };
-  });
+      let field = key.split('__')[0];
+      let fieldOperator = key.split('__')[1];
+
+      if (!fieldOperator) {
+        fieldOperator = 'eq';
+      } else if (!operators[fieldOperator]) {
+        throw new Error(
+          `Invalid field operator "${fieldOperator}" for field "${field}". You can only use the following operators after the "${field}" field: __lt, __gt, __lte, __gte, __eq, __neq.`
+        );
+      }
+
+      let operator = operators[fieldOperator];
+      return { field, operator, value };
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+      error: error,
+    });
+  }
 
   let whereString = '';
   if (_filters !== '') {
     whereString += ' WHERE ';
     whereString += filters
-      .map((filter) => `${tableName}.${filter.field} = '${filter.value}'`)
+      .map(
+        (filter) =>
+          `${tableName}.${filter.field} ${filter.operator} '${filter.value}'`
+      )
       .join(' AND ');
+    params = `_filters=${_filters}&`;
   }
 
   // if _search is provided, search rows by it
@@ -95,6 +129,7 @@ const listTableRows = async (req, res) => {
         .map((field) => `${tableName}.${field.name} LIKE '%${_search}%'`)
         .join(' OR ');
       whereString += ')';
+      params += `_search=${_search}&`;
     } catch (error) {
       return res.status(400).json({
         message: error.message,
@@ -111,6 +146,7 @@ const listTableRows = async (req, res) => {
     orderString += ` ORDER BY ${_ordering.replace('-', '')} ${
       _ordering.startsWith('-') ? 'DESC' : 'ASC'
     }`;
+    params += `_ordering=${_ordering}&`;
   }
 
   // if _schema is provided, return only those fields
@@ -123,6 +159,7 @@ const listTableRows = async (req, res) => {
     schemaFields.forEach((field) => {
       schemaString += `${tableName}.${field},`;
     });
+    params += `_schema=${_schema}&`;
   } else {
     schemaString = `${tableName}.*`;
   }
@@ -157,7 +194,9 @@ const listTableRows = async (req, res) => {
   //   }
   // }
 
+  let foreignKeyError = { error: '', message: '' };
   let extendString = '';
+
   if (_extend) {
     const extendFields = _extend.split(',');
     extendFields.forEach((extendedField) => {
@@ -168,7 +207,9 @@ const listTableRows = async (req, res) => {
           .find((fk) => fk.from === extendedField);
 
         if (!foreignKey) {
-          throw new Error('Foreign key not found');
+          throw new Error(
+            `Foreign key not found for extended field '${extendedField}'`
+          );
         }
 
         const { table: joinedTableName } = foreignKey;
@@ -198,12 +239,19 @@ const listTableRows = async (req, res) => {
 
         schemaString += extendFieldsString;
       } catch (error) {
-        return res.status(400).json({
-          message: error.message,
-          error: error,
-        });
+        foreignKeyError.error = error;
+        foreignKeyError.message = error.message;
       }
     });
+
+    params += `_extend=${_extend}&`;
+
+    if (foreignKeyError.error) {
+      return res.status(400).json({
+        message: foreignKeyError.message,
+        error: foreignKeyError.error,
+      });
+    }
   }
 
   // get paginated rows
@@ -233,8 +281,17 @@ const listTableRows = async (req, res) => {
       .get().total;
 
     const next =
-      data.length === limit ? `/tables/${tableName}?page=${page + 1}` : null;
-    const previous = page > 1 ? `/tables/${tableName}?page=${page - 1}` : null;
+      data.length === limit
+        ? `/tables/${tableName}/rows?${params}_limit=${_limit}&_page=${
+            page + 1
+          }`
+        : null;
+    const previous =
+      page > 1
+        ? `/tables/${tableName}/rows?${params}_limit=${_limit}&_page=${
+            page - 1
+          }`
+        : null;
 
     res.json({
       data,

@@ -2,6 +2,7 @@ const fs = require('fs');
 const { unlink } = require('fs/promises');
 
 const db = require('../db/index');
+const { testNames } = require('./testData');
 
 const dropTestTable = (table = 'users') => {
   db.prepare(`DROP TABLE IF EXISTS ${table}`).run();
@@ -31,10 +32,13 @@ const createTestTable = (table = 'users') => {
 };
 
 const insertIntoTestTable = (table = 'users') => {
-  db.prepare(`INSERT INTO ${table} (firstName, lastName) VALUES (?, ?)`).run(
-    'John',
-    'Doe'
+  const statement = db.prepare(
+    `INSERT INTO ${table} (firstName, lastName) VALUES (?, ?)`
   );
+
+  for (const user of testNames) {
+    statement.run(user.firstName, user.lastName);
+  }
 };
 
 module.exports = {
