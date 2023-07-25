@@ -31,7 +31,7 @@ Response
 
 - `_page` e.g. `?_page=2`, to get the second page of results.
 - `_limit` e.g. `?_limit=20`, to get 20 results per page.
-- `_search` e.g. `?_search=rock`, to search between rows.
+- `_search` e.g. `?_search=rock`, to search across all fields.
 - `_ordering` e.g. `?_ordering=-Title`, to order rows by title descending, or without `-` to sort ascending, e.g. `?_ordering=Title`
 - `_schema` e.g. `?_schema=Title,ArtistId`, to get only the Title and ArtistId columns.
 - `_extend` e.g. `?_extend=ArtistId`, to get the Artist object related to the Album.
