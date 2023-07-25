@@ -59,6 +59,16 @@ describe('Rows Endpoints', () => {
     );
   });
 
+  it('GET /tables/:name/rows: should return a null field', async () => {
+    const res = await requestWithSupertest.get(
+      '/api/tables/users/rows?_filters=firstName__null,lastName__notnull'
+    );
+
+    expect(res.status).toEqual(200);
+    expect(res.body.data[0].firstName).toBeNull();
+    expect(res.body.data[0].lastName).not.toBeNull();
+  });
+
   it('POST /tables/:name/rows should insert a new row and return the lastInsertRowid', async () => {
     const res = await requestWithSupertest
       .post('/api/tables/users/rows')
