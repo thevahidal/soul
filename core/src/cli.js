@@ -46,6 +46,12 @@ if (process.env.NO_CLI !== 'true') {
       type: 'string',
       demandOption: false,
     })
+    .options('S', {
+      alias: 'studio',
+      describe: 'Start Soul Studio in parallel',
+      type: 'boolean',
+      demandOption: false
+    })
     .help(true).argv;
 }
 
