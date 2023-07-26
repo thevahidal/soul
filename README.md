@@ -102,12 +102,6 @@ npm run dev # Start the dev server
 
 [Join](https://bit.ly/soul-discord) the discussion in our Discord server and help making Soul together.
 
-## Contributing
-
-Contributions are always welcome!
-
-See `CONTRIBUTING.md` for ways to get started and please adhere to `CODE OF CONDUCT`.
-
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
@@ -115,6 +109,12 @@ See `CONTRIBUTING.md` for ways to get started and please adhere to `CODE OF COND
 <a href="https://trackgit.com">
 <img src="https://us-central1-trackgit-analytics.cloudfunctions.net/token/ping/la8rmyedi6oogy87pxla" alt="trackgit-views" />
 </a>
+
+## Contributing
+
+Contributions are always welcome!
+
+See `CONTRIBUTING.md` for ways to get started and please adhere to `CODE OF CONDUCT`.
 
 ## Contributors ✨
 
@@ -140,4 +140,4 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification.
