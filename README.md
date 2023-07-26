@@ -6,6 +6,7 @@
 </p>
 
 [![justforfunnoreally.dev badge](https://img.shields.io/badge/justforfunnoreally-dev-9ff)](https://justforfunnoreally.dev)
+[![All Contributors](https://img.shields.io/github/all-contributors/thevahidal/soul?color=ee8449&style=flat-square)](#contributors)
 
 ## Installation
 
@@ -107,9 +108,16 @@ Contributions are always welcome!
 
 See `CONTRIBUTING.md` for ways to get started and please adhere to `CODE OF CONDUCT`.
 
-## Authors
+## Contributors
 
-- [@thevahidal](https://www.github.com/thevahidal)
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## License
 
