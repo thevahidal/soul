@@ -24,6 +24,7 @@ const testNames = [
   { firstName: 'Mila', lastName: 'Flores' },
   { firstName: 'Evelyn', lastName: 'Morales' },
   { firstName: 'Logan', lastName: 'Collins' },
+  { firstName: null, lastName: 'Flores' },
 ];
 
 module.exports = { testNames };

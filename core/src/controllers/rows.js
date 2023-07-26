@@ -13,6 +13,8 @@ const operators = {
   lte: '<=',
   gte: '>=',
   neq: '!=',
+  null: 'IS NULL',
+  notnull: 'IS NOT NULL',
 };
 
 // Return paginated rows of a table
@@ -91,6 +93,10 @@ const listTableRows = async (req, res) => {
       }
 
       let operator = operators[fieldOperator];
+      if (['null', 'notnull'].includes(fieldOperator)) {
+        value = null;
+      }
+
       return { field, operator, value };
     });
   } catch (error) {
@@ -104,9 +110,10 @@ const listTableRows = async (req, res) => {
   if (_filters !== '') {
     whereString += ' WHERE ';
     whereString += filters
-      .map(
-        (filter) =>
-          `${tableName}.${filter.field} ${filter.operator} '${filter.value}'`
+      .map((filter) =>
+        filter.value !== null
+          ? `${tableName}.${filter.field} ${filter.operator} '${filter.value}'`
+          : `${tableName}.${filter.field} ${filter.operator}`
       )
       .join(' AND ');
     params = `_filters=${_filters}&`;
