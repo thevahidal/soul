@@ -17,6 +17,15 @@
       ]
     },
     {
+      "login": "AbegaM",
+      "name": "Abenezer Melkamu",
+      "avatar_url": "https://avatars.githubusercontent.com/u/70259638?v=4",
+      "profile": "https://github.com/AbegaM",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
       "login": "IanMayo",
       "name": "Ian Mayo",
       "avatar_url": "https://avatars.githubusercontent.com/u/1108513?v=4",
@@ -30,6 +39,15 @@
       "name": "Hanz",
       "avatar_url": "https://avatars.githubusercontent.com/u/40712686?v=4",
       "profile": "https://godot.id",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "KoenDG",
+      "name": "Koen De Groote",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1440619?v=4",
+      "profile": "https://github.com/KoenDG",
       "contributions": [
         "code"
       ]
