@@ -24,6 +24,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "HanzCEO",
+      "name": "Hanz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/40712686?v=4",
+      "profile": "https://godot.id",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
