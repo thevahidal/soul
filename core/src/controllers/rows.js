@@ -336,28 +336,29 @@ const insertRowInTable = async (req, res, next) => {
   */
 
   const { name: tableName } = req.params;
-  const { fields:queryFields } = req.body;
+  const { fields: queryFields } = req.body;
 
+  // Remove null values from fields for accurate query construction.
   const fields = Object.fromEntries(
     Object.entries(queryFields).filter(([_, value]) => value !== null)
   );
 
-  const fieldsString = Object.keys(fields).join(', ');
+  const fieldsString = Object.keys(fields).join(", ");
 
   // wrap text values in quotes
   const valuesString = Object.values(fields)
     .map((value) => {
-      if (typeof value === 'string') {
+      if (typeof value === "string") {
         return `'${value}'`;
       }
       return value;
     })
-    .join(', ');
+    .join(", ");
 
   let values = `(${fieldsString}) VALUES (${valuesString})`;
 
-  if (valuesString === '') {
-    values = 'DEFAULT VALUES';
+  if (valuesString === "") {
+    values = "DEFAULT VALUES";
   }
 
   const query = `INSERT INTO ${tableName} ${values}`;
@@ -373,15 +374,15 @@ const insertRowInTable = async (req, res, next) => {
       }
     */
     res.status(201).json({
-      message: 'Row inserted',
-      data,
+      message: "Row inserted",
+      data
     });
     req.broadcast = {
-      type: 'INSERT',
+      type: "INSERT",
       data: {
         pk: data.lastInsertRowid,
-        ...fields,
-      },
+        ...fields
+      }
     };
     next();
   } catch (error) {
@@ -395,7 +396,7 @@ const insertRowInTable = async (req, res, next) => {
     */
     res.status(400).json({
       message: error.message,
-      error: error,
+      error: error
     });
   }
 };
