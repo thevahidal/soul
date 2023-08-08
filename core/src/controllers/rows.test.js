@@ -101,4 +101,20 @@ describe('Rows Endpoints', () => {
     expect(res.status).toEqual(200);
     expect(res.type).toEqual(expect.stringContaining('json'));
   });
+
+    it('POST /tables/:name/rows should insert a new row if any of the value of the object being inserted is null', async () => {
+      const res = await requestWithSupertest
+        .post("/api/tables/users/rows")
+        .send({
+          fields: {
+            firstName: null,
+            lastName: "Doe",
+            email: null,
+            username: "Jane"
+          }
+        });
+      expect(res.status).toEqual(201);
+      expect(res.type).toEqual(expect.stringContaining('json'));
+      expect(res.body).toHaveProperty('data');
+    });
 });

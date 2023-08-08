@@ -27,7 +27,7 @@ const dropTestDatabase = async (path = 'test.db') => {
 
 const createTestTable = (table = 'users') => {
   db.prepare(
-    `CREATE TABLE ${table} (id INTEGER PRIMARY KEY, firstName TEXT, lastName TEXT)`
+    `CREATE TABLE ${table} (id INTEGER PRIMARY KEY, firstName TEXT, lastName TEXT, email TEXT, username TEXT)`
   ).run();
 };
 
