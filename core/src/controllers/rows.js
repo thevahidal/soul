@@ -336,7 +336,12 @@ const insertRowInTable = async (req, res, next) => {
   */
 
   const { name: tableName } = req.params;
-  const { fields } = req.body;
+  const { fields:queryFields } = req.body;
+
+  const fields = Object.fromEntries(
+    Object.entries(queryFields).filter(([_, value]) => value !== null)
+  );
+
   const fieldsString = Object.keys(fields).join(', ');
 
   // wrap text values in quotes
