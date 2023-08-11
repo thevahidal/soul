@@ -56,7 +56,7 @@ const listTableRows = async (req, res) => {
       in: 'query',
     }
   */
-  let params = '';
+  let params = "";
   const { name: tableName } = req.params;
   const {
     _page = 1,
@@ -65,7 +65,7 @@ const listTableRows = async (req, res) => {
     _ordering,
     _schema,
     _extend,
-    _filters = '',
+    _filters = ""
   } = req.query;
 
   const page = parseInt(_page);
@@ -77,16 +77,18 @@ const listTableRows = async (req, res) => {
   // e.g. ?_filters=name:John,age:20
   // will filter by name like '%John%' and age like '%20%'
   let filters = [];
+
+  // split the filters by comma(,) except when in an array
   const re = /(\w+:?(\[.*?\]|\w+)?)/g;
   try {
     filters = _filters.match(re)?.map((filter) => {
-      let [key, value] = filter.split(':');
+      let [key, value] = filter.split(":");
 
-      let field = key.split('__')[0];
-      let fieldOperator = key.split('__')[1];
+      let field = key.split("__")[0];
+      let fieldOperator = key.split("__")[1];
 
       if (!fieldOperator) {
-        fieldOperator = 'eq';
+        fieldOperator = "eq";
       } else if (!operators[fieldOperator]) {
         throw new Error(
           `Invalid field operator "${fieldOperator}" for field "${field}". You can only use the following operators after the "${field}" field: __lt, __gt, __lte, __gte, __eq, __neq.`
@@ -94,7 +96,7 @@ const listTableRows = async (req, res) => {
       }
 
       let operator = operators[fieldOperator];
-      if (['null', 'notnull'].includes(fieldOperator)) {
+      if (["null", "notnull"].includes(fieldOperator)) {
         value = null;
       }
 
@@ -103,54 +105,54 @@ const listTableRows = async (req, res) => {
   } catch (error) {
     return res.status(400).json({
       message: error.message,
-      error: error,
+      error: error
     });
   }
 
-   let whereString = '';
-   if (_filters !== '') {
-     whereString += ' WHERE ';
-     whereString += filters
-       .map((filter) => {
-         if (filter.value) {
-           if (filter.value.startsWith('[') && filter.value.endsWith(']')) {
-             const arrayValues = filter.value.slice(1, -1).split(',');
-             return `${tableName}.${filter.field} IN (${arrayValues
-               .map((val) => `'${val}'`)
-               .join(', ')})`;
-           } else {
-             return `${tableName}.${filter.field} ${filter.operator} '${filter.value}'`;
-           }
-         } else {
-           return `${tableName}.${filter.field} ${filter.operator}`;
-         }
-       })
-       .join(' AND ');
-     params = `_filters=${_filters}&`;
-   }
-   
+  let whereString = "";
+  if (_filters !== "") {
+    whereString += " WHERE ";
+    whereString += filters
+      .map((filter) => {
+        if (filter.value) {
+          if (filter.value.startsWith("[") && filter.value.endsWith("]")) {
+            const arrayValues = filter.value.slice(1, -1).split(",");
+            return `${tableName}.${filter.field} IN (${arrayValues
+              .map((val) => `'${val}'`)
+              .join(", ")})`;
+          } else {
+            return `${tableName}.${filter.field} ${filter.operator} '${filter.value}'`;
+          }
+        } else {
+          return `${tableName}.${filter.field} ${filter.operator}`;
+        }
+      })
+      .join(" AND ");
+    params = `_filters=${_filters}&`;
+  }
+
   // if _search is provided, search rows by it
   // e.g. ?_search=John will search for John in all fields of the table
   // searching is case insensitive
   if (_search) {
-    if (whereString !== '') {
-      whereString += ' AND ';
+    if (whereString !== "") {
+      whereString += " AND ";
     } else {
-      whereString += ' WHERE ';
+      whereString += " WHERE ";
     }
     try {
       // get all fields of the table
       const fields = db.prepare(`PRAGMA table_info(${tableName})`).all();
-      whereString += '(';
+      whereString += "(";
       whereString += fields
         .map((field) => `${tableName}.${field.name} LIKE '%${_search}%'`)
-        .join(' OR ');
-      whereString += ')';
+        .join(" OR ");
+      whereString += ")";
       params += `_search=${_search}&`;
     } catch (error) {
       return res.status(400).json({
         message: error.message,
-        error: error,
+        error: error
       });
     }
   }
@@ -158,10 +160,10 @@ const listTableRows = async (req, res) => {
   // if _ordering is provided, order rows by it
   // e.g. ?_ordering=name will order by name
   // e.g. ?_ordering=-name will order by name descending
-  let orderString = '';
+  let orderString = "";
   if (_ordering) {
-    orderString += ` ORDER BY ${_ordering.replace('-', '')} ${
-      _ordering.startsWith('-') ? 'DESC' : 'ASC'
+    orderString += ` ORDER BY ${_ordering.replace("-", "")} ${
+      _ordering.startsWith("-") ? "DESC" : "ASC"
     }`;
     params += `_ordering=${_ordering}&`;
   }
@@ -170,9 +172,9 @@ const listTableRows = async (req, res) => {
   // e.g. ?_schema=name,age will return only name and age fields
   // if _schema is not provided, return all fields
 
-  let schemaString = '';
+  let schemaString = "";
   if (_schema) {
-    const schemaFields = _schema.split(',');
+    const schemaFields = _schema.split(",");
     schemaFields.forEach((field) => {
       schemaString += `${tableName}.${field},`;
     });
@@ -182,7 +184,7 @@ const listTableRows = async (req, res) => {
   }
 
   // remove trailing comma
-  schemaString = schemaString.replace(/,\s*$/, '');
+  schemaString = schemaString.replace(/,\s*$/, "");
 
   // if _extend is provided, extend rows with related data using joins
   // e.g. ?_extend=author_id will extend rows with author data
@@ -211,11 +213,11 @@ const listTableRows = async (req, res) => {
   //   }
   // }
 
-  let foreignKeyError = { error: '', message: '' };
-  let extendString = '';
+  let foreignKeyError = { error: "", message: "" };
+  let extendString = "";
 
   if (_extend) {
-    const extendFields = _extend.split(',');
+    const extendFields = _extend.split(",");
     extendFields.forEach((extendedField) => {
       try {
         const foreignKey = db
@@ -239,19 +241,19 @@ const listTableRows = async (req, res) => {
 
         // joined fields will be returned in a new object called {field}_data e.g. author_id_data
         const extendFieldsString =
-          'json_object( ' +
+          "json_object( " +
           joinedTableFields
             .map(
               (joinedTableField) =>
                 `'${joinedTableField.name}', ${joinedTableName}.${joinedTableField.name}`
             )
-            .join(', ') +
-          ' ) as ' +
+            .join(", ") +
+          " ) as " +
           extendedField +
-          '_data';
+          "_data";
 
         if (schemaString) {
-          schemaString += ', ';
+          schemaString += ", ";
         }
 
         schemaString += extendFieldsString;
@@ -266,7 +268,7 @@ const listTableRows = async (req, res) => {
     if (foreignKeyError.error) {
       return res.status(400).json({
         message: foreignKeyError.message,
-        error: foreignKeyError.error,
+        error: foreignKeyError.error
       });
     }
   }
@@ -281,10 +283,10 @@ const listTableRows = async (req, res) => {
 
     // parse json extended files
     if (_extend) {
-      const extendFields = _extend.split(',');
+      const extendFields = _extend.split(",");
       data = data.map((row) => {
         Object.keys(row).forEach((key) => {
-          if (extendFields.includes(key.replace('_data', ''))) {
+          if (extendFields.includes(key.replace("_data", ""))) {
             row[key] = JSON.parse(row[key]);
           }
         });
@@ -314,12 +316,12 @@ const listTableRows = async (req, res) => {
       data,
       total,
       next,
-      previous,
+      previous
     });
   } catch (error) {
     res.status(400).json({
       message: error.message,
-      error: error,
+      error: error
     });
   }
 };
