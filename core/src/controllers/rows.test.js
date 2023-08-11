@@ -120,11 +120,22 @@ describe('Rows Endpoints', () => {
 
   it('GET /tables/:name/rows: should return values if any of the IDs from the array match the user ID.', async () => {
     const res = await requestWithSupertest.get(
-      '/api/tables/users/rows?_filters=id:[1,2,3]'
+      '/api/tables/users/rows?_filters=id:[2,3]'
     );
     expect(res.status).toEqual(200);
     expect(res.body).toHaveProperty('data');
     expect(res.body.data).toEqual(expect.any(Array));
+    expect(res.body.data.length).toEqual(2);
+  });
+
+  it('GET /tables/:name/rows: should return values if the provided ID matches the user ID.', async () => {
+    const res = await requestWithSupertest.get(
+      '/api/tables/users/rows?_filters=id:2'
+    );
+    expect(res.status).toEqual(200);
+    expect(res.body).toHaveProperty('data');
+    expect(res.body.data).toEqual(expect.any(Array));
+    expect(res.body.data.length).toEqual(1);
   });
 
 });
