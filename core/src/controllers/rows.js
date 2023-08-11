@@ -77,8 +77,9 @@ const listTableRows = async (req, res) => {
   // e.g. ?_filters=name:John,age:20
   // will filter by name like '%John%' and age like '%20%'
   let filters = [];
+  const re = /(\w+:(\[.*?\]|\w+)?)/g;
   try {
-    filters = _filters.split(',').map((filter) => {
+    filters = _filters.match(re)?.map((filter) => {
       let [key, value] = filter.split(':');
 
       let field = key.split('__')[0];
@@ -106,19 +107,28 @@ const listTableRows = async (req, res) => {
     });
   }
 
-  let whereString = '';
-  if (_filters !== '') {
-    whereString += ' WHERE ';
-    whereString += filters
-      .map((filter) =>
-        filter.value !== null
-          ? `${tableName}.${filter.field} ${filter.operator} '${filter.value}'`
-          : `${tableName}.${filter.field} ${filter.operator}`
-      )
-      .join(' AND ');
-    params = `_filters=${_filters}&`;
-  }
-
+   let whereString = '';
+   if (_filters !== '') {
+     whereString += ' WHERE ';
+     whereString += filters
+       .map((filter) => {
+         if (filter.value) {
+           if (filter.value.startsWith('[') && filter.value.endsWith(']')) {
+             const arrayValues = filter.value.slice(1, -1).split(',');
+             return `${tableName}.${filter.field} IN (${arrayValues
+               .map((val) => `'${val}'`)
+               .join(', ')})`;
+           } else {
+             return `${tableName}.${filter.field} ${filter.operator} '${filter.value}'`;
+           }
+         } else {
+           return `${tableName}.${filter.field} ${filter.operator}`;
+         }
+       })
+       .join(' AND ');
+     params = `_filters=${_filters}&`;
+   }
+   
   // if _search is provided, search rows by it
   // e.g. ?_search=John will search for John in all fields of the table
   // searching is case insensitive
