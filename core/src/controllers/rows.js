@@ -77,7 +77,7 @@ const listTableRows = async (req, res) => {
   // e.g. ?_filters=name:John,age:20
   // will filter by name like '%John%' and age like '%20%'
   let filters = [];
-  const re = /(\w+:(\[.*?\]|\w+)?)/g;
+  const re = /(\w+:?(\[.*?\]|\w+)?)/g;
   try {
     filters = _filters.match(re)?.map((filter) => {
       let [key, value] = filter.split(':');
