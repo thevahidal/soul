@@ -56,7 +56,7 @@ const listTableRows = async (req, res) => {
       in: 'query',
     }
   */
-  let params = "";
+  let params = '';
   const { name: tableName } = req.params;
   const {
     _page = 1,
@@ -65,7 +65,7 @@ const listTableRows = async (req, res) => {
     _ordering,
     _schema,
     _extend,
-    _filters = ""
+    _filters = ''
   } = req.query;
 
   const page = parseInt(_page);
@@ -82,21 +82,21 @@ const listTableRows = async (req, res) => {
   const re = /(\w+:?(\[.*?\]|\w+)?)/g;
   try {
     filters = _filters.match(re)?.map((filter) => {
-      let [key, value] = filter.split(":");
+      let [key, value] = filter.split(':');
 
-      let field = key.split("__")[0];
-      let fieldOperator = key.split("__")[1];
+      let field = key.split('__')[0];
+      let fieldOperator = key.split('__')[1];
 
       if (!fieldOperator) {
-        fieldOperator = "eq";
+        fieldOperator = 'eq';
       } else if (!operators[fieldOperator]) {
         throw new Error(
-          `Invalid field operator "${fieldOperator}" for field "${field}". You can only use the following operators after the "${field}" field: __lt, __gt, __lte, __gte, __eq, __neq.`
+          `Invalid field operator '${fieldOperator}' for field '${field}'. You can only use the following operators after the '${field}' field: __lt, __gt, __lte, __gte, __eq, __neq.`
         );
       }
 
       let operator = operators[fieldOperator];
-      if (["null", "notnull"].includes(fieldOperator)) {
+      if (['null', 'notnull'].includes(fieldOperator)) {
         value = null;
       }
 
@@ -109,17 +109,17 @@ const listTableRows = async (req, res) => {
     });
   }
 
-  let whereString = "";
-  if (_filters !== "") {
-    whereString += " WHERE ";
+  let whereString = '';
+  if (_filters !== '') {
+    whereString += ' WHERE ';
     whereString += filters
       .map((filter) => {
         if (filter.value) {
-          if (filter.value.startsWith("[") && filter.value.endsWith("]")) {
-            const arrayValues = filter.value.slice(1, -1).split(",");
+          if (filter.value.startsWith('[') && filter.value.endsWith(']')) {
+            const arrayValues = filter.value.slice(1, -1).split(',');
             return `${tableName}.${filter.field} IN (${arrayValues
               .map((val) => `'${val}'`)
-              .join(", ")})`;
+              .join(', ')})`;
           } else {
             return `${tableName}.${filter.field} ${filter.operator} '${filter.value}'`;
           }
@@ -127,7 +127,7 @@ const listTableRows = async (req, res) => {
           return `${tableName}.${filter.field} ${filter.operator}`;
         }
       })
-      .join(" AND ");
+      .join(' AND ');
     params = `_filters=${_filters}&`;
   }
 
@@ -135,19 +135,19 @@ const listTableRows = async (req, res) => {
   // e.g. ?_search=John will search for John in all fields of the table
   // searching is case insensitive
   if (_search) {
-    if (whereString !== "") {
-      whereString += " AND ";
+    if (whereString !== '') {
+      whereString += ' AND ';
     } else {
-      whereString += " WHERE ";
+      whereString += ' WHERE ';
     }
     try {
       // get all fields of the table
       const fields = db.prepare(`PRAGMA table_info(${tableName})`).all();
-      whereString += "(";
+      whereString += '(';
       whereString += fields
         .map((field) => `${tableName}.${field.name} LIKE '%${_search}%'`)
-        .join(" OR ");
-      whereString += ")";
+        .join(' OR ');
+      whereString += ')';
       params += `_search=${_search}&`;
     } catch (error) {
       return res.status(400).json({
@@ -160,10 +160,10 @@ const listTableRows = async (req, res) => {
   // if _ordering is provided, order rows by it
   // e.g. ?_ordering=name will order by name
   // e.g. ?_ordering=-name will order by name descending
-  let orderString = "";
+  let orderString = '';
   if (_ordering) {
-    orderString += ` ORDER BY ${_ordering.replace("-", "")} ${
-      _ordering.startsWith("-") ? "DESC" : "ASC"
+    orderString += ` ORDER BY ${_ordering.replace('-', '')} ${
+      _ordering.startsWith('-') ? 'DESC' : 'ASC'
     }`;
     params += `_ordering=${_ordering}&`;
   }
@@ -172,9 +172,9 @@ const listTableRows = async (req, res) => {
   // e.g. ?_schema=name,age will return only name and age fields
   // if _schema is not provided, return all fields
 
-  let schemaString = "";
+  let schemaString = '';
   if (_schema) {
-    const schemaFields = _schema.split(",");
+    const schemaFields = _schema.split(',');
     schemaFields.forEach((field) => {
       schemaString += `${tableName}.${field},`;
     });
@@ -184,7 +184,7 @@ const listTableRows = async (req, res) => {
   }
 
   // remove trailing comma
-  schemaString = schemaString.replace(/,\s*$/, "");
+  schemaString = schemaString.replace(/,\s*$/, '');
 
   // if _extend is provided, extend rows with related data using joins
   // e.g. ?_extend=author_id will extend rows with author data
@@ -213,11 +213,11 @@ const listTableRows = async (req, res) => {
   //   }
   // }
 
-  let foreignKeyError = { error: "", message: "" };
-  let extendString = "";
+  let foreignKeyError = { error: '', message: '' };
+  let extendString = '';
 
   if (_extend) {
-    const extendFields = _extend.split(",");
+    const extendFields = _extend.split(',');
     extendFields.forEach((extendedField) => {
       try {
         const foreignKey = db
@@ -241,19 +241,19 @@ const listTableRows = async (req, res) => {
 
         // joined fields will be returned in a new object called {field}_data e.g. author_id_data
         const extendFieldsString =
-          "json_object( " +
+          'json_object( ' +
           joinedTableFields
             .map(
               (joinedTableField) =>
                 `'${joinedTableField.name}', ${joinedTableName}.${joinedTableField.name}`
             )
-            .join(", ") +
-          " ) as " +
+            .join(', ') +
+          ' ) as ' +
           extendedField +
-          "_data";
+          '_data';
 
         if (schemaString) {
-          schemaString += ", ";
+          schemaString += ', ';
         }
 
         schemaString += extendFieldsString;
@@ -283,10 +283,10 @@ const listTableRows = async (req, res) => {
 
     // parse json extended files
     if (_extend) {
-      const extendFields = _extend.split(",");
+      const extendFields = _extend.split(',');
       data = data.map((row) => {
         Object.keys(row).forEach((key) => {
-          if (extendFields.includes(key.replace("_data", ""))) {
+          if (extendFields.includes(key.replace('_data', ''))) {
             row[key] = JSON.parse(row[key]);
           }
         });
@@ -343,7 +343,7 @@ const insertRowInTable = async (req, res, next) => {
       in: 'body',
       required: true,
       type: 'object',
-      schema: { $ref: "#/definitions/InsertRowRequestBody" }
+      schema: { $ref: '#/definitions/InsertRowRequestBody' }
     }
   */
 
@@ -355,22 +355,22 @@ const insertRowInTable = async (req, res, next) => {
     Object.entries(queryFields).filter(([_, value]) => value !== null)
   );
 
-  const fieldsString = Object.keys(fields).join(", ");
+  const fieldsString = Object.keys(fields).join(', ');
 
   // wrap text values in quotes
   const valuesString = Object.values(fields)
     .map((value) => {
-      if (typeof value === "string") {
+      if (typeof value === 'string') {
         return `'${value}'`;
       }
       return value;
     })
-    .join(", ");
+    .join(', ');
 
   let values = `(${fieldsString}) VALUES (${valuesString})`;
 
-  if (valuesString === "") {
-    values = "DEFAULT VALUES";
+  if (valuesString === '') {
+    values = 'DEFAULT VALUES';
   }
 
   const query = `INSERT INTO ${tableName} ${values}`;
@@ -381,16 +381,16 @@ const insertRowInTable = async (req, res, next) => {
       #swagger.responses[201] = {
         description: 'Row inserted successfully',
         schema: {
-          $ref: "#/definitions/InsertRowSuccessResponse"
+          $ref: '#/definitions/InsertRowSuccessResponse'
         }
       }
     */
     res.status(201).json({
-      message: "Row inserted",
+      message: 'Row inserted',
       data
     });
     req.broadcast = {
-      type: "INSERT",
+      type: 'INSERT',
       data: {
         pk: data.lastInsertRowid,
         ...fields
@@ -402,7 +402,7 @@ const insertRowInTable = async (req, res, next) => {
       #swagger.responses[400] = {
         description: 'Bad request',
         schema: {
-          $ref: "#/definitions/InsertRowErrorResponse"
+          $ref: '#/definitions/InsertRowErrorResponse'
         }
       }
     */
@@ -627,7 +627,7 @@ const updateRowInTableByPK = async (req, res, next) => {
       in: 'body',
       required: true,
       type: 'object',
-      schema: { $ref: "#/definitions/UpdateRowRequestBody" }
+      schema: { $ref: '#/definitions/UpdateRowRequestBody' }
     }
 
     #swagger.parameters['_lookup_field'] = {

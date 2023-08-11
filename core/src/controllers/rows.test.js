@@ -104,13 +104,13 @@ describe('Rows Endpoints', () => {
 
   it('POST /tables/:name/rows should insert a new row if any of the value of the object being inserted is null', async () => {
     const res = await requestWithSupertest
-      .post("/api/tables/users/rows")
+      .post('/api/tables/users/rows')
       .send({
         fields: {
           firstName: null,
-          lastName: "Doe",
+          lastName: 'Doe',
           email: null,
-          username: "Jane"
+          username: 'Jane'
         }
       });
     expect(res.status).toEqual(201);
@@ -118,12 +118,12 @@ describe('Rows Endpoints', () => {
     expect(res.body).toHaveProperty('data');
   });
 
-  it("GET /tables/:name/rows: should return values if any of the IDs from the array match the user ID.", async () => {
+  it('GET /tables/:name/rows: should return values if any of the IDs from the array match the user ID.', async () => {
     const res = await requestWithSupertest.get(
-      "/api/tables/users/rows?_filters=id:[1,2,3]"
+      '/api/tables/users/rows?_filters=id:[1,2,3]'
     );
     expect(res.status).toEqual(200);
-    expect(res.body).toHaveProperty("data");
+    expect(res.body).toHaveProperty('data');
     expect(res.body.data).toEqual(expect.any(Array));
   });
 
