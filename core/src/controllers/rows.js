@@ -1,4 +1,5 @@
 const db = require('../db/index');
+const { rowService } = require('../services');
 
 const quotePrimaryKeys = (pks) => {
   const primaryKeys = pks.split(',');
@@ -107,14 +108,22 @@ const listTableRows = async (req, res) => {
   }
 
   let whereString = '';
+  const whereStringValues = [];
+
   if (_filters !== '') {
     whereString += ' WHERE ';
     whereString += filters
-      .map((filter) =>
-        filter.value !== null
-          ? `${tableName}.${filter.field} ${filter.operator} '${filter.value}'`
-          : `${tableName}.${filter.field} ${filter.operator}`
-      )
+      .map((filter) => {
+        let query;
+        if (filter.value != null) {
+          query = `${tableName}.${filter.field} ${filter.operator} ?`;
+          whereStringValues.push(filter.value);
+        } else {
+          query = `${tableName}.${filter.field} ${filter.operator}`;
+        }
+
+        return query;
+      })
       .join(' AND ');
     params = `_filters=${_filters}&`;
   }
@@ -261,13 +270,17 @@ const listTableRows = async (req, res) => {
     }
   }
 
-  // get paginated rows
-  const query = `SELECT ${schemaString} FROM ${tableName} ${extendString} ${whereString} ${orderString} LIMIT ${limit} OFFSET ${
-    limit * (page - 1)
-  }`;
-
   try {
-    let data = db.prepare(query).all();
+    let data = rowService.get({
+      schemaString,
+      tableName,
+      extendString,
+      whereString,
+      orderString,
+      limit,
+      page: limit * (page - 1),
+      whereStringValues,
+    });
 
     // parse json extended files
     if (_extend) {
@@ -283,9 +296,11 @@ const listTableRows = async (req, res) => {
     }
 
     // get total number of rows
-    const total = db
-      .prepare(`SELECT COUNT(*) as total FROM ${tableName} ${whereString}`)
-      .get().total;
+    const total = rowService.getCount({
+      tableName,
+      whereString,
+      whereStringValues,
+    });
 
     const next =
       data.length === limit
@@ -343,27 +358,8 @@ const insertRowInTable = async (req, res, next) => {
     Object.entries(queryFields).filter(([_, value]) => value !== null)
   );
 
-  const fieldsString = Object.keys(fields).join(", ");
-
-  // wrap text values in quotes
-  const valuesString = Object.values(fields)
-    .map((value) => {
-      if (typeof value === "string") {
-        return `'${value}'`;
-      }
-      return value;
-    })
-    .join(", ");
-
-  let values = `(${fieldsString}) VALUES (${valuesString})`;
-
-  if (valuesString === "") {
-    values = "DEFAULT VALUES";
-  }
-
-  const query = `INSERT INTO ${tableName} ${values}`;
   try {
-    const data = db.prepare(query).run();
+    const data = rowService.save({ tableName, fields });
 
     /*
       #swagger.responses[201] = {
@@ -374,15 +370,15 @@ const insertRowInTable = async (req, res, next) => {
       }
     */
     res.status(201).json({
-      message: "Row inserted",
-      data
+      message: 'Row inserted',
+      data,
     });
     req.broadcast = {
-      type: "INSERT",
+      type: 'INSERT',
       data: {
         pk: data.lastInsertRowid,
-        ...fields
-      }
+        ...fields,
+      },
     };
     next();
   } catch (error) {
@@ -396,7 +392,7 @@ const insertRowInTable = async (req, res, next) => {
     */
     res.status(400).json({
       message: error.message,
-      error: error
+      error: error,
     });
   }
 };
@@ -555,12 +551,14 @@ const getRowInTableByPK = async (req, res) => {
     });
   }
 
-  const query = `SELECT ${schemaString} FROM ${tableName} ${extendString} WHERE ${tableName}.${lookupField} in (${quotePrimaryKeys(
-    pks
-  )})`;
-
   try {
-    let data = db.prepare(query).all();
+    let data = rowService.getById({
+      schemaString,
+      tableName,
+      extendString,
+      lookupField,
+      pks,
+    });
 
     // parse json extended files
     if (_extend) {
@@ -665,12 +663,13 @@ const updateRowInTableByPK = async (req, res, next) => {
     });
   }
 
-  const query = `UPDATE ${tableName} SET ${fieldsString} WHERE ${lookupField} in (${quotePrimaryKeys(
-    pks
-  )})`;
-
   try {
-    const data = db.prepare(query).run();
+    const data = rowService.update({
+      tableName,
+      fieldsString,
+      lookupField,
+      pks,
+    });
 
     res.json({
       message: 'Row updated',
@@ -738,12 +737,8 @@ const deleteRowInTableByPK = async (req, res, next) => {
     }
   }
 
-  const query = `DELETE FROM ${tableName} WHERE ${lookupField} in (${quotePrimaryKeys(
-    pks
-  )})`;
-
   try {
-    const data = db.prepare(query).run();
+    const data = rowService.delete({ tableName, lookupField, pks });
 
     if (data.changes === 0) {
       res.status(404).json({
