@@ -7,6 +7,7 @@
 
 [![justforfunnoreally.dev badge](https://img.shields.io/badge/justforfunnoreally-dev-9ff)](https://justforfunnoreally.dev)
 [![All Contributors](https://img.shields.io/github/all-contributors/thevahidal/soul?color=ee8449&style=flat-square)](#contributors)
+[![trackgit](https://us-central1-trackgit-analytics.cloudfunctions.net/token/ping/la8rmyedi6oogy87pxla)](https://trackgit.com)
 
 ## Installation
 
@@ -106,9 +107,6 @@ npm run dev # Start the dev server
 
 [MIT](https://choosealicense.com/licenses/mit/)
 
-<a href="https://trackgit.com">
-<img src="https://us-central1-trackgit-analytics.cloudfunctions.net/token/ping/la8rmyedi6oogy87pxla" alt="trackgit-views" />
-</a>
 
 ## Contributing
 
