@@ -102,19 +102,40 @@ describe('Rows Endpoints', () => {
     expect(res.type).toEqual(expect.stringContaining('json'));
   });
 
-    it('POST /tables/:name/rows should insert a new row if any of the value of the object being inserted is null', async () => {
-      const res = await requestWithSupertest
-        .post("/api/tables/users/rows")
-        .send({
-          fields: {
-            firstName: null,
-            lastName: "Doe",
-            email: null,
-            username: "Jane"
-          }
-        });
-      expect(res.status).toEqual(201);
-      expect(res.type).toEqual(expect.stringContaining('json'));
-      expect(res.body).toHaveProperty('data');
-    });
+  it('POST /tables/:name/rows should insert a new row if any of the value of the object being inserted is null', async () => {
+    const res = await requestWithSupertest
+      .post('/api/tables/users/rows')
+      .send({
+        fields: {
+          firstName: null,
+          lastName: 'Doe',
+          email: null,
+          username: 'Jane'
+        }
+      });
+    expect(res.status).toEqual(201);
+    expect(res.type).toEqual(expect.stringContaining('json'));
+    expect(res.body).toHaveProperty('data');
+  });
+
+  it('GET /tables/:name/rows should return values if any of the IDs from the array match the user ID.', async () => {
+    const res = await requestWithSupertest.get(
+      '/api/tables/users/rows?_filters=id:[2,3]'
+    );
+    expect(res.status).toEqual(200);
+    expect(res.body).toHaveProperty('data');
+    expect(res.body.data).toEqual(expect.any(Array));
+    expect(res.body.data.length).toEqual(2);
+  });
+
+  it('GET /tables/:name/rows should return values if the provided ID matches the user ID.', async () => {
+    const res = await requestWithSupertest.get(
+      '/api/tables/users/rows?_filters=id:2,firstName:Michael,lastName:Lee'
+    );
+    expect(res.status).toEqual(200);
+    expect(res.body).toHaveProperty('data');
+    expect(res.body.data).toEqual(expect.any(Array));
+    expect(res.body.data.length).toEqual(1);
+  });
+
 });

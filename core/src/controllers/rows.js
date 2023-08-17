@@ -66,7 +66,7 @@ const listTableRows = async (req, res) => {
     _ordering,
     _schema,
     _extend,
-    _filters = '',
+    _filters = ''
   } = req.query;
 
   const page = parseInt(_page);
@@ -78,8 +78,11 @@ const listTableRows = async (req, res) => {
   // e.g. ?_filters=name:John,age:20
   // will filter by name like '%John%' and age like '%20%'
   let filters = [];
+
+  // split the filters by comma(,) except when in an array
+  const re = /(\w+:?(\[.*?\]|\w+)?)/g;
   try {
-    filters = _filters.split(',').map((filter) => {
+    filters = _filters.match(re)?.map((filter) => {
       let [key, value] = filter.split(':');
 
       let field = key.split('__')[0];
@@ -89,7 +92,7 @@ const listTableRows = async (req, res) => {
         fieldOperator = 'eq';
       } else if (!operators[fieldOperator]) {
         throw new Error(
-          `Invalid field operator "${fieldOperator}" for field "${field}". You can only use the following operators after the "${field}" field: __lt, __gt, __lte, __gte, __eq, __neq.`
+          `Invalid field operator '${fieldOperator}' for field '${field}'. You can only use the following operators after the '${field}' field: __lt, __gt, __lte, __gte, __eq, __neq.`
         );
       }
 
@@ -103,7 +106,7 @@ const listTableRows = async (req, res) => {
   } catch (error) {
     return res.status(400).json({
       message: error.message,
-      error: error,
+      error: error
     });
   }
 
@@ -114,15 +117,18 @@ const listTableRows = async (req, res) => {
     whereString += ' WHERE ';
     whereString += filters
       .map((filter) => {
-        let query;
-        if (filter.value != null) {
-          query = `${tableName}.${filter.field} ${filter.operator} ?`;
-          whereStringValues.push(filter.value);
+        if (filter.value) {
+          if (filter.value.startsWith('[') && filter.value.endsWith(']')) {
+            const arrayValues = filter.value.slice(1, -1).split(',');
+            return `${tableName}.${filter.field} IN (${arrayValues
+              .map((val) => `'${val}'`)
+              .join(', ')})`;
+          } else {
+            return `${tableName}.${filter.field} ${filter.operator} '${filter.value}'`;
+          }
         } else {
-          query = `${tableName}.${filter.field} ${filter.operator}`;
+          return `${tableName}.${filter.field} ${filter.operator}`;
         }
-
-        return query;
       })
       .join(' AND ');
     params = `_filters=${_filters}&`;
@@ -149,7 +155,7 @@ const listTableRows = async (req, res) => {
     } catch (error) {
       return res.status(400).json({
         message: error.message,
-        error: error,
+        error: error
       });
     }
   }
@@ -265,7 +271,7 @@ const listTableRows = async (req, res) => {
     if (foreignKeyError.error) {
       return res.status(400).json({
         message: foreignKeyError.message,
-        error: foreignKeyError.error,
+        error: foreignKeyError.error
       });
     }
   }
@@ -319,12 +325,12 @@ const listTableRows = async (req, res) => {
       data,
       total,
       next,
-      previous,
+      previous
     });
   } catch (error) {
     res.status(400).json({
       message: error.message,
-      error: error,
+      error: error
     });
   }
 };
@@ -346,7 +352,7 @@ const insertRowInTable = async (req, res, next) => {
       in: 'body',
       required: true,
       type: 'object',
-      schema: { $ref: "#/definitions/InsertRowRequestBody" }
+      schema: { $ref: '#/definitions/InsertRowRequestBody' }
     }
   */
 
@@ -365,7 +371,7 @@ const insertRowInTable = async (req, res, next) => {
       #swagger.responses[201] = {
         description: 'Row inserted successfully',
         schema: {
-          $ref: "#/definitions/InsertRowSuccessResponse"
+          $ref: '#/definitions/InsertRowSuccessResponse'
         }
       }
     */
@@ -386,7 +392,7 @@ const insertRowInTable = async (req, res, next) => {
       #swagger.responses[400] = {
         description: 'Bad request',
         schema: {
-          $ref: "#/definitions/InsertRowErrorResponse"
+          $ref: '#/definitions/InsertRowErrorResponse'
         }
       }
     */
@@ -613,7 +619,7 @@ const updateRowInTableByPK = async (req, res, next) => {
       in: 'body',
       required: true,
       type: 'object',
-      schema: { $ref: "#/definitions/UpdateRowRequestBody" }
+      schema: { $ref: '#/definitions/UpdateRowRequestBody' }
     }
 
     #swagger.parameters['_lookup_field'] = {
