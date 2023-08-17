@@ -118,7 +118,7 @@ describe('Rows Endpoints', () => {
     expect(res.body).toHaveProperty('data');
   });
 
-  it('GET /tables/:name/rows: should return values if any of the IDs from the array match the user ID.', async () => {
+  it('GET /tables/:name/rows should return values if any of the IDs from the array match the user ID.', async () => {
     const res = await requestWithSupertest.get(
       '/api/tables/users/rows?_filters=id:[2,3]'
     );
@@ -128,9 +128,9 @@ describe('Rows Endpoints', () => {
     expect(res.body.data.length).toEqual(2);
   });
 
-  it('GET /tables/:name/rows: should return values if the provided ID matches the user ID.', async () => {
+  it('GET /tables/:name/rows should return values if the provided ID matches the user ID.', async () => {
     const res = await requestWithSupertest.get(
-      '/api/tables/users/rows?_filters=id:2'
+      '/api/tables/users/rows?_filters=id:2,firstName:Michael,lastName:Lee'
     );
     expect(res.status).toEqual(200);
     expect(res.body).toHaveProperty('data');
