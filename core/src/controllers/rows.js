@@ -15,7 +15,7 @@ const operators = {
   gte: '>=',
   neq: '!=',
   null: 'IS NULL',
-  notnull: 'IS NOT NULL',
+  notnull: 'IS NOT NULL'
 };
 
 // Return paginated rows of a table
@@ -80,11 +80,10 @@ const listTableRows = async (req, res) => {
   let filters = [];
 
   // split the filters by comma(,) except when in an array
-  const re = /(\w+:?(\[.*?\]|\w+)?)/g;
+  const re = /,(?![^\[]*?\])/;
   try {
-    filters = _filters.match(re)?.map((filter) => {
+    filters = _filters.split(re).map((filter) => {
       let [key, value] = filter.split(':');
-
       let field = key.split('__')[0];
       let fieldOperator = key.split('__')[1];
 
@@ -109,6 +108,8 @@ const listTableRows = async (req, res) => {
       error: error
     });
   }
+
+  //console.log('Filters ', filters);
 
   let whereString = '';
   const whereStringValues = [];
@@ -285,7 +286,7 @@ const listTableRows = async (req, res) => {
       orderString,
       limit,
       page: limit * (page - 1),
-      whereStringValues,
+      whereStringValues
     });
 
     // parse json extended files
@@ -305,7 +306,7 @@ const listTableRows = async (req, res) => {
     const total = rowService.getCount({
       tableName,
       whereString,
-      whereStringValues,
+      whereStringValues
     });
 
     const next =
@@ -377,14 +378,14 @@ const insertRowInTable = async (req, res, next) => {
     */
     res.status(201).json({
       message: 'Row inserted',
-      data,
+      data
     });
     req.broadcast = {
       type: 'INSERT',
       data: {
         pk: data.lastInsertRowid,
-        ...fields,
-      },
+        ...fields
+      }
     };
     next();
   } catch (error) {
@@ -398,7 +399,7 @@ const insertRowInTable = async (req, res, next) => {
     */
     res.status(400).json({
       message: error.message,
-      error: error,
+      error: error
     });
   }
 };
@@ -459,7 +460,7 @@ const getRowInTableByPK = async (req, res) => {
     } catch (error) {
       return res.status(400).json({
         message: error.message,
-        error: error,
+        error: error
       });
     }
   }
@@ -551,7 +552,7 @@ const getRowInTableByPK = async (req, res) => {
       } catch (error) {
         return res.status(400).json({
           message: error.message,
-          error: error,
+          error: error
         });
       }
     });
@@ -563,7 +564,7 @@ const getRowInTableByPK = async (req, res) => {
       tableName,
       extendString,
       lookupField,
-      pks,
+      pks
     });
 
     // parse json extended files
@@ -582,17 +583,17 @@ const getRowInTableByPK = async (req, res) => {
     if (data.length === 0) {
       return res.status(404).json({
         message: 'Row not found',
-        error: 'not_found',
+        error: 'not_found'
       });
     } else {
       res.json({
-        data,
+        data
       });
     }
   } catch (error) {
     return res.status(400).json({
       message: error.message,
-      error: error,
+      error: error
     });
   }
 };
@@ -646,7 +647,7 @@ const updateRowInTableByPK = async (req, res, next) => {
     } catch (error) {
       return res.status(400).json({
         message: error.message,
-        error: error,
+        error: error
       });
     }
   }
@@ -665,7 +666,7 @@ const updateRowInTableByPK = async (req, res, next) => {
   if (fieldsString === '') {
     return res.status(400).json({
       message: 'No fields provided',
-      error: 'no_fields_provided',
+      error: 'no_fields_provided'
     });
   }
 
@@ -674,26 +675,26 @@ const updateRowInTableByPK = async (req, res, next) => {
       tableName,
       fieldsString,
       lookupField,
-      pks,
+      pks
     });
 
     res.json({
       message: 'Row updated',
-      data,
+      data
     });
     req.broadcast = {
       type: 'UPDATE',
       _lookup_field: lookupField,
       data: {
         pks: pks.split(','),
-        ...fields,
-      },
+        ...fields
+      }
     };
     next();
   } catch (error) {
     res.status(400).json({
       message: error.message,
-      error: error,
+      error: error
     });
   }
 };
@@ -738,7 +739,7 @@ const deleteRowInTableByPK = async (req, res, next) => {
     } catch (error) {
       return res.status(400).json({
         message: error.message,
-        error: error,
+        error: error
       });
     }
   }
@@ -748,26 +749,26 @@ const deleteRowInTableByPK = async (req, res, next) => {
 
     if (data.changes === 0) {
       res.status(404).json({
-        error: 'not_found',
+        error: 'not_found'
       });
     } else {
       res.json({
         message: 'Row deleted',
-        data,
+        data
       });
       req.broadcast = {
         type: 'DELETE',
         _lookup_field: lookupField,
         data: {
-          pks: pks.split(','),
-        },
+          pks: pks.split(',')
+        }
       };
       next();
     }
   } catch (error) {
     res.status(400).json({
       message: error.message,
-      error: error,
+      error: error
     });
   }
 };
@@ -777,5 +778,5 @@ module.exports = {
   insertRowInTable,
   getRowInTableByPK,
   updateRowInTableByPK,
-  deleteRowInTableByPK,
+  deleteRowInTableByPK
 };
