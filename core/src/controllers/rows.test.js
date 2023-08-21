@@ -30,7 +30,7 @@ describe('Rows Endpoints', () => {
       _ordering: '-firstName',
       _schema: 'firstName,lastName',
       _limit: 8,
-      _page: 2,
+      _page: 2
     };
     const query = queryString(params);
     const res = await requestWithSupertest.get(
@@ -47,14 +47,14 @@ describe('Rows Endpoints', () => {
     expect(res.body.next).toEqual(
       `/tables/users/rows?${queryString({
         ...params,
-        _page: params._page + 1,
+        _page: params._page + 1
       }).toString()}`
     );
 
     expect(res.body.previous).toEqual(
       `/tables/users/rows?${queryString({
         ...params,
-        _page: params._page - 1,
+        _page: params._page - 1
       }).toString()}`
     );
   });
@@ -67,6 +67,18 @@ describe('Rows Endpoints', () => {
     expect(res.status).toEqual(200);
     expect(res.body.data[0].firstName).toBeNull();
     expect(res.body.data[0].lastName).not.toBeNull();
+  });
+
+  it('GET /tables/:name/rows: should filter items by createdAt date', async () => {
+    const res = await requestWithSupertest.get(
+      '/api/tables/users/rows?_filters=createdAt__gte:2009-01-01 00:00:00'
+    );
+
+    expect(res.status).toEqual(200);
+    expect(res.body.data[0]).toHaveProperty('id');
+    expect(res.body.data[0]).toHaveProperty('firstName');
+    expect(res.body.data[0]).toHaveProperty('lastName');
+    expect(res.body.data[0]).toHaveProperty('createdAt');
   });
 
   it('POST /tables/:name/rows should insert a new row and return the lastInsertRowid', async () => {
@@ -103,16 +115,14 @@ describe('Rows Endpoints', () => {
   });
 
   it('POST /tables/:name/rows should insert a new row if any of the value of the object being inserted is null', async () => {
-    const res = await requestWithSupertest
-      .post('/api/tables/users/rows')
-      .send({
-        fields: {
-          firstName: null,
-          lastName: 'Doe',
-          email: null,
-          username: 'Jane'
-        }
-      });
+    const res = await requestWithSupertest.post('/api/tables/users/rows').send({
+      fields: {
+        firstName: null,
+        lastName: 'Doe',
+        email: null,
+        username: 'Jane'
+      }
+    });
     expect(res.status).toEqual(201);
     expect(res.type).toEqual(expect.stringContaining('json'));
     expect(res.body).toHaveProperty('data');
@@ -137,5 +147,4 @@ describe('Rows Endpoints', () => {
     expect(res.body.data).toEqual(expect.any(Array));
     expect(res.body.data.length).toEqual(1);
   });
-
 });
