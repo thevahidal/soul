@@ -40,7 +40,7 @@ const testNames = [
   },
   { firstName: 'Liam', lastName: 'Gonzalez', createdAt: '2020-01-08 00:00:00' },
   { firstName: 'Emma', lastName: 'Gomez', createdAt: '2021-01-08 00:00:00' },
-  { firstName: 'Noah', lastName: 'Perez', createdAt: '2022-01-08 00:00:00' },
+  { firstName: 'Noah', lastName: 'Perez', createdAt: '2021-01-08 00:00:00' },
   { firstName: 'Avery', lastName: 'Ramirez', createdAt: '2023-02-08 00:00:00' },
   { firstName: 'Jacob', lastName: 'Turner', createdAt: '2023-03-08 00:00:00' },
   {

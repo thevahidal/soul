@@ -1,3 +1,4 @@
+const { not } = require('joi');
 const supertest = require('supertest');
 
 const app = require('../index');
@@ -69,10 +70,85 @@ describe('Rows Endpoints', () => {
     expect(res.body.data[0].lastName).not.toBeNull();
   });
 
-  it('GET /tables/:name/rows: should filter items by createdAt date', async () => {
+  it('GET /tables/:name/rows: should successfully retrieve users created after 2010-01-01 00:00:00.', async () => {
+    const date = '2010-01-01 00:00:00';
     const res = await requestWithSupertest.get(
-      '/api/tables/users/rows?_filters=createdAt__gte:2009-01-01 00:00:00'
+      `/api/tables/users/rows?_filters=createdAt__gte:${date}`
     );
+
+    res.body.data.map((user) => {
+      const createdAt = new Date(user.createdAt);
+      const referenceDate = new Date(date);
+      expect(createdAt.getTime()).toBeGreaterThan(referenceDate.getTime());
+    });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.data[0]).toHaveProperty('id');
+    expect(res.body.data[0]).toHaveProperty('firstName');
+    expect(res.body.data[0]).toHaveProperty('lastName');
+    expect(res.body.data[0]).toHaveProperty('createdAt');
+  });
+
+  it('GET /tables/:name/rows: should successfully retrieve users created before 2008-01-20 00:00:00.', async () => {
+    const date = '2008-01-20 00:00:00';
+    const res = await requestWithSupertest.get(
+      `/api/tables/users/rows?_filters=createdAt__lte:${date}`
+    );
+
+    res.body.data.map((user) => {
+      const createdAt = new Date(user.createdAt);
+      const referenceDate = new Date(date);
+      expect(createdAt.getTime()).toBeLessThan(referenceDate.getTime());
+    });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.data[0]).toHaveProperty('id');
+    expect(res.body.data[0]).toHaveProperty('firstName');
+    expect(res.body.data[0]).toHaveProperty('lastName');
+    expect(res.body.data[0]).toHaveProperty('createdAt');
+  });
+
+  it('GET /tables/:name/rows: should successfully retrieve users created at 2013-01-08 00:00:00', async () => {
+    const date = '2013-01-08 00:00:00';
+    const res = await requestWithSupertest.get(
+      `/api/tables/users/rows?_filters=createdAt__eq:${date}`
+    );
+
+    res.body.data.map((user) => {
+      const createdAt = new Date(user.createdAt);
+      const referenceDate = new Date(date);
+      expect(createdAt.getTime()).toEqual(referenceDate.getTime());
+    });
+
+    expect(res.status).toEqual(200);
+    expect(res.body.data[0]).toHaveProperty('id');
+    expect(res.body.data[0]).toHaveProperty('firstName');
+    expect(res.body.data[0]).toHaveProperty('lastName');
+    expect(res.body.data[0]).toHaveProperty('createdAt');
+  });
+
+  it('GET /tables/:name/rows: should successfully retrieve users created at 2007-01-08 00:00:00', async () => {
+    const date = '2007-01-08 00:00:00';
+    const res = await requestWithSupertest.get(
+      `/api/tables/users/rows?_filters=createdAt__eq:${date}`
+    );
+
+    //There are no users that are created at 2007-01-08 00:00:00 so the API should return empty data
+    expect(res.body.data).toHaveLength(0);
+    expect(res.status).toEqual(200);
+  });
+
+  it('GET /tables/:name/rows: should successfully retrieve users that are not created at 2021-01-08 00:00:00', async () => {
+    const date = '2021-01-08 00:00:00';
+    const res = await requestWithSupertest.get(
+      `/api/tables/users/rows?_filters=createdAt__neq:${date}`
+    );
+
+    res.body.data.map((user) => {
+      const createdAt = new Date(user.createdAt);
+      const referenceDate = new Date(date);
+      expect(createdAt.getTime()).not.toEqual(referenceDate.getTime());
+    });
 
     expect(res.status).toEqual(200);
     expect(res.body.data[0]).toHaveProperty('id');

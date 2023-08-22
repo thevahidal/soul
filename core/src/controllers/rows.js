@@ -83,7 +83,14 @@ const listTableRows = async (req, res) => {
   const re = /,(?![^\[]*?\])/;
   try {
     filters = _filters.split(re).map((filter) => {
-      let [key, value] = filter.split(':');
+      //NOTE: When using the _filter parameter, the values are split using the ":" sign, like this (_filters=Total__eq:1). However, if the user sends a date value, such as (_filters=InvoiceDate__eq:2010-01-08 00:00:00), there will be additional colon (":") signs present.
+      let [key, ...value] = filter.split(':');
+      if (value.length === 1) {
+        value = value[0];
+      } else {
+        value = value.map((element) => element).join(':');
+      }
+
       let field = key.split('__')[0];
       let fieldOperator = key.split('__')[1];
 
@@ -108,8 +115,6 @@ const listTableRows = async (req, res) => {
       error: error
     });
   }
-
-  //console.log('Filters ', filters);
 
   let whereString = '';
   const whereStringValues = [];
