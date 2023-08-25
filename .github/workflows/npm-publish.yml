@@ -18,19 +18,6 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - run: npm ci
-        working-directory: ./core
-      - run: npm ci
-        working-directory: ./studio
-
-      - name: Build soul studio
-        run: npm run build
-        working-directory: ./studio
-
       - run: npm publish
-        working-directory: ./core
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
-      - run: npm publish
-        working-directory: ./studio
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
