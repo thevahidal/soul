@@ -1,7 +1,7 @@
 <p align="center">
     <img src='docs/logo.png' height='150px' style="">
     <p align="center">
-        A SQLite REST and Realtime server 
+        A SQLite REST and Realtime server
     </p>
 </p>
 
@@ -59,7 +59,7 @@ Soul is able to be extended (e.g. Adding custom APIs) via extensions, you can fi
 
 ## Soul Studio
 
-Soul Studio provides a GUI to work with your database.
+[Soul Studio](https://github.com/thevahidal/soul-studio) provides a GUI to work with your database.
 
 Right now Soul Studio is in early stages of development and not useful to work with.
 
@@ -71,26 +71,6 @@ Right now Soul Studio is in early stages of development and not useful to work w
 
 ```bash
 git clone https://github.com/thevahidal/soul # Clone project
-```
-
-### Core API
-
-```bash
-cd core # Move into the core directory
-
-cp .env.sample .env # Duplicate sample environment variables
-nano .env # Update the environment variables
-
-npm install # Install dependencies
-npm run dev # Start the dev server
-```
-
-### Studio
-
-Make sure that Soul Core API is up and running and then
-
-```bash
-cd studio # Move into the studio directory
 
 cp .env.sample .env # Duplicate sample environment variables
 nano .env # Update the environment variables

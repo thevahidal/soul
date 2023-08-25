@@ -27,12 +27,11 @@ soul -d ./Chinook_Sqlite.sqlite -p 8000
 
 <details>
   <summary>Or Using Local Development</summary>
-  
+
 ```bash
 git clone https://github.com/thevahidal/soul # Clone project
-cd core/
 npm install # Install dependencies
-npm link # might need `sudo` 
+npm link # might need `sudo`
 soul -d ./Chinook_Sqlite.sqlite -p 8000
 ```
 </details>

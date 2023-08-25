@@ -25,12 +25,11 @@ soul -d ./Chinook_Sqlite.sqlite -p 8000 -e "/absolute/path/to/_extensions/"
 
 <details>
   <summary>Or Using Local Development</summary>
-  
+
 ```bash
 git clone https://github.com/thevahidal/soul # Clone project
-cd core/
 npm install # Install dependencies
-npm link # might need `sudo` 
+npm link # might need `sudo`
 soul -d ./Chinook_Sqlite.sqlite -p 8000 -e "/absolute/path/to/_extensions/"
 ```
 </details>
@@ -45,7 +44,7 @@ const hello = {
   method: 'GET',
   path: '/api/hello-soul',
   handler: (req, res, db) => {
-    res.status(200).json({ 
+    res.status(200).json({
         message: 'Hello Soul!'
     });
   },
@@ -79,8 +78,8 @@ const searchTables = {
   handler: (req, res, db) => {
     const { q } = req.query;
     const sql = `
-      SELECT name FROM sqlite_master 
-      WHERE type='table' 
+      SELECT name FROM sqlite_master
+      WHERE type='table'
       AND name LIKE $searchQuery
     `;
     try {

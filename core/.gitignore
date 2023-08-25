@@ -107,3 +107,6 @@ dist
 *.db
 *.db-shm
 *.db-wal
+
+*Chinook*
+_extensions/
