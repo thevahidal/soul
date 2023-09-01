@@ -57,15 +57,19 @@ For websocket examples, check [docs/ws-examples.md](docs/ws-examples.md)
 
 Soul is able to be extended (e.g. Adding custom APIs) via extensions, you can find a list of extensions at [docs/extensions-examples.md](docs/extensions-examples.md)
 
-## Soul Studio
+## Soul-mates
 
-[Soul Studio](https://github.com/thevahidal/soul-studio) provides a GUI to work with your database.
+A collection of projects that revolve around the Soul ecosystem.
 
-Right now Soul Studio is in early stages of development and not useful to work with.
+- [Soul Studio](https://github.com/thevahidal/soul-studio) provides a GUI to work with your database.
 
-<p align="center">
-    <img src='docs/soul-studio.png' style="">
-</p>
+    Right now Soul Studio is in early stages of development and not useful to work with.
+    
+    <p align="center">
+        <img src='docs/soul-studio.png' style="">
+    </p>
+
+- [RCO-Soul](https://github.com/DeepBlueCLtd/RCO-Soul) The purpose of this project is to demonstrate how to run a React admin client using Soul as a REST API service.
 
 ## Development
 
