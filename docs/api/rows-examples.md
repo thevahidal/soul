@@ -36,7 +36,7 @@ Response
 - `_schema` e.g. `?_schema=Title,ArtistId`, to get only the Title and ArtistId columns.
 - `_extend` e.g. `?_extend=ArtistId`, to get the Artist object related to the Album.
 - `_filters` e.g. `?_filters=ArtistId:[1,2,3],Title:Rock`, to get only the rows where the ArtistId can be 1,2 or 3 and the Title is Rock.
-  NOTE: If you want to use comparison operators in the filter, you can use these operators after the field: `__eq, __neq, __lt, __gt, __lte, __gte, __null, __notNull` . For example, you can use `/invoices/rows?_filters=InvoiceId__neq:1,Total__gte:5,BillingPostalCode__notNull`
+  NOTE: If you want to use comparison operators in the filter, you can use these operators after the field: `__eq, __neq, __lt, __gt, __lte, __gte, __null, __notnull` . For example, you can use `/invoices/rows?_filters=InvoiceId__neq:1,Total__gte:5,BillingPostalCode__notnull`
 
 Example with query params
 
