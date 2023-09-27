@@ -30,7 +30,6 @@ module.exports = (db) => {
     save(data) {
       // wrap text values in quotes
       const fieldsString = Object.keys(data.fields).join(', ');
-
       // wrap text values in quotes
       const valuesString = Object.values(data.fields).map((value) => value);
       const placeholders = Object.values(data.fields)
@@ -64,6 +63,6 @@ module.exports = (db) => {
       const statement = db.prepare(query);
       const result = statement.run(...pks);
       return result;
-    },
+    }
   };
 };

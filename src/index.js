@@ -15,6 +15,7 @@ const tablesRoutes = require('./routes/tables');
 const rowsRoutes = require('./routes/rows');
 const swaggerFile = require('./swagger/swagger.json');
 const { setupExtensions } = require('./extensions');
+const { createDefaultPermissionTable } = require('./controllers/auth');
 
 const app = express();
 
@@ -35,7 +36,7 @@ if (corsOrigin.includes('*')) {
 }
 
 const corsOptions = {
-  origin: corsOrigin,
+  origin: corsOrigin
 };
 
 app.use(cors(corsOptions));
@@ -52,7 +53,7 @@ if (config.verbose !== null) {
       meta: false,
       msg: 'HTTP {{req.method}} {{req.url}}',
       expressFormat: true,
-      colorize: false,
+      colorize: false
     })
   );
 }
@@ -62,12 +63,15 @@ if (config.rateLimit.enabled) {
     windowMs: config.rateLimit.windowMs,
     max: config.rateLimit.max, // Limit each IP to {max} requests per `window`
     standardHeaders: true, // Return rate limit info in the `RateLimit*` headers
-    legacyHeaders: false, // Disable the `XRateLimit*` headers
+    legacyHeaders: false // Disable the `XRateLimit*` headers
   });
 
   // Apply the rate limiting middleware to all requests
   app.use(limiter);
 }
+
+//check if there is a _default_permission table, if not create it
+createDefaultPermissionTable();
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 app.use('/api', rootRoutes);
