@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/thevahidal/soul#readme",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "better-sqlite3": "^8.1.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
