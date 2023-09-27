@@ -12,4 +12,10 @@ router.post(
   controllers.registerUser
 );
 
+router.post(
+  '/token',
+  validator(schema.obtainAccessToken),
+  controllers.obtainAccessToken
+);
+
 module.exports = router;

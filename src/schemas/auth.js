@@ -13,6 +13,18 @@ const registerUser = Joi.object({
   }).required()
 });
 
+const obtainAccessToken = Joi.object({
+  query: Joi.object().required(),
+  params: Joi.object().required(),
+  body: Joi.object({
+    fields: Joi.object({
+      user_name: Joi.string().required(),
+      password: Joi.string().required()
+    }).required()
+  }).required()
+});
+
 module.exports = {
-  registerUser
+  registerUser,
+  obtainAccessToken
 };

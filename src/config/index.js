@@ -27,12 +27,14 @@ const envVarsSchema = Joi.object()
 
     EXTENSIONS: Joi.string().default(null),
 
-    START_WITH_STUDIO: Joi.boolean().default(false)
+    START_WITH_STUDIO: Joi.boolean().default(false),
+
+    JWT_SECRET: Joi.string().default(null)
   })
   .unknown();
 
 const env = {
-  ...process.env,
+  ...process.env
 };
 
 if (argv.port) {
@@ -55,6 +57,10 @@ if (argv['rate-limit-enabled']) {
   env.RATE_LIMIT_ENABLED = argv['rate-limit-enabled'];
 }
 
+if (argv.jwtSecret) {
+  env.JWT_SECRET = argv.jwtSecret;
+}
+
 const { value: envVars, error } = envVarsSchema
   .prefs({ errors: { label: 'key' } })
   .validate(env);
@@ -74,21 +80,23 @@ module.exports = {
   verbose: argv['verbose'] || envVars.VERBOSE,
 
   db: {
-    filename: argv.database || envVars.DB || ':memory:',
+    filename: argv.database || envVars.DB || ':memory:'
   },
   cors: {
     origin: argv.cors?.split(',') ||
-      envVars.CORS_ORIGIN_WHITELIST?.split(',') || ['*'],
+      envVars.CORS_ORIGIN_WHITELIST?.split(',') || ['*']
   },
   rateLimit: {
     enabled: argv['rate-limit-enabled'] || envVars.RATE_LIMIT_ENABLED,
     windowMs: envVars.RATE_LIMIT_WINDOW,
-    max: envVars.RATE_LIMIT_MAX,
+    max: envVars.RATE_LIMIT_MAX
   },
 
   extensions: {
-    path: argv.extensions || envVars.EXTENSIONS,
+    path: argv.extensions || envVars.EXTENSIONS
   },
 
-  startWithStudio: argv.studio || envVars.START_WITH_STUDIO
+  startWithStudio: argv.studio || envVars.START_WITH_STUDIO,
+
+  jwtSecret: argv.jwtSecret || envVars.JWT_SECRET
 };

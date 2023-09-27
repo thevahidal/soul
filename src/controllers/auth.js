@@ -1,7 +1,9 @@
 const bcrypt = require('bcrypt');
+const JWT = require('jsonwebtoken');
 
 const { tableService } = require('../services');
 const { rowService } = require('../services');
+const config = require('../config');
 
 const registerUser = async (req, res, next) => {
   const { fields: queryFields } = req.body;
@@ -58,7 +60,66 @@ const registerUser = async (req, res, next) => {
   }
 };
 
-const obtainAccessToken = async (req, res, next) => {};
+const obtainAccessToken = async (req, res, next) => {
+  const { fields: queryFields } = req.body;
+
+  // Remove null values from fields for accurate query construction.
+  const fields = Object.fromEntries(
+    Object.entries(queryFields).filter(([_, value]) => value !== null)
+  );
+
+  try {
+    //check if the user name exists
+    let user = rowService.get({
+      schemaString: '_users.*',
+      tableName: '_users',
+      extendString: '',
+      whereString: ` WHERE _users.user_name = '${fields.user_name}'`,
+      orderString: '',
+      limit: 10,
+      page: 0,
+      whereStringValues: []
+    });
+
+    if (user.length == 0) {
+      return res.status(400).json({
+        message: 'Invalid username or password',
+        error: {}
+      });
+    }
+
+    user = user[0];
+
+    //check if the password is valid
+    const isPasswordValid = await comparePasswords(
+      fields.password,
+      user.hashed_password
+    );
+
+    if (!isPasswordValid) {
+      return res.status(400).json({
+        message: 'Invalid username or password',
+        error: {}
+      });
+    }
+
+    //prepare the payload for the token
+    const payload = {
+      username: fields.user_name,
+      is_super_user: toBoolean(user.is_super_user)
+    };
+
+    //generate token
+    const token = await generateToken(payload, '5H');
+
+    res.json({ token });
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+      error: error
+    });
+  }
+};
 
 const refreshAccessToken = async (req, res, next) => {};
 
@@ -133,6 +194,20 @@ const hashPassword = async (password) => {
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
   return hashedPassword;
+};
+
+const comparePasswords = async (plainPassword, hashedPassword) => {
+  const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
+  return isMatch;
+};
+
+const generateToken = async (payload, expTime) => {
+  const token = JWT.sign(payload, config.jwtSecret, { expiresIn: expTime });
+  return `Bearer ${token}`;
+};
+
+const toBoolean = (value) => {
+  return true ? value == 'true' : false;
 };
 
 module.exports = {

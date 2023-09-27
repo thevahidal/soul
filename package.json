@@ -33,6 +33,7 @@
     "express-rate-limit": "^6.7.0",
     "express-winston": "^4.2.0",
     "joi": "^17.8.3",
+    "jsonwebtoken": "^9.0.2",
     "soul-studio": "^0.0.1",
     "swagger-ui-express": "^4.6.1",
     "winston": "^3.8.2",
