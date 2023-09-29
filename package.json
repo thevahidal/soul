@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "npm run swagger-autogen && cross-env NO_CLI=true nodemon src/server.js",
-    "cli": "nodemon src/server.js --database foobar.db",
+    "cli": "nodemon src/server.js --database foobar.db --port 8000 createsuperuser  --username john --password 123456789",
     "swagger-autogen": "cross-env NO_CLI=true node src/swagger/index.js",
     "test": "cross-env NODE_ENV=test NO_CLI=true DB=test.db CORE_PORT=8001 jest --testTimeout=10000"
   },

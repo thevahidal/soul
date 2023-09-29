@@ -3,6 +3,7 @@ const JWT = require('jsonwebtoken');
 
 const { tableService } = require('../services');
 const { rowService } = require('../services');
+const schema = require('../schemas/auth');
 const config = require('../config');
 
 const registerUser = async (req, res, next) => {
@@ -190,6 +191,67 @@ const createDefaultTables = async () => {
   }
 };
 
+const createSuperUser = async (user) => {
+  const { superUserUsername: username, superUserPassword: password } = config;
+
+  try {
+    //check if a super_user is already created
+    const superUser = rowService.get({
+      schemaString: '_users.*',
+      tableName: '_users',
+      extendString: '',
+      whereString: ` WHERE _users.is_super_user = 'true'`,
+      orderString: '',
+      limit: 10,
+      page: 0,
+      whereStringValues: []
+    });
+
+    if (superUser.length === 0) {
+      //check if the username and password are valid
+      if (username && password) {
+        const superUserData = {
+          query: {},
+          params: {},
+          body: {
+            fields: {
+              first_name: 'Super',
+              last_name: 'User',
+              user_name: username,
+              password,
+              is_super_user: true
+            }
+          }
+        };
+
+        const { value, error } = schema.registerUser.validate(superUserData);
+        if (error) {
+          console.log('Super User creation failed: ', error);
+          process.exit(1);
+        }
+
+        //Hash the password
+        const fields = value.body.fields;
+        fields.hashed_password = await hashPassword(fields.password);
+        fields.is_super_user = 'true';
+        delete fields.password;
+
+        //save the user
+        const result = rowService.save({ tableName: '_users', fields });
+        console.log('Super user created successfully ', result);
+      } else {
+        console.warn(
+          'Please pass a username and a password from the CLI to create a super user'
+        );
+      }
+    } else {
+      console.log('Super user is already created');
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const hashPassword = async (password) => {
   const saltRounds = 10;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -214,5 +276,6 @@ module.exports = {
   registerUser,
   obtainAccessToken,
   refreshAccessToken,
-  createDefaultTables
+  createDefaultTables,
+  createSuperUser
 };

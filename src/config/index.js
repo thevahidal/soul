@@ -98,5 +98,8 @@ module.exports = {
 
   startWithStudio: argv.studio || envVars.START_WITH_STUDIO,
 
-  jwtSecret: argv.jwtSecret || envVars.JWT_SECRET
+  jwtSecret: argv.jwtSecret || envVars.JWT_SECRET,
+
+  superUserUsername: argv.username,
+  superUserPassword: argv.password
 };

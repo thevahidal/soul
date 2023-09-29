@@ -16,7 +16,7 @@ const authRoutes = require('./routes/auth');
 const rowsRoutes = require('./routes/rows');
 const swaggerFile = require('./swagger/swagger.json');
 const { setupExtensions } = require('./extensions');
-const { createDefaultTables } = require('./controllers/auth');
+const { createDefaultTables, createSuperUser } = require('./controllers/auth');
 
 const app = express();
 
@@ -73,6 +73,9 @@ if (config.rateLimit.enabled) {
 
 //check if there is a _default_permission table, if not create it
 createDefaultTables();
+
+//create a super user if the a username and password is passed from the CLI
+createSuperUser();
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 app.use('/api', rootRoutes);

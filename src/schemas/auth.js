@@ -8,7 +8,8 @@ const registerUser = Joi.object({
       first_name: Joi.string().required(),
       last_name: Joi.string().required(),
       user_name: Joi.string().required(),
-      password: Joi.string().min(8).required()
+      password: Joi.string().min(8).required(),
+      is_super_user: Joi.boolean().default(false)
     }).required()
   }).required()
 });
