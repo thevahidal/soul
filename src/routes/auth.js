@@ -3,11 +3,13 @@ const express = require('express');
 const controllers = require('../controllers/auth');
 const { validator } = require('../middlewares/validation');
 const schema = require('../schemas/auth');
+const { authorize } = require('../middlewares/authorization');
 
 const router = express.Router();
 
 router.post(
-  '/users/register',
+  '/_users',
+  authorize,
   validator(schema.registerUser),
   controllers.registerUser
 );
