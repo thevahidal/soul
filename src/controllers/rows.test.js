@@ -1,4 +1,3 @@
-const { not } = require('joi');
 const supertest = require('supertest');
 
 const app = require('../index');

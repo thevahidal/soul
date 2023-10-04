@@ -42,7 +42,7 @@ const registerUser = async (req, res, next) => {
 
     //save the user
     const data = rowService.save({ tableName: '_users', fields });
-    res.status(201).json({
+    res.status(200).json({
       message: 'Row inserted',
       data
     });
@@ -114,7 +114,7 @@ const obtainAccessToken = async (req, res, next) => {
     //generate token
     const token = await generateToken(payload, config.jwtExpirationTime);
 
-    res.json({ token });
+    res.json({ message: 'Access Token Obtained', data: { token } });
   } catch (error) {
     res.status(400).json({
       message: error.message,
@@ -137,7 +137,7 @@ const refreshAccessToken = async (req, res, next) => {
     //generate token
     const token = await generateToken(payload, config.jwtExpirationTime);
 
-    res.json({ token });
+    res.json({ message: 'Access Token Refreshed', data: { token } });
   } catch (error) {
     console.log(error);
     res.status(400).json({
