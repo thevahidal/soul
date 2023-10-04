@@ -29,7 +29,7 @@ const registerUser = async (req, res, next) => {
 
     if (user.length > 0) {
       return res.status(400).json({
-        message: 'This user name is already taken',
+        message: 'This username is already taken',
         error: {}
       });
     }
@@ -195,57 +195,60 @@ const createSuperUser = async (user) => {
   const { superUserUsername: username, superUserPassword: password } = config;
 
   try {
-    //check if a super_user is already created
-    const superUser = rowService.get({
-      schemaString: '_users.*',
-      tableName: '_users',
-      extendString: '',
-      whereString: ` WHERE _users.is_super_user = 'true'`,
-      orderString: '',
-      limit: 10,
-      page: 0,
-      whereStringValues: []
-    });
+    //check if the username and password are valid
+    if (username && password) {
+      //check if the user_name is taken
+      const user = rowService.get({
+        schemaString: '_users.*',
+        tableName: '_users',
+        extendString: '',
+        whereString: ` WHERE _users.user_name = '${username}'`,
+        orderString: '',
+        limit: 10,
+        page: 0,
+        whereStringValues: []
+      });
 
-    if (superUser.length === 0) {
-      //check if the username and password are valid
-      if (username && password) {
-        const superUserData = {
-          query: {},
-          params: {},
-          body: {
-            fields: {
-              first_name: 'Super',
-              last_name: 'User',
-              user_name: username,
-              password,
-              is_super_user: true
-            }
-          }
-        };
-
-        const { value, error } = schema.registerUser.validate(superUserData);
-        if (error) {
-          console.log('Super User creation failed: ', error);
-          process.exit(1);
-        }
-
-        //Hash the password
-        const fields = value.body.fields;
-        fields.hashed_password = await hashPassword(fields.password);
-        fields.is_super_user = 'true';
-        delete fields.password;
-
-        //save the user
-        const result = rowService.save({ tableName: '_users', fields });
-        console.log('Super user created successfully ', result);
-      } else {
-        console.warn(
-          'Please pass a username and a password from the CLI to create a super user'
+      if (user.length > 0) {
+        console.log(
+          'Error: The username you passed for the superuser is already taken.'
         );
+        process.exit(1);
       }
+
+      const superUserData = {
+        query: {},
+        params: {},
+        body: {
+          fields: {
+            first_name: 'Super',
+            last_name: 'User',
+            user_name: username,
+            password,
+            is_super_user: true
+          }
+        }
+      };
+
+      const { value, error } = schema.registerUser.validate(superUserData);
+      if (error) {
+        console.log('Error: Super User creation failed: ', error);
+        process.exit(1);
+      }
+
+      //Hash the password
+      const fields = value.body.fields;
+      fields.hashed_password = await hashPassword(fields.password);
+      fields.is_super_user = 'true';
+      delete fields.password;
+
+      //save the user
+      const result = rowService.save({ tableName: '_users', fields });
+      console.log('Super user created successfully ', result);
     } else {
-      console.log('Super user is already created');
+      console.warn(
+        'Please pass a username and a password from the CLI to create a super user'
+      );
     }
   } catch (error) {
     console.log(error);
