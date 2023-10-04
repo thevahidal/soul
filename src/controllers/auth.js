@@ -5,6 +5,7 @@ const { tableService } = require('../services');
 const { rowService } = require('../services');
 const schema = require('../schemas/auth');
 const config = require('../config');
+const { verifyToken } = require('../middlewares/authorization');
 
 const registerUser = async (req, res, next) => {
   const { fields: queryFields } = req.body;
@@ -62,11 +63,11 @@ const registerUser = async (req, res, next) => {
 };
 
 const obtainAccessToken = async (req, res, next) => {
-  const { fields: queryFields } = req.body;
+  const { fields: body } = req.body;
 
   // Remove null values from fields for accurate query construction.
   const fields = Object.fromEntries(
-    Object.entries(queryFields).filter(([_, value]) => value !== null)
+    Object.entries(body).filter(([_, value]) => value !== null)
   );
 
   try {
@@ -111,7 +112,7 @@ const obtainAccessToken = async (req, res, next) => {
     };
 
     //generate token
-    const token = await generateToken(payload, '5H');
+    const token = await generateToken(payload, config.jwtExpirationTime);
 
     res.json({ token });
   } catch (error) {
@@ -122,7 +123,29 @@ const obtainAccessToken = async (req, res, next) => {
   }
 };
 
-const refreshAccessToken = async (req, res, next) => {};
+const refreshAccessToken = async (req, res, next) => {
+  const { fields: body } = req.body;
+
+  //Remove null values from fields for accurate query construction.
+  const fields = Object.fromEntries(
+    Object.entries(body).filter(([_, value]) => value !== null)
+  );
+
+  try {
+    let { iat, exp, ...payload } = verifyToken(fields.token);
+
+    //generate token
+    const token = await generateToken(payload, config.jwtExpirationTime);
+
+    res.json({ token });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({
+      message: error.message,
+      error: error
+    });
+  }
+};
 
 const createDefaultTables = async () => {
   //Create _default_permissions table

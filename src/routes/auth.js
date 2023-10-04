@@ -20,4 +20,10 @@ router.post(
   controllers.obtainAccessToken
 );
 
+router.post(
+  '/token/refresh',
+  validator(schema.refreshAccessToken),
+  controllers.refreshAccessToken
+);
+
 module.exports = router;

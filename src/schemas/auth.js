@@ -25,7 +25,18 @@ const obtainAccessToken = Joi.object({
   }).required()
 });
 
+const refreshAccessToken = Joi.object({
+  query: Joi.object().required(),
+  params: Joi.object().required(),
+  body: Joi.object({
+    fields: Joi.object({
+      token: Joi.string().required()
+    }).required()
+  }).required()
+});
+
 module.exports = {
   registerUser,
-  obtainAccessToken
+  obtainAccessToken,
+  refreshAccessToken
 };

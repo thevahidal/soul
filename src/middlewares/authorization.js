@@ -56,7 +56,7 @@ const checkPermission = ({ tableName, access }) => {
   return hasPermission;
 };
 
-const verifyToken = async (authHeader) => {
+const verifyToken = (authHeader) => {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     throw new Error('Not Authorized');
   }
@@ -66,4 +66,4 @@ const verifyToken = async (authHeader) => {
   return payload;
 };
 
-module.exports = { authorize };
+module.exports = { authorize, verifyToken };

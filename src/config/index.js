@@ -99,6 +99,7 @@ module.exports = {
   startWithStudio: argv.studio || envVars.START_WITH_STUDIO,
 
   jwtSecret: argv.jwtSecret || envVars.JWT_SECRET,
+  jwtExpirationTime: '5H',
 
   superUserUsername: argv.username,
   superUserPassword: argv.password
