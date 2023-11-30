@@ -11,7 +11,10 @@
     "dev": "npm run swagger-autogen && cross-env NO_CLI=true nodemon src/server.js",
     "cli": "nodemon src/server.js --database foobar.db",
     "swagger-autogen": "cross-env NO_CLI=true node src/swagger/index.js",
-    "test": "cross-env NODE_ENV=test NO_CLI=true DB=test.db CORE_PORT=8001 jest --testTimeout=10000"
+    "test": "cross-env CI=true NODE_ENV=test NO_CLI=true DB=test.db CORE_PORT=8001 jest --testTimeout=10000",
+    "prepare": "husky install",
+    "lint": "eslint . --fix --max-warnings=0",
+    "format": "prettier . --write"
   },
   "repository": {
     "type": "git",
@@ -40,8 +43,12 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "husky": "^8.0.3",
     "jest": "^29.4.3",
     "nodemon": "^2.0.20",
+    "prettier": "3.1.0",
     "supertest": "^6.3.3",
     "swagger-autogen": "^2.23.1"
   },
@@ -52,5 +59,9 @@
     ],
     "globalSetup": "./src/tests/globalSetup.js",
     "globalTeardown": "./src/tests/globalTeardown.js"
+  },
+  "lint-staged": {
+    "*.js": "eslint --fix",
+    "*.{js,css,md,html,json}": "prettier --write"
   }
 }

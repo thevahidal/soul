@@ -1,0 +1,23 @@
+# EditorConfig is awesome: https://github.com/editorconfig/editorconfig
+
+# Top-most EditorConfig file
+root = true
+
+[*]
+# Set default charset to utf-8
+charset = utf-8
+# Set default indentation to spaces
+indent_style = space
+# Linux-style newlines with a newline ending every file
+end_of_line = lf
+insert_final_newline = true
+# Remove whitespace characters preceding newline characters
+trim_trailing_whitespace = true
+
+# Two space indentation for JavaScript files
+[*.{js,json}]
+indent_size = 2
+
+# Disable trimming trailing whitespaces so that double space newlines work
+[*.md]
+trim_trailing_whitespace = false
