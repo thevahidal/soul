@@ -1,6 +1,6 @@
 {
   "name": "soul-cli",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "A SQLite REST and Realtime server",
   "main": "src/server.js",
   "bin": {
@@ -27,30 +27,30 @@
   },
   "homepage": "https://github.com/thevahidal/soul#readme",
   "dependencies": {
-    "better-sqlite3": "^8.1.0",
+    "better-sqlite3": "^9.2.2",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "express-rate-limit": "^6.7.0",
+    "express-rate-limit": "^7.1.5",
     "express-winston": "^4.2.0",
-    "joi": "^17.8.3",
+    "joi": "^17.11.0",
     "soul-studio": "^0.0.1",
-    "swagger-ui-express": "^4.6.1",
-    "winston": "^3.8.2",
-    "ws": "^8.12.1",
-    "yargs": "^17.7.1"
+    "swagger-ui-express": "^5.0.0",
+    "winston": "^3.11.0",
+    "ws": "^8.14.2",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
-    "eslint": "^8.54.0",
-    "eslint-config-prettier": "^9.0.0",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^9.1.0",
     "husky": "^8.0.3",
-    "jest": "^29.4.3",
-    "nodemon": "^2.0.20",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
     "prettier": "3.1.0",
     "supertest": "^6.3.3",
-    "swagger-autogen": "^2.23.1"
+    "swagger-autogen": "^2.23.7"
   },
   "jest": {
     "testEnvironment": "node",
