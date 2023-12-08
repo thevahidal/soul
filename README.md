@@ -53,6 +53,8 @@ There's also a list of all endpoints examples at [docs/api-examples.md](docs/api
 
 For websocket examples, check [docs/ws-examples.md](docs/ws-examples.md)
 
+For detailed information on how authentication works in Soul, please refer to the [docs/auth.md](docs/auth.md)
+
 ## Extending Soul
 
 Soul is able to be extended (e.g. Adding custom APIs) via extensions, you can find a list of extensions at [docs/extensions-examples.md](docs/extensions-examples.md)
@@ -63,8 +65,8 @@ A collection of projects that revolve around the Soul ecosystem.
 
 - [Soul Studio](https://github.com/thevahidal/soul-studio) provides a GUI to work with your database.
 
-    Right now Soul Studio is in early stages of development and not useful to work with.
-    
+  Right now Soul Studio is in early stages of development and not useful to work with.
+
     <p align="center">
         <img src='docs/soul-studio.png' style="">
     </p>
@@ -90,7 +92,6 @@ npm run dev # Start the dev server
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
 
 ## Contributing
 
