@@ -9,11 +9,10 @@ The Soul authentication system handles both authentication and authorization. Br
 The auth system consists of:
 
 - Users
-- Permissions: Binary (yes/no) flags designating whether a user may perform a certain task.
-- Default Permissions
-- Roles: A generic way of applying labels and permissions to more than one user.
+- Roles and Permissions: A generic way of applying labels and permissions to more than one user.
 - A password hashing system
 - APIs for logging in users or restricting content
+- JWT based access tokens
 
 The authentication system in Soul aims to be very generic and doesn't provide some features commonly found in web authentication systems, such as:
 
@@ -22,64 +21,111 @@ The authentication system in Soul aims to be very generic and doesn't provide so
 - Authentication against third-parties (OAuth, for example)
 - Object-level permissions
 
+![auth-db-diagram](./auth-db-diagram.png)
+
+<center style="font-size: 12px; color: gray">Figure 1: Soul Authentication Database Diagram</center>
+
 #### Users
 
-User objects are the core of the authentication system. They typically represent the people interacting with your site and are used to enable things like restricting access, registering user profiles, associating content with creators, etc. Only one class of user exists in Soul's authentication framework, i.e., 'superusers' or types of users are just user objects with special attributes set, not different classes of user objects.
+The `_users` table serves as the central component of the authentication system. Each row in the `_users` table represents an individual who interacts with your Soul instance. This table is crucial for enabling various functionalities, such as access restriction, and user registration.
 
-The primary attributes of the default user are:
+**_Superusers_**, distinguished by the `is_superuser` attribute set to true, are a special type of user in Soul. They can bypass any permissions and restrictions, effectively granting them "God-mode" within the system. Authorization limitations do not apply to superusers.
 
-- username
-- password
-- email
-- first_name
-- last_name
+The attributes of the `_users` table are:
 
-Note that when Soul boots up, it looks for a table called "\_users" which holds the User objects mentioned above.
+- id int
+- username varchar
+- \_hashed_password varchar
+- \_salt varchar
+- is_superuser boolean
+- created_at datetime
+- updated_at datetime
 
-Creating superusers:
+Note that when Soul boots up, it looks for a table called `_users` (Otherwise Soul creates `_users` table) which holds the Users mentioned above.
 
-Create superusers using the createsuperuser command:
+##### Modifying Superusers
+
+Due to the sensitive nature of the superuser status, it is not possible to change the `is_superuser` attribute of a user through the API.
+
+Instead you can create, update and delete superusers using the command line.
+
+Create superusers using the `createsuperuser` command:
 
 ```
 $ node src/server.js createsuperuser --username=joe --password=strongstring
 ```
 
-#### Permissions
+Updating superusers using the `updatesuperuser` command:
 
-Soul comes with a built-in permissions system. It provides a way to assign permissions to specific users and groups of users.
+```
+$ node src/server.js updatesuperuser --username=joe --password=newstrongstring
+```
 
-Soul uses permissions as follows:
+Deleting superusers using the `deletesuperuser` command:
 
-- Access to view objects is limited to users with the "read" permission for that type of object.
-- Access to add an object is limited to users with the "create" permission for that type of object.
-- Access to change an object is limited to users with the "update" permission for that type of object.
-- Access to delete an object is limited to users with the "delete" permission for that type of object.
+```
+$ node src/server.js deletesuperuser --username=joe
 
-Default Permissions:
-
-By default, Soul ensures that four default permissions – create, update, delete, and read – are created for each table defined in one of your databases.
-
-| table_name | can_create | can_read | can_update | can_delete |
-| ---------- | ---------- | -------- | ---------- | ---------- |
-| albums     | false      | true     | true       | false      |
-
-In this scenario, calling POST (create) and GET (read) requests to /tables/albums/rows is allowed by any user (even anonymous), while PUT (update) and DELETE (delete, of course) requests are not allowed.
-
-When Soul boots up, it checks for the existence of a table called \_default_permissions.
+```
 
 #### Roles
 
-Roles are a generic way of categorizing users so you can apply permissions or some other label to those users. A user can belong to any number of roles.
+Roles are a generic way of categorizing users so you can assign permissions to those users. A user can belong to any number of roles.
 
-A user with a role automatically has the permissions granted to that role. For example, if the role "editor" has the permission can_update_posts, any user with that role will have that permission.
+If we have an `editor` role, and a `_roles_permissions` entry for the `posts` table that allows `update`, then any user with that role will be able to update `posts`.
 
-Beyond permissions, roles are a convenient way to categorize users and give them some label or extended functionality.
+The attributes of the `_roles` table are:
+
+- id int
+- name varchar
+- created_at datetime
+- updated_at datetime
+
+##### Roles Permissions
+
+Using a table called `_roles_permissions` we can assign permissions to roles.
+
+The attributes of this table are:
+
+- id int
+- role_id int
+- table_name varchar
+- create boolean
+- read boolean
+- update boolean
+- delete boolean
+
+There is unique constraint on the combination of `role_id` and `table_name` attributes,
+to prevent duplication of permissions for the same role and table.
+
+###### Default Role
+
+Once a new table is created, Soul will automatically create a new `_roles_permissions` row for the `default` role and the new table, with the following permissions:
+
+- create: false
+- read: true
+- update: false
+- delete: false
+
+Which basically means that any user can read the table data, but can't create, update or delete data.
+
+Soul uses the `default` role to assign permissions to new users.
+
+The same happens when Soul boots up, but for all existing tables, making sure that all tables have the `default` role assigned to them.
+
+##### Users Roles
+
+To assign roles to users we have a join table called `_users_roles` with the following attributes:
+
+- id int
+- user_id int
+- role_id int
 
 #### Authentication
 
 Soul uses cookies and middleware to hook the authentication system into request objects.
 
-These provide a req.user attribute on every request, which represents the current user. If the current user has not logged in, it is set to null.
+These provide a `req.user` attribute on every request, which represents the current user. If the current user has not logged in, it is set to null.
 
 #### Obtain Access Token
 
@@ -93,4 +139,9 @@ For security reasons, Access tokens have a very short lifetime, and once expired
 
 #### Register New Users
 
-There's also a superuser level of access API to create new users for ease of use. This API takes the information for new users and creates a new object for them.
+To register new users, you need to create a new user using the `/api/tables/_users/rows/` endpoint, and then assign roles to that user using the `/api/tables/_users_roles/rows/` endpoint.
+Note that you need to be logged in using a user with a role that has creating users permission.
+
+Additionally, it's important to note that the `/api/tables/_users/rows/` endpoint functions slightly differently compared to other `/api/tables/<table_name>/rows/` endpoints. When creating or updating user data through this endpoint, we need to provide the raw passwords, which are then automatically hashed before being stored in the `_hashed_password` field. This extra step enhances the security of the stored passwords.
+
+Furthermore, when retrieving user data, the endpoint automatically filters out sensitive information such as the `_hashed_password` and `_salt` fields. This precautionary measure is in place to address security concerns and ensure that only necessary and non-sensitive information is included in the returned results.
