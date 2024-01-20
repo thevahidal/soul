@@ -126,7 +126,7 @@ Response
 
 #### Path Params
 
-- `lookup-values` e.g. `1`, to get the row with the AlbumId 1. or comma-separated values e.g. `1,2`, to get the row with the AlbumId 1 and ArtistId 2. (Bulk Retrieve)
+- `lookup-values` e.g. `1`, to get the row with the AlbumId 1. or comma-separated values e.g. `1,2`, to get the rows with the AlbumId 1 and 2. (Bulk Retrieve)
 
 #### Query Params
 
@@ -179,7 +179,7 @@ Response
 
 #### Path Params
 
-- `lookup-values` e.g. `1`, to update the row with the AlbumId 1. or comma-separated values e.g. `1,2`, to update the row with the AlbumId 1 and ArtistId 2. (Bulk Update)
+- `lookup-values` e.g. `1`, to update the row with the AlbumId 1. or comma-separated values e.g. `1,2`, to update the rows with the AlbumId 1 and 2. (Bulk Update)
 
 #### Query Params
 
@@ -218,7 +218,7 @@ Response
 
 #### Path Params
 
-- `lookup-values` e.g. `1`, to delete the row with the AlbumId 1. or comma-separated values e.g. `1,2`, to delete the row with the AlbumId 1 and ArtistId 2. (Bulk Delete)
+- `lookup-values` e.g. `1`, to delete the row with the AlbumId 1. or comma-separated values e.g. `1,2`, to delete the rows with the AlbumId 1 and 2. (Bulk Delete)
 
 #### Query Params
 
