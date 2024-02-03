@@ -47,25 +47,11 @@ Note that when Soul boots up, it looks for a table called `_users` (Otherwise So
 
 Due to the sensitive nature of the superuser status, it is not possible to change the `is_superuser` attribute of a user through the API.
 
-Instead you can create, update and delete superusers using the command line.
-
-Create superusers using the `createsuperuser` command:
+Instead, you can update superusers using the command line.
 
 ```
-$ node src/server.js createsuperuser --username=joe --password=strongstring
-```
-
-Updating superusers using the `updatesuperuser` command:
-
-```
-$ node src/server.js updatesuperuser --username=joe --password=newstrongstring
-```
-
-Deleting superusers using the `deletesuperuser` command:
-
-```
-$ node src/server.js deletesuperuser --username=joe
-
+$ node src/server.js updateuser --id=1 --password=newstrongstring // To update password of a superuser with id 1
+$ node src/server.js updateuser --id=1 --is_superuser=true // To promote a user with id 1 to superuser
 ```
 
 #### Roles
