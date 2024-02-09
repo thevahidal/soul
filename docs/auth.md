@@ -29,7 +29,7 @@ The authentication system in Soul aims to be very generic and doesn't provide so
 
 The `_users` table serves as the central component of the authentication system. Each row in the `_users` table represents an individual who interacts with your Soul instance. This table is crucial for enabling various functionalities, such as access restriction, and user registration.
 
-**_Superusers_**, distinguished by the `is_superuser` attribute set to true, are a special type of user in Soul. They can bypass any permissions and restrictions, effectively granting them "God-mode" within the system. Authorization limitations do not apply to superusers.
+**_Superusers_**, distinguished by the `is_superuser` attribute set to true, are a special type of user in Soul. They can bypass any permissions and restrictions, effectively granting them "God-mode" within the system, including being able to access the `/api/tables` and `/api` end-points. Authorization limitations do not apply to superusers.
 
 The attributes of the `_users` table are:
 
