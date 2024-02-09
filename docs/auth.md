@@ -2,6 +2,8 @@
 
 Soul incorporates a robust user authentication system that handles user accounts, groups, permissions, and cookie-based user sessions. This section provides an overview of how the default implementation works.
 
+Authentication is switched off by default in Soul, but is enabled when either of the `-a` or  `--auth` flags are provided at the command line.
+
 ### Overview
 
 The Soul authentication system handles both authentication and authorization. Briefly, authentication verifies a user is who they claim to be, and authorization determines what an authenticated user is allowed to do. Here, the term "authentication" is used to refer to both tasks.
