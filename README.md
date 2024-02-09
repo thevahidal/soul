@@ -32,8 +32,8 @@ Options:
   -p, --port                Port to listen on                           [number]
   -r, --rate-limit-enabled  Enable rate limiting                       [boolean]
   -c, --cors                CORS whitelist origins                [string]
-  -S, --studio              Start Soul Studio in parallel              [boolean]
-      --help                Show help                                  [boolean]
+  -S, --studio              Start Soul Studio in parallel
+      --help                Show help
 
 ```
 
