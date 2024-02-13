@@ -18,15 +18,21 @@ const createDefaultTables = async () => {
     tableService.createTable('_users', dbTables.userSchema);
   }
 
+  if (!usersRolesTable) {
+    tableService.createTable('_users_roles', dbTables.usersRoleSchema);
+  }
+
   if (!rolesPermissionTable) {
     tableService.createTable(
       '_roles_permissions',
       dbTables.rolePermissionSchema,
+      {
+        multipleUniqueConstraints: {
+          name: 'unique_role_table',
+          fields: ['role_id', 'table_name'],
+        },
+      },
     );
-  }
-
-  if (!usersRolesTable) {
-    tableService.createTable('_users_roles', dbTables.usersRoleSchema);
   }
 };
 

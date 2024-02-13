@@ -1,11 +1,12 @@
 module.exports = (db) => {
   return {
-    createTable(
-      tableName,
-      schema,
-      autoAddCreatedAt = true,
-      autoAddUpdatedAt = true,
-    ) {
+    createTable(tableName, schema, options = {}) {
+      const {
+        autoAddCreatedAt = true,
+        autoAddUpdatedAt = true,
+        multipleUniqueConstraints,
+      } = options;
+
       let indices = [];
 
       let schemaString = schema
@@ -45,17 +46,19 @@ module.exports = (db) => {
 
       // add created at and updated at
       if (autoAddCreatedAt) {
-        schemaString = `
-          createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-          ${schemaString}
-        `;
+        schemaString = `${schemaString}, createdAt DATETIME DEFAULT CURRENT_TIMESTAMP`;
       }
 
       if (autoAddUpdatedAt) {
-        schemaString = `
-          updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-          ${schemaString}
-        `;
+        schemaString = `${schemaString}, updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP`;
+      }
+
+      if (multipleUniqueConstraints) {
+        schemaString = `${schemaString}, CONSTRAINT ${
+          multipleUniqueConstraints.name
+        } UNIQUE (${multipleUniqueConstraints.fields
+          .map((field) => field)
+          .join(' ,')})`;
       }
 
       let indicesString = indices

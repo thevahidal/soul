@@ -52,7 +52,7 @@ module.exports = {
     },
 
     {
-      name: 'tableName',
+      name: 'table_name',
       type: 'TEXT',
       primaryKey: false,
       notNull: true,
