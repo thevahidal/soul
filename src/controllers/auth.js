@@ -1,32 +1,32 @@
-const { tableService } = require("../services");
-const { dbTables } = require("../constants");
+const { tableService } = require('../services');
+const { dbTables } = require('../constants');
 
 const createDefaultTables = async () => {
   //1. Check if the default tables are already created
-  const roleTable = tableService.checkTableExists("_roles");
-  const usersTable = tableService.checkTableExists("_users");
+  const roleTable = tableService.checkTableExists('_roles');
+  const usersTable = tableService.checkTableExists('_users');
   const rolesPermissionTable =
-    tableService.checkTableExists("_roles_permissions");
-  const usersRolesTable = tableService.checkTableExists("_users_roles");
+    tableService.checkTableExists('_roles_permissions');
+  const usersRolesTable = tableService.checkTableExists('_users_roles');
 
   //2. Create default auth tables
   if (!roleTable) {
-    tableService.createTable("_roles", dbTables.roleSchema);
+    tableService.createTable('_roles', dbTables.roleSchema);
   }
 
   if (!usersTable) {
-    tableService.createTable("_users", dbTables.userSchema);
+    tableService.createTable('_users', dbTables.userSchema);
   }
 
   if (!rolesPermissionTable) {
     tableService.createTable(
-      "_roles_permissions",
+      '_roles_permissions',
       dbTables.rolePermissionSchema,
     );
   }
 
   if (!usersRolesTable) {
-    tableService.createTable("_users_roles", dbTables.usersRoleSchema);
+    tableService.createTable('_users_roles', dbTables.usersRoleSchema);
   }
 };
 

@@ -1,8 +1,8 @@
 module.exports = {
   roleSchema: [
     {
-      name: "name",
-      type: "TEXT",
+      name: 'name',
+      type: 'TEXT',
       primaryKey: false,
       notNull: true,
       unique: false,
@@ -11,30 +11,30 @@ module.exports = {
 
   userSchema: [
     {
-      name: "username",
-      type: "TEXT",
+      name: 'username',
+      type: 'TEXT',
       primaryKey: false,
       notNull: true,
       unique: false,
     },
     {
-      name: "hashed_password",
-      type: "TEXT",
+      name: 'hashed_password',
+      type: 'TEXT',
       primaryKey: false,
       notNull: true,
       unique: false,
     },
     {
-      name: "salt",
-      type: "NUMERIC",
+      name: 'salt',
+      type: 'NUMERIC',
       primaryKey: false,
       notNull: true,
       unique: false,
     },
 
     {
-      name: "is_superuser",
-      type: "BOOLEAN",
+      name: 'is_superuser',
+      type: 'BOOLEAN',
       primaryKey: false,
       notNull: true,
       unique: false,
@@ -43,49 +43,49 @@ module.exports = {
 
   rolePermissionSchema: [
     {
-      name: "role_id",
-      type: "NUMERIC",
+      name: 'role_id',
+      type: 'NUMERIC',
       primaryKey: false,
       notNull: true,
       unique: false,
-      foreignKey: { table: "_roles", column: "id" },
+      foreignKey: { table: '_roles', column: 'id' },
     },
 
     {
-      name: "tableName",
-      type: "TEXT",
-      primaryKey: false,
-      notNull: true,
-      unique: false,
-    },
-
-    {
-      name: "create",
-      type: "BOOLEAN",
+      name: 'tableName',
+      type: 'TEXT',
       primaryKey: false,
       notNull: true,
       unique: false,
     },
 
     {
-      name: "read",
-      type: "BOOLEAN",
+      name: 'create',
+      type: 'BOOLEAN',
       primaryKey: false,
       notNull: true,
       unique: false,
     },
 
     {
-      name: "update",
-      type: "BOOLEAN",
+      name: 'read',
+      type: 'BOOLEAN',
       primaryKey: false,
       notNull: true,
       unique: false,
     },
 
     {
-      name: "delete",
-      type: "BOOLEAN",
+      name: 'update',
+      type: 'BOOLEAN',
+      primaryKey: false,
+      notNull: true,
+      unique: false,
+    },
+
+    {
+      name: 'delete',
+      type: 'BOOLEAN',
       primaryKey: false,
       notNull: true,
       unique: false,
@@ -94,21 +94,21 @@ module.exports = {
 
   usersRoleSchema: [
     {
-      name: "user_id",
-      type: "NUMERIC",
+      name: 'user_id',
+      type: 'NUMERIC',
       primaryKey: false,
       notNull: true,
       unique: false,
-      foreignKey: { table: "_users", column: "id" },
+      foreignKey: { table: '_users', column: 'id' },
     },
 
     {
-      name: "role_id",
-      type: "NUMERIC",
+      name: 'role_id',
+      type: 'NUMERIC',
       primaryKey: false,
       notNull: true,
       unique: false,
-      foreignKey: { table: "_roles", column: "id" },
+      foreignKey: { table: '_roles', column: 'id' },
     },
   ],
 };

@@ -13,13 +13,13 @@ module.exports = (db) => {
           let column = `'${name}' '${type}'`;
 
           if (notNull) {
-            column += " NOT NULL";
+            column += ' NOT NULL';
           }
           if (unique) {
-            column += " UNIQUE";
+            column += ' UNIQUE';
           }
           if (primaryKey) {
-            column += " PRIMARY KEY";
+            column += ' PRIMARY KEY';
           }
           if (foreignKey) {
             column += ` REFERENCES ${foreignKey.table}(${foreignKey.column})`;
@@ -33,7 +33,7 @@ module.exports = (db) => {
 
           return column;
         })
-        .join(", ");
+        .join(', ');
 
       // add id if primary key is not defined
       if (!schema.find((field) => field.primaryKey)) {
@@ -65,7 +65,7 @@ module.exports = (db) => {
       ON ${tableName} (${field})
     `;
         })
-        .join(";");
+        .join(';');
 
       const query = `CREATE TABLE ${tableName} (${schemaString})`;
 

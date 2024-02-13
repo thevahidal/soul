@@ -1,3 +1,3 @@
-const dbTables = require("./dbTables");
+const dbTables = require('./dbTables');
 
 module.exports = { dbTables };

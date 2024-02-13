@@ -1,25 +1,25 @@
-const dotenv = require("dotenv");
-const Joi = require("joi");
-const path = require("path");
+const dotenv = require('dotenv');
+const Joi = require('joi');
+const path = require('path');
 
-const { yargs } = require("../cli");
+const { yargs } = require('../cli');
 
 const { argv } = yargs;
 
-dotenv.config({ path: path.join(__dirname, "../../.env") });
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const envVarsSchema = Joi.object()
   .keys({
     CORE_PORT: Joi.number().positive().default(8000),
 
     NODE_ENV: Joi.string()
-      .valid("production", "development", "test")
-      .default("production"),
+      .valid('production', 'development', 'test')
+      .default('production'),
 
     DB: Joi.string().required(),
-    VERBOSE: Joi.string().valid("console", null).default(null),
+    VERBOSE: Joi.string().valid('console', null).default(null),
 
-    CORS_ORIGIN_WHITELIST: Joi.string().default("*"),
+    CORS_ORIGIN_WHITELIST: Joi.string().default('*'),
     AUTH: Joi.boolean().default(false),
 
     RATE_LIMIT_ENABLED: Joi.boolean().default(false),
@@ -56,12 +56,12 @@ if (argv.auth) {
   env.AUTH = argv.auth;
 }
 
-if (argv["rate-limit-enabled"]) {
-  env.RATE_LIMIT_ENABLED = argv["rate-limit-enabled"];
+if (argv['rate-limit-enabled']) {
+  env.RATE_LIMIT_ENABLED = argv['rate-limit-enabled'];
 }
 
 const { value: envVars, error } = envVarsSchema
-  .prefs({ errors: { label: "key" } })
+  .prefs({ errors: { label: 'key' } })
   .validate(env);
 
 if (error) {
@@ -71,25 +71,25 @@ if (error) {
 module.exports = {
   env: envVars.NODE_ENV,
 
-  isProduction: envVars.NODE_ENV === "production",
-  isDevelopment: envVars.NODE_ENV === "development",
-  isTest: envVars.NODE_ENV === "test",
+  isProduction: envVars.NODE_ENV === 'production',
+  isDevelopment: envVars.NODE_ENV === 'development',
+  isTest: envVars.NODE_ENV === 'test',
 
   port: argv.port || envVars.CORE_PORT,
-  verbose: argv["verbose"] || envVars.VERBOSE,
+  verbose: argv['verbose'] || envVars.VERBOSE,
 
   db: {
-    filename: argv.database || envVars.DB || ":memory:",
+    filename: argv.database || envVars.DB || ':memory:',
   },
   cors: {
-    origin: argv.cors?.split(",") ||
-      envVars.CORS_ORIGIN_WHITELIST?.split(",") || ["*"],
+    origin: argv.cors?.split(',') ||
+      envVars.CORS_ORIGIN_WHITELIST?.split(',') || ['*'],
   },
 
   auth: argv.auth || envVars.AUTH,
 
   rateLimit: {
-    enabled: argv["rate-limit-enabled"] || envVars.RATE_LIMIT_ENABLED,
+    enabled: argv['rate-limit-enabled'] || envVars.RATE_LIMIT_ENABLED,
     windowMs: envVars.RATE_LIMIT_WINDOW,
     max: envVars.RATE_LIMIT_MAX,
   },
