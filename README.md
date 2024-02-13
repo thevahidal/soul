@@ -32,6 +32,7 @@ Options:
   -p, --port                Port to listen on                           [number]
   -r, --rate-limit-enabled  Enable rate limiting                       [boolean]
   -c, --cors                CORS whitelist origins                [string]
+  -a, --auth                Enable authentication and authorization [boolean]
   -S, --studio              Start Soul Studio in parallel
       --help                Show help
 
@@ -63,8 +64,8 @@ A collection of projects that revolve around the Soul ecosystem.
 
 - [Soul Studio](https://github.com/thevahidal/soul-studio) provides a GUI to work with your database.
 
-    Right now Soul Studio is in early stages of development and not useful to work with.
-    
+  Right now Soul Studio is in early stages of development and not useful to work with.
+
     <p align="center">
         <img src='docs/soul-studio.png' style="">
     </p>
@@ -90,7 +91,6 @@ npm run dev # Start the dev server
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
 
 ## Contributing
 
