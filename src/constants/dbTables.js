@@ -5,7 +5,7 @@ module.exports = {
       type: 'TEXT',
       primaryKey: false,
       notNull: true,
-      unique: false,
+      unique: true,
     },
   ],
 
@@ -15,14 +15,14 @@ module.exports = {
       type: 'TEXT',
       primaryKey: false,
       notNull: true,
-      unique: false,
+      unique: true,
     },
     {
       name: 'hashed_password',
       type: 'TEXT',
       primaryKey: false,
       notNull: true,
-      unique: false,
+      unique: true,
     },
     {
       name: 'salt',
@@ -98,7 +98,7 @@ module.exports = {
       type: 'NUMERIC',
       primaryKey: false,
       notNull: true,
-      unique: false,
+      unique: true,
       foreignKey: { table: '_users', column: 'id' },
     },
 
