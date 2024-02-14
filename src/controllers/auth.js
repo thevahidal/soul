@@ -1,28 +1,37 @@
 const { tableService } = require('../services');
+const { rowService } = require('../services');
 const { dbTables } = require('../constants');
 
 const createDefaultTables = async () => {
-  //1. Check if the default tables are already created
+  // check if the default tables are already created
   const roleTable = tableService.checkTableExists('_roles');
   const usersTable = tableService.checkTableExists('_users');
   const rolesPermissionTable =
     tableService.checkTableExists('_roles_permissions');
   const usersRolesTable = tableService.checkTableExists('_users_roles');
 
-  //2. Create default auth tables
-  if (!roleTable) {
-    tableService.createTable('_roles', dbTables.roleSchema);
-  }
-
   if (!usersTable) {
+    // create the _users table
     tableService.createTable('_users', dbTables.userSchema);
   }
 
   if (!usersRolesTable) {
+    // create the _users_roles table
     tableService.createTable('_users_roles', dbTables.usersRoleSchema);
   }
 
-  if (!rolesPermissionTable) {
+  if (!roleTable && !rolesPermissionTable) {
+    // create the _role table
+    tableService.createTable('_roles', dbTables.roleSchema);
+
+    // create a default role in the _roles table
+    const role = rowService.save({
+      tableName: '_roles',
+      fields: { name: 'defaultt' },
+    });
+    const roleId = role.lastInsertRowid;
+
+    // create the _roles_permissions table
     tableService.createTable(
       '_roles_permissions',
       dbTables.rolePermissionSchema,
@@ -33,6 +42,28 @@ const createDefaultTables = async () => {
         },
       },
     );
+
+    // fetch all DB tables
+    const tables = tableService.listTables();
+
+    // add permission for the default role (for each db table)
+    const permissions = [];
+    for (const table of tables) {
+      permissions.push({
+        role_id: roleId,
+        table_name: table.name,
+        create: 'false',
+        read: 'true',
+        update: 'false',
+        delete: 'false',
+      });
+    }
+
+    // store the permissions in the db
+    rowService.bulkWrite({
+      tableName: '_roles_permissions',
+      fields: permissions,
+    });
   }
 };
 

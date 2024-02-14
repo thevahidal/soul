@@ -85,6 +85,43 @@ module.exports = (db) => {
       }
     },
 
+    listTables(options = {}) {
+      const { search, ordering, exclude } = options;
+
+      let query = `SELECT name FROM sqlite_master WHERE type IN ('table', 'view')`;
+
+      // if search is provided, search the tables
+      // e.g. search=users
+      if (search) {
+        query += ` AND name LIKE $searchQuery`;
+      }
+
+      // if exclude is passed don't return the some tables
+      // e.g. exclude=['_users', '_roles']
+      if (exclude) {
+        const excludeTables = exclude.map((field) => `'${field}'`).join(' ,');
+        query += `AND name NOT IN (${excludeTables});`;
+      }
+
+      // if ordering is provided, order the tables
+      // e.g. ordering=name (ascending) or ?_ordering=-name (descending)
+      if (ordering) {
+        query += ` ORDER BY $ordering`;
+      }
+
+      try {
+        const tables = db.prepare(query).all({
+          searchQuery: `%${search}%`,
+          ordering: `${ordering?.replace('-', '')} ${
+            ordering?.startsWith('-') ? 'DESC' : 'ASC'
+          }`,
+        });
+        return tables;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+
     checkTableExists(tableName) {
       const query = `SELECT name FROM sqlite_master WHERE type='table' AND name='${tableName}'`;
       const result = db.prepare(query).get();

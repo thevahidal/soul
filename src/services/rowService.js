@@ -6,14 +6,14 @@ module.exports = (db) => {
       const result = statement.all(
         ...data.whereStringValues,
         data.limit,
-        data.page
+        data.page,
       );
       return result;
     },
 
     getById(data) {
       const pks = data.pks.split(',');
-      const placeholders = pks.map((pk) => '?').join(',');
+      const placeholders = pks.map(() => '?').join(',');
       const query = `SELECT ${data.schemaString} FROM ${data.tableName} ${data.extendString} WHERE ${data.tableName}.${data.lookupField} in (${placeholders})`;
       const statement = db.prepare(query);
       const result = statement.all(...pks);
@@ -48,9 +48,28 @@ module.exports = (db) => {
       return result;
     },
 
+    bulkWrite(data) {
+      const { tableName, fields } = data;
+      const fieldNames = Object.keys(fields[0]);
+      const valueSets = fields.map((row) => Object.values(row));
+
+      const placeholders = fieldNames.map(() => '?');
+      const valuesString = valueSets
+        .map(() => `(${placeholders.join(',')})`)
+        .join(',');
+
+      const query = `INSERT INTO ${tableName} (${fieldNames
+        .map((field) => `'${field}'`)
+        .join(', ')}) VALUES ${valuesString}`;
+
+      const statement = db.prepare(query);
+      const result = statement.run(...valueSets.flat());
+      return result;
+    },
+
     update(data) {
       const pks = data.pks.split(',');
-      const placeholders = pks.map((pk) => '?').join(',');
+      const placeholders = pks.map(() => '?').join(',');
       const query = `UPDATE ${data.tableName} SET ${data.fieldsString} WHERE ${data.lookupField} in (${placeholders})`;
       const statement = db.prepare(query);
       const result = statement.run(...pks);
@@ -59,7 +78,7 @@ module.exports = (db) => {
 
     delete(data) {
       const pks = data.pks.split(',');
-      const placeholders = pks.map((pk) => '?').join(',');
+      const placeholders = pks.map(() => '?').join(',');
       const query = `DELETE FROM ${data.tableName} WHERE ${data.lookupField} in (${placeholders})`;
       const statement = db.prepare(query);
       const result = statement.run(...pks);
