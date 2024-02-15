@@ -67,4 +67,29 @@ const createDefaultTables = async () => {
   }
 };
 
-module.exports = { createDefaultTables };
+const updateUser = async (fields) => {
+  const { id, password, is_superuser } = fields;
+
+  // find the user by using the id field
+  //   const user = rowService.get({ schemaString: '*',
+  //     tableName: '_users',
+  //     whereString: 'WHERE id= `${id}`',
+  //     // orderString,
+  //     // limit,
+  //     // page: limit * (page - 1),
+  //     // whereStringValues})
+  // })
+  try {
+    const user = rowService.get({
+      tableName: '_users',
+      whereString: 'WHERE id=?',
+      whereStringValues: [id],
+    });
+
+    console.log(user, password, is_superuser);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports = { createDefaultTables, updateUser };

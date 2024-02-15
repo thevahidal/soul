@@ -46,6 +46,18 @@ curl http://localhost:8000/api/tables
 
 It should return a list of the tables inside `sqlite.db` database.
 
+**Updating a user**
+
+To modify user information in a database, you can utilize the `updateuser` command. This command allows you to change a user's `password` and upgrade a normal user to a `superuser`. Below is an example of how to use it:
+
+```
+soul --d foobar.db updateuser --id=1 password=<new_password_for_the_user> // Update the password for the user with ID 1
+
+soul --d foobar.db updateuser --id=1 --is_superuser=true // Upgrade the user with ID 1 to a superuser
+
+soul --d foobar.db updateuser --id=1 --is_superuser=false // Revoke the superuser role from the user with ID 1
+```
+
 ## Documentation
 
 API documentation is available while the project is running at [http://localhost:8000/api/docs](http://localhost:8000/api/docs)

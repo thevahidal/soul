@@ -1,8 +1,14 @@
 module.exports = (db) => {
   return {
     get(data) {
-      const query = `SELECT ${data.schemaString} FROM ${data.tableName} ${data.extendString} ${data.whereString} ${data.orderString} LIMIT ? OFFSET ?`;
+      const query = `SELECT ${data.schemaString || '*'} FROM ${
+        data.tableName
+      } ${data.extendString || ''} ${data.whereString || ''} ${
+        data.orderString || ''
+      } LIMIT ? OFFSET ?`;
+      console.log(query);
       const statement = db.prepare(query);
+      console.log('DATA', ...data.whereStringValues);
       const result = statement.all(
         ...data.whereStringValues,
         data.limit,
