@@ -1,6 +1,7 @@
 const { tableService } = require('../services');
 const { rowService } = require('../services');
 const { dbTables } = require('../constants');
+const { hashPassword } = require('../utils');
 
 const createDefaultTables = async () => {
   // check if the default tables are already created
@@ -69,24 +70,56 @@ const createDefaultTables = async () => {
 
 const updateUser = async (fields) => {
   const { id, password, is_superuser } = fields;
+  let newHashedPassword, newSalt;
+  let fieldsString = '';
 
-  // find the user by using the id field
-  //   const user = rowService.get({ schemaString: '*',
-  //     tableName: '_users',
-  //     whereString: 'WHERE id= `${id}`',
-  //     // orderString,
-  //     // limit,
-  //     // page: limit * (page - 1),
-  //     // whereStringValues})
-  // })
   try {
-    const user = rowService.get({
+    // find the user by using the id field
+    let user = rowService.get({
       tableName: '_users',
       whereString: 'WHERE id=?',
       whereStringValues: [id],
     });
 
-    console.log(user, password, is_superuser);
+    // abort if the id is invalid
+    if (user.length === 0) {
+      console.log('The user id you passed does not exist in the database');
+      process.exit(1);
+    }
+
+    user = user[0];
+
+    // check if the is_superuser field is passed
+    if (is_superuser !== undefined) {
+      fieldsString = `is_superuser = '${is_superuser}', `;
+    }
+
+    // if the password is sent from the CLI, update it
+    if (password) {
+      if (password.length < 8) {
+        console.log('Your password should be at least 8 charachters long');
+        process.exit(1);
+      }
+
+      //hash the password
+      const { hashedPassword, salt } = await hashPassword(password, 10);
+      newHashedPassword = hashedPassword;
+      newSalt = salt;
+      fieldsString += `hashed_password = '${newHashedPassword}', salt = '${newSalt}'`;
+    }
+
+    // update the user
+    rowService.update({
+      tableName: '_users',
+      lookupField: `id`,
+      fieldsString,
+      pks: `${id}`,
+    });
+
+    console.log(
+      'User updated successfully, you can now restart soul without the updateuser command',
+    );
+    process.exit(1);
   } catch (error) {
     console.log(error);
   }

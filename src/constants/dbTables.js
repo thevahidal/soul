@@ -26,7 +26,7 @@ module.exports = {
     },
     {
       name: 'salt',
-      type: 'NUMERIC',
+      type: 'TEXT',
       primaryKey: false,
       notNull: true,
       unique: false,

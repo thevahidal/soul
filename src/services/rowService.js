@@ -6,14 +6,14 @@ module.exports = (db) => {
       } ${data.extendString || ''} ${data.whereString || ''} ${
         data.orderString || ''
       } LIMIT ? OFFSET ?`;
-      console.log(query);
+
       const statement = db.prepare(query);
-      console.log('DATA', ...data.whereStringValues);
       const result = statement.all(
         ...data.whereStringValues,
-        data.limit,
-        data.page,
+        data.limit || 10,
+        data.page || 0,
       );
+
       return result;
     },
 
