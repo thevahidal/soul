@@ -21,17 +21,10 @@
       "description": "Rows endpoints"
     }
   ],
-  "schemes": [
-    "http",
-    "https"
-  ],
+  "schemes": ["http", "https"],
   "securityDefinitions": {},
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/health": {
       "get": {
@@ -46,9 +39,7 @@
     },
     "/api/": {
       "get": {
-        "tags": [
-          "Root"
-        ],
+        "tags": ["Root"],
         "summary": "Timestamp",
         "description": "Endpoint to return server timestamp",
         "parameters": [],
@@ -61,9 +52,7 @@
     },
     "/api/transaction": {
       "post": {
-        "tags": [
-          "Root"
-        ],
+        "tags": ["Root"],
         "summary": "Transaction",
         "description": "Endpoint to run any transaction, e.g. [{ \"query\": \"\" }, { \"statement\": \"\", \"values\": {} }, { \"query\": \"\" }]",
         "parameters": [
@@ -88,9 +77,7 @@
     },
     "/api/tables/": {
       "get": {
-        "tags": [
-          "Tables"
-        ],
+        "tags": ["Tables"],
         "summary": "List Tables",
         "description": "Endpoint to list all tables",
         "parameters": [
@@ -119,9 +106,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Tables"
-        ],
+        "tags": ["Tables"],
         "summary": "Create Table",
         "description": "Endpoint to create a table",
         "parameters": [
@@ -152,9 +137,7 @@
     },
     "/api/tables/{name}": {
       "get": {
-        "tags": [
-          "Tables"
-        ],
+        "tags": ["Tables"],
         "summary": "Get Table Schema",
         "description": "Endpoint to get the schema of a table",
         "parameters": [
@@ -176,9 +159,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Tables"
-        ],
+        "tags": ["Tables"],
         "summary": "Delete Table",
         "description": "Endpoint to delete a table",
         "parameters": [
@@ -202,9 +183,7 @@
     },
     "/api/tables/{name}/rows": {
       "get": {
-        "tags": [
-          "Rows"
-        ],
+        "tags": ["Rows"],
         "summary": "List Rows",
         "description": "Endpoint to list rows of a table.",
         "parameters": [
@@ -260,18 +239,13 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
           "400": {
             "description": "Bad Request"
           }
         }
       },
       "post": {
-        "tags": [
-          "Rows"
-        ],
+        "tags": ["Rows"],
         "summary": "Insert Row",
         "description": "Insert a new row in a table",
         "parameters": [
@@ -309,9 +283,7 @@
     },
     "/api/tables/{name}/rows/{pks}": {
       "get": {
-        "tags": [
-          "Rows"
-        ],
+        "tags": ["Rows"],
         "summary": "Retrieve Row",
         "description": "Retrieve a row by primary key",
         "parameters": [
@@ -352,9 +324,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
           "400": {
             "description": "Bad Request"
           },
@@ -364,9 +333,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Rows"
-        ],
+        "tags": ["Rows"],
         "summary": "Update Row",
         "description": "Update a row by primary key",
         "parameters": [
@@ -430,9 +397,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Rows"
-        ],
+        "tags": ["Rows"],
         "summary": "Delete Row",
         "description": "Delete a row by primary key",
         "parameters": [
@@ -718,11 +683,7 @@
       "properties": {
         "pks": {
           "type": "array",
-          "example": [
-            1,
-            2,
-            3
-          ],
+          "example": [1, 2, 3],
           "items": {
             "type": "number"
           }
@@ -740,11 +701,7 @@
       "properties": {
         "pks": {
           "type": "array",
-          "example": [
-            1,
-            2,
-            3
-          ],
+          "example": [1, 2, 3],
           "items": {
             "type": "number"
           }

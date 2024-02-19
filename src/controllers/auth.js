@@ -1,7 +1,7 @@
 const { tableService } = require('../services');
 const { rowService } = require('../services');
 const { dbTables } = require('../constants');
-const { hashPassword } = require('../utils');
+const { hashPassword, checkPasswordStrength } = require('../utils');
 
 const createDefaultTables = async () => {
   // check if the default tables are already created
@@ -28,7 +28,7 @@ const createDefaultTables = async () => {
     // create a default role in the _roles table
     const role = rowService.save({
       tableName: '_roles',
-      fields: { name: 'defaultt' },
+      fields: { name: 'default' },
     });
     const roleId = role.lastInsertRowid;
 
@@ -125,4 +125,66 @@ const updateUser = async (fields) => {
   }
 };
 
-module.exports = { createDefaultTables, updateUser };
+const registerUser = async (req, res) => {
+  const { username, password } = req.body.fields;
+
+  try {
+    // check if the username is taken
+    let user = rowService.get({
+      tableName: '_users',
+      whereString: 'WHERE username=?',
+      whereStringValues: [username],
+    });
+
+    if (user.length > 0) {
+      return res.status(409).send({ message: 'This username is taken' });
+    }
+
+    // check if the password is weak
+    if (['Too weak', 'Weak'].includes(checkPasswordStrength(password))) {
+      return res.status(400).send({
+        message: 'This password is weak, please use another password',
+      });
+    }
+
+    // hash the password
+    const { salt, hashedPassword } = await hashPassword(password, 10);
+
+    // // create the user
+    const newUser = rowService.save({
+      tableName: '_users',
+      fields: {
+        username,
+        salt,
+        hashed_password: hashedPassword,
+        is_superuser: 'false',
+      },
+    });
+
+    // find the default role from the DB
+    let defaultRole = rowService.get({
+      tableName: '_roles',
+      whereString: 'WHERE name=?',
+      whereStringValues: ['default'],
+    });
+
+    if (defaultRole.length <= 0) {
+      return res.status(500).send({
+        message: 'Please restart soul so a default role can be created',
+      });
+    }
+
+    // create a role for the user
+    rowService.save({
+      tableName: '_users_roles',
+      fields: { user_id: newUser.lastInsertRowid, role_id: defaultRole[0].id },
+    });
+
+    res.status(201).send({ message: 'Row Inserted' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: error.message });
+  }
+};
+
+module.exports = { createDefaultTables, updateUser, registerUser };

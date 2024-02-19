@@ -1,11 +1,11 @@
 const db = require('../db/index');
 const { rowService } = require('../services');
 
-const quotePrimaryKeys = (pks) => {
-  const primaryKeys = pks.split(',');
-  const quotedPks = primaryKeys.map((id) => `'${id}'`).join(',');
-  return quotedPks;
-};
+// const quotePrimaryKeys = (pks) => {
+//   const primaryKeys = pks.split(',');
+//   const quotedPks = primaryKeys.map((id) => `'${id}'`).join(',');
+//   return quotedPks;
+// };
 
 const operators = {
   eq: '=',
@@ -15,11 +15,11 @@ const operators = {
   gte: '>=',
   neq: '!=',
   null: 'IS NULL',
-  notnull: 'IS NOT NULL'
+  notnull: 'IS NOT NULL',
 };
 
 // Return paginated rows of a table
-const listTableRows = async (req, res) => {
+const listTableRows = async (req, res, next) => {
   /*
     #swagger.tags = ['Rows']
     #swagger.summary = 'List Rows'
@@ -66,7 +66,7 @@ const listTableRows = async (req, res) => {
     _ordering,
     _schema,
     _extend,
-    _filters = ''
+    _filters = '',
   } = req.query;
 
   const page = parseInt(_page);
@@ -80,7 +80,7 @@ const listTableRows = async (req, res) => {
   let filters = [];
 
   // split the filters by comma(,) except when in an array
-  const re = /,(?![^\[]*?\])/;
+  const re = /,(?![^[]*?\])/;
   try {
     filters = _filters.split(re).map((filter) => {
       //NOTE: When using the _filter parameter, the values are split using the ":" sign, like this (_filters=Total__eq:1). However, if the user sends a date value, such as (_filters=InvoiceDate__eq:2010-01-08 00:00:00), there will be additional colon (":") signs present.
@@ -98,7 +98,7 @@ const listTableRows = async (req, res) => {
         fieldOperator = 'eq';
       } else if (!operators[fieldOperator]) {
         throw new Error(
-          `Invalid field operator '${fieldOperator}' for field '${field}'. You can only use the following operators after the '${field}' field: __lt, __gt, __lte, __gte, __eq, __neq.`
+          `Invalid field operator '${fieldOperator}' for field '${field}'. You can only use the following operators after the '${field}' field: __lt, __gt, __lte, __gte, __eq, __neq.`,
         );
       }
 
@@ -112,7 +112,7 @@ const listTableRows = async (req, res) => {
   } catch (error) {
     return res.status(400).json({
       message: error.message,
-      error: error
+      error: error,
     });
   }
 
@@ -161,7 +161,7 @@ const listTableRows = async (req, res) => {
     } catch (error) {
       return res.status(400).json({
         message: error.message,
-        error: error
+        error: error,
       });
     }
   }
@@ -236,7 +236,7 @@ const listTableRows = async (req, res) => {
 
         if (!foreignKey) {
           throw new Error(
-            `Foreign key not found for extended field '${extendedField}'`
+            `Foreign key not found for extended field '${extendedField}'`,
           );
         }
 
@@ -254,7 +254,7 @@ const listTableRows = async (req, res) => {
           joinedTableFields
             .map(
               (joinedTableField) =>
-                `'${joinedTableField.name}', ${joinedTableName}.${joinedTableField.name}`
+                `'${joinedTableField.name}', ${joinedTableName}.${joinedTableField.name}`,
             )
             .join(', ') +
           ' ) as ' +
@@ -277,7 +277,7 @@ const listTableRows = async (req, res) => {
     if (foreignKeyError.error) {
       return res.status(400).json({
         message: foreignKeyError.message,
-        error: foreignKeyError.error
+        error: foreignKeyError.error,
       });
     }
   }
@@ -291,7 +291,7 @@ const listTableRows = async (req, res) => {
       orderString,
       limit,
       page: limit * (page - 1),
-      whereStringValues
+      whereStringValues,
     });
 
     // parse json extended files
@@ -311,10 +311,10 @@ const listTableRows = async (req, res) => {
     const total = rowService.getCount({
       tableName,
       whereString,
-      whereStringValues
+      whereStringValues,
     });
 
-    const next =
+    const nextPage =
       data.length === limit
         ? `/tables/${tableName}/rows?${params}_limit=${_limit}&_page=${
             page + 1
@@ -327,16 +327,22 @@ const listTableRows = async (req, res) => {
           }`
         : null;
 
-    res.json({
-      data,
-      total,
-      next,
-      previous
-    });
+    // res.json({
+    //   data,
+    //   total,
+    //   next: nextPage,
+    //   previous
+    // });
+
+    req.response = {
+      status: 200,
+      payload: { data, total, next: nextPage, previous },
+    };
+    next();
   } catch (error) {
     res.status(400).json({
       message: error.message,
-      error: error
+      error: error,
     });
   }
 };
@@ -367,7 +373,7 @@ const insertRowInTable = async (req, res, next) => {
 
   // Remove null values from fields for accurate query construction.
   const fields = Object.fromEntries(
-    Object.entries(queryFields).filter(([_, value]) => value !== null)
+    Object.entries(queryFields).filter(([, value]) => value !== null),
   );
 
   try {
@@ -383,14 +389,15 @@ const insertRowInTable = async (req, res, next) => {
     */
     res.status(201).json({
       message: 'Row inserted',
-      data
+      data,
     });
+
     req.broadcast = {
       type: 'INSERT',
       data: {
         pk: data.lastInsertRowid,
-        ...fields
-      }
+        ...fields,
+      },
     };
     next();
   } catch (error) {
@@ -404,13 +411,13 @@ const insertRowInTable = async (req, res, next) => {
     */
     res.status(400).json({
       message: error.message,
-      error: error
+      error: error,
     });
   }
 };
 
 // Get a row by pk
-const getRowInTableByPK = async (req, res) => {
+const getRowInTableByPK = async (req, res, next) => {
   /*
     #swagger.tags = ['Rows']
     #swagger.summary = 'Retrieve Row'
@@ -465,7 +472,7 @@ const getRowInTableByPK = async (req, res) => {
     } catch (error) {
       return res.status(400).json({
         message: error.message,
-        error: error
+        error: error,
       });
     }
   }
@@ -542,7 +549,7 @@ const getRowInTableByPK = async (req, res) => {
           joinedTableFields
             .map(
               (joinedTableField) =>
-                `'${joinedTableField.name}', ${joinedTableName}.${joinedTableField.name}`
+                `'${joinedTableField.name}', ${joinedTableName}.${joinedTableField.name}`,
             )
             .join(', ') +
           ' ) as ' +
@@ -557,7 +564,7 @@ const getRowInTableByPK = async (req, res) => {
       } catch (error) {
         return res.status(400).json({
           message: error.message,
-          error: error
+          error: error,
         });
       }
     });
@@ -569,7 +576,7 @@ const getRowInTableByPK = async (req, res) => {
       tableName,
       extendString,
       lookupField,
-      pks
+      pks,
     });
 
     // parse json extended files
@@ -588,17 +595,20 @@ const getRowInTableByPK = async (req, res) => {
     if (data.length === 0) {
       return res.status(404).json({
         message: 'Row not found',
-        error: 'not_found'
+        error: 'not_found',
       });
     } else {
-      res.json({
-        data
-      });
+      // res.json({
+      //   data
+      // });
+
+      req.response = { status: 200, payload: { data } };
+      next();
     }
   } catch (error) {
     return res.status(400).json({
       message: error.message,
-      error: error
+      error: error,
     });
   }
 };
@@ -652,7 +662,7 @@ const updateRowInTableByPK = async (req, res, next) => {
     } catch (error) {
       return res.status(400).json({
         message: error.message,
-        error: error
+        error: error,
       });
     }
   }
@@ -671,7 +681,7 @@ const updateRowInTableByPK = async (req, res, next) => {
   if (fieldsString === '') {
     return res.status(400).json({
       message: 'No fields provided',
-      error: 'no_fields_provided'
+      error: 'no_fields_provided',
     });
   }
 
@@ -680,26 +690,26 @@ const updateRowInTableByPK = async (req, res, next) => {
       tableName,
       fieldsString,
       lookupField,
-      pks
+      pks,
     });
 
     res.json({
       message: 'Row updated',
-      data
+      data,
     });
     req.broadcast = {
       type: 'UPDATE',
       _lookup_field: lookupField,
       data: {
         pks: pks.split(','),
-        ...fields
-      }
+        ...fields,
+      },
     };
     next();
   } catch (error) {
     res.status(400).json({
       message: error.message,
-      error: error
+      error: error,
     });
   }
 };
@@ -744,7 +754,7 @@ const deleteRowInTableByPK = async (req, res, next) => {
     } catch (error) {
       return res.status(400).json({
         message: error.message,
-        error: error
+        error: error,
       });
     }
   }
@@ -754,26 +764,26 @@ const deleteRowInTableByPK = async (req, res, next) => {
 
     if (data.changes === 0) {
       res.status(404).json({
-        error: 'not_found'
+        error: 'not_found',
       });
     } else {
       res.json({
         message: 'Row deleted',
-        data
+        data,
       });
       req.broadcast = {
         type: 'DELETE',
         _lookup_field: lookupField,
         data: {
-          pks: pks.split(',')
-        }
+          pks: pks.split(','),
+        },
       };
       next();
     }
   } catch (error) {
     res.status(400).json({
       message: error.message,
-      error: error
+      error: error,
     });
   }
 };
@@ -783,5 +793,5 @@ module.exports = {
   insertRowInTable,
   getRowInTableByPK,
   updateRowInTableByPK,
-  deleteRowInTableByPK
+  deleteRowInTableByPK,
 };

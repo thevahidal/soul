@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const { passwordStrength } = require('check-password-strength');
 
 const hashPassword = async (password, saltRounds) => {
   const salt = await bcrypt.genSalt(saltRounds);
@@ -11,4 +12,9 @@ const comparePasswords = async (plainPassword, hashedPassword) => {
   return isMatch;
 };
 
-module.exports = { hashPassword, comparePasswords };
+const checkPasswordStrength = (password) => {
+  const value = passwordStrength(password).value;
+  return value;
+};
+
+module.exports = { hashPassword, comparePasswords, checkPasswordStrength };
