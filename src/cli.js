@@ -53,6 +53,20 @@ if (process.env.NO_CLI !== 'true') {
       default: false,
       demandOption: false,
     })
+    .options('js', {
+      alias: 'jwtsecret',
+      describe: 'JWT secret',
+      type: 'string',
+      default: null,
+      demandOption: false,
+    })
+    .options('jet', {
+      alias: 'jwtexpirationtime',
+      describe: 'JWT expiration time',
+      type: 'string',
+      default: '3D',
+      demandOption: false,
+    })
     .options('S', {
       alias: 'studio',
       describe: 'Start Soul Studio in parallel',

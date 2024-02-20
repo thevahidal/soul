@@ -1,4 +1,6 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 const { passwordStrength } = require('check-password-strength');
 
 const hashPassword = async (password, saltRounds) => {
@@ -17,4 +19,23 @@ const checkPasswordStrength = (password) => {
   return value;
 };
 
-module.exports = { hashPassword, comparePasswords, checkPasswordStrength };
+const generateToken = async (payload, secret, expiresIn) => {
+  return jwt.sign(payload, secret, { expiresIn });
+};
+
+const decodeToken = async (token, secret) => {
+  try {
+    const decoded = jwt.verify(token, secret);
+    return decoded;
+  } catch (error) {
+    throw new Error('Invalid token');
+  }
+};
+
+module.exports = {
+  hashPassword,
+  comparePasswords,
+  checkPasswordStrength,
+  generateToken,
+  decodeToken,
+};

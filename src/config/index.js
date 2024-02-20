@@ -29,6 +29,9 @@ const envVarsSchema = Joi.object()
     EXTENSIONS: Joi.string().default(null),
 
     START_WITH_STUDIO: Joi.boolean().default(false),
+
+    JWT_SECRET: Joi.string().default(null),
+    JWT_EXPIRATION_TIME: Joi.string().default('1D'),
   })
   .unknown();
 
@@ -60,6 +63,14 @@ if (argv['rate-limit-enabled']) {
   env.RATE_LIMIT_ENABLED = argv['rate-limit-enabled'];
 }
 
+if (argv.jwtsecret) {
+  env.JWT_SECRET = argv.jwtsecret;
+}
+
+if (argv.jwtexpirationtime) {
+  env.JWT_EXPIRATION_TIME = argv.jwtexpirationtime;
+}
+
 const { value: envVars, error } = envVarsSchema
   .prefs({ errors: { label: 'key' } })
   .validate(env);
@@ -87,6 +98,8 @@ module.exports = {
   },
 
   auth: argv.auth || envVars.AUTH,
+  jwtSecret: argv.jwtsecret || envVars.JWT_SECRET,
+  jwtExpirationTime: argv.jwtexpirationtime || envVars.JWT_EXPIRATION_TIME,
 
   rateLimit: {
     enabled: argv['rate-limit-enabled'] || envVars.RATE_LIMIT_ENABLED,

@@ -1,7 +1,13 @@
 const { tableService } = require('../services');
 const { rowService } = require('../services');
 const { dbTables } = require('../constants');
-const { hashPassword, checkPasswordStrength } = require('../utils');
+const config = require('../config');
+const {
+  hashPassword,
+  checkPasswordStrength,
+  comparePasswords,
+  generateToken,
+} = require('../utils');
 
 const createDefaultTables = async () => {
   // check if the default tables are already created
@@ -187,4 +193,72 @@ const registerUser = async (req, res) => {
   }
 };
 
-module.exports = { createDefaultTables, updateUser, registerUser };
+const obtainAccessToken = async (req, res) => {
+  // extract payload
+  const { username, password } = req.body.fields;
+
+  try {
+    // check if the username exists in the Db
+    let users = rowService.get({
+      tableName: '_users',
+      whereString: 'WHERE username=?',
+      whereStringValues: [username],
+    });
+
+    if (users.length <= 0) {
+      return res.status(401).send({ message: 'Invalid username or password' });
+    }
+
+    // check if the password is valid
+    let user = users[0];
+    const isMatch = await comparePasswords(password, user.hashed_password);
+
+    if (!isMatch) {
+      return res.status(401).send({ message: 'Invalid username or password' });
+    }
+
+    // get the users role from the DB
+    let usersRole = rowService.get({
+      tableName: '_users_roles',
+      whereString: 'WHERE user_id=?',
+      whereStringValues: [user.id],
+    });
+
+    const payload = {
+      username: user.username,
+      userId: user.id,
+      roleId: usersRole.role_id,
+    };
+
+    // generate an access token
+    const accessToken = await generateToken(payload, config.jwtSecret, '1H');
+
+    // generate a refresh token
+    const refreshToken = await generateToken(
+      payload,
+      config.jwtSecret,
+      config.jwtExpirationTime,
+    );
+
+    // set the token in the cookie
+    let cookieOptions = { httpOnly: true, secure: false, Path: '/' };
+
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+
+    res.status(201).send({ message: 'Success', data: { userId: user.id } });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: error.message,
+      error: error,
+    });
+  }
+};
+
+module.exports = {
+  createDefaultTables,
+  updateUser,
+  registerUser,
+  obtainAccessToken,
+};

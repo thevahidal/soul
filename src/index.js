@@ -10,9 +10,12 @@ const swaggerUi = require('swagger-ui-express');
 
 const config = require('./config/index');
 const db = require('./db/index');
+
 const rootRoutes = require('./routes/index');
 const tablesRoutes = require('./routes/tables');
 const rowsRoutes = require('./routes/rows');
+const authRoutes = require('./routes/auth');
+
 const swaggerFile = require('./swagger/swagger.json');
 const { setupExtensions } = require('./extensions');
 const { createDefaultTables, updateUser } = require('./controllers/auth');
@@ -99,6 +102,8 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 app.use('/api', rootRoutes);
 app.use('/api/tables', tablesRoutes);
 app.use('/api/tables', rowsRoutes);
+
+app.use('/api/auth', authRoutes);
 
 setupExtensions(app, db);
 
