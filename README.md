@@ -19,7 +19,8 @@ Install Soul CLI with npm
 
 ## Usage
 
-**1. Running Soul**
+### 1. Running Soul
+
 Soul is command line tool, after installing it,
 Run `soul -d sqlite.db -p 8000` and it'll start a REST API on [http://localhost:8000](http://localhost:8000) and a Websocket server on [ws://localhost:8000](ws://localhost:8000).
 
@@ -49,7 +50,7 @@ curl http://localhost:8000/api/tables
 
 It should return a list of the tables inside `sqlite.db` database.
 
-**2. Running Soul in Auth mode**
+### 2. Running Soul in Auth mode
 
 To run Soul in auth mode, allowing login and signup features with authorization capabilities in your database tables, follow these steps:
 
@@ -75,7 +76,7 @@ Here are some example values for the `-jet` flag
 
 NOTE: It is crucial to securely store a copy of the JWT secret value used in Soul. Once you pass this value, make sure to keep a backup because you will need it every time you restart Soul. Losing this secret value can result in a situation where all of your users are blocked from accessing Soul.
 
-**3. Updating Super Users**
+### 3. Updating Super Users
 
 To modify user information in a database, you can utilize the `updateuser` command. This command allows you to change a user's `password` and upgrade a normal user to a `superuser`. Below is an example of how to use it:
 
