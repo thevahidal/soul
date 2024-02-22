@@ -7,6 +7,7 @@ const expressWinston = require('express-winston');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const swaggerUi = require('swagger-ui-express');
+const cookieParser = require('cookie-parser');
 
 const config = require('./config/index');
 const db = require('./db/index');
@@ -29,6 +30,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 // Activate wal mode
 db.exec('PRAGMA journal_mode = WAL');

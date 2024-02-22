@@ -468,6 +468,20 @@
           }
         }
       }
+    },
+    "/api/auth/token/refresh": {
+      "get": {
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
     }
   },
   "definitions": {

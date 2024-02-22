@@ -7,6 +7,7 @@ const {
   checkPasswordStrength,
   comparePasswords,
   generateToken,
+  decodeToken,
 } = require('../utils');
 
 const createDefaultTables = async () => {
@@ -227,7 +228,7 @@ const obtainAccessToken = async (req, res) => {
     const payload = {
       username: user.username,
       userId: user.id,
-      roleId: usersRole.role_id,
+      roleId: usersRole[0].role_id,
     };
 
     // generate an access token
@@ -259,9 +260,61 @@ const obtainAccessToken = async (req, res) => {
   }
 };
 
+const refreshAccessToken = async (req, res) => {
+  try {
+    // extract the payload from the token and verify it
+    const payload = await decodeToken(
+      req.cookies.refreshToken,
+      config.jwtSecret,
+    );
+
+    // find the user
+    const users = rowService.get({
+      tableName: '_users',
+      whereString: 'WHERE id=?',
+      whereStringValues: [payload.userId],
+    });
+
+    if (users.length <= 0) {
+      return res.status(401).send({ message: 'User not found' });
+    }
+
+    const user = users[0];
+
+    const newPaylod = {
+      username: payload.username,
+      userId: payload.userId,
+      roleId: payload.roleId,
+    };
+    // generate an access token
+    const accessToken = await generateToken(
+      { subject: 'accessToken', ...newPaylod },
+      config.jwtSecret,
+      '1H',
+    );
+
+    // generate a refresh token
+    const refreshToken = await generateToken(
+      { subject: 'refreshToken', ...newPaylod },
+      config.jwtSecret,
+      config.jwtExpirationTime,
+    );
+
+    // set the token in the cookie
+    let cookieOptions = { httpOnly: true, secure: false, Path: '/' };
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+
+    res.status(201).send({ message: 'Success', data: { userId: user.id } });
+  } catch (error) {
+    res.status(401).send({ message: 'Invalid refresh token' });
+  }
+};
+
 module.exports = {
   createDefaultTables,
   updateUser,
   registerUser,
   obtainAccessToken,
+  refreshAccessToken,
 };

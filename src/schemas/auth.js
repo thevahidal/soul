@@ -12,6 +12,13 @@ const obtainAccessToken = Joi.object({
   }).required(),
 });
 
+const refreshAccessToken = Joi.object({
+  query: Joi.object().required(),
+  params: Joi.object({}).required(),
+  body: Joi.object({}).required(),
+});
+
 module.exports = {
   obtainAccessToken,
+  refreshAccessToken,
 };
