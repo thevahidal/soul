@@ -19,6 +19,7 @@ Install Soul CLI with npm
 
 ## Usage
 
+**1. Running Soul**
 Soul is command line tool, after installing it,
 Run `soul -d sqlite.db -p 8000` and it'll start a REST API on [http://localhost:8000](http://localhost:8000) and a Websocket server on [ws://localhost:8000](ws://localhost:8000).
 
@@ -40,12 +41,6 @@ Options:
 
 ```
 
-NOTE: When specifying the JWT expiration time in Soul, it must be in a specific format. Here are some examples:
-
-60M: Represents a duration of 60 minutes.
-5H: Represents a duration of 5 hours.
-1D: Represents a duration of 1 day.
-
 Then to test Soul is working run the following command
 
 ```bash
@@ -54,7 +49,7 @@ curl http://localhost:8000/api/tables
 
 It should return a list of the tables inside `sqlite.db` database.
 
-**Running Soul in Auth mode**
+**2. Running Soul in Auth mode**
 
 To run Soul in auth mode, allowing login and signup features with authorization capabilities in your database tables, follow these steps:
 
@@ -64,15 +59,23 @@ Run the Soul command with the necessary parameters:
 soul --d foobar.db -a -js=<your_jwt_secret_value> -jet=3D
 ```
 
+Note: When configuring your JWT Secret, it is recommended to use a long string value for enhanced security. It is advisable to use a secret that is at least 10 characters in length.
+
 In this example:
 
 The `-a` flag instructs Soul to run in auth mode.
 The `-js` flag allows you to pass a JWT secret value for token generation and verification. Replace <your_jwt_secret_value> with your desired secret value.
 The `-jet` flag sets the JWT expiration time. In this case, it is set to one day (3D), meaning the tokens will expire after 72 hours. (`jet` is used for the JWT Refresh Token)
 
-**NOTE: It is crucial to securely store a copy of the JWT secret value used in Soul. Once you pass this value, make sure to keep a backup because you will need it every time you restart Soul. Losing this secret value can result in a situation where all of your users are blocked from accessing Soul.**
+Here are some example values for the `-jet` flag
 
-**Updating Super Users**
+- 60M: Represents a duration of 60 minutes.
+- 5H: Represents a duration of 5 hours.
+- 1D: Represents a duration of 1 day.
+
+NOTE: It is crucial to securely store a copy of the JWT secret value used in Soul. Once you pass this value, make sure to keep a backup because you will need it every time you restart Soul. Losing this secret value can result in a situation where all of your users are blocked from accessing Soul.
+
+**3. Updating Super Users**
 
 To modify user information in a database, you can utilize the `updateuser` command. This command allows you to change a user's `password` and upgrade a normal user to a `superuser`. Below is an example of how to use it:
 
