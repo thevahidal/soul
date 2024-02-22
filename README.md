@@ -66,7 +66,7 @@ soul --d foobar.db -a -js=<your_jwt_secret_value> -jet=3D
 
 In this example:
 
-The `-a` flag enables Soul to run in auth mode.
+The `-a` flag instructs Soul to run in auth mode.
 The `-js` flag allows you to pass a JWT secret value for token generation and verification. Replace <your_jwt_secret_value> with your desired secret value.
 The `-jet` flag sets the JWT expiration time. In this case, it is set to one day (3D), meaning the tokens will expire after 72 hours. (`jet` is used for the JWT Refresh Token)
 

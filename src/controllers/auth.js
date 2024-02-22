@@ -224,6 +224,10 @@ const obtainAccessToken = async (req, res) => {
       whereStringValues: [user.id],
     });
 
+    if (usersRole < 0) {
+      res.status(404).send({ message: 'Default role not found' });
+    }
+
     const payload = {
       username: user.username,
       userId: user.id,
