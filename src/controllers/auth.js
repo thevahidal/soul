@@ -231,18 +231,21 @@ const obtainAccessToken = async (req, res) => {
     };
 
     // generate an access token
-    const accessToken = await generateToken(payload, config.jwtSecret, '1H');
+    const accessToken = await generateToken(
+      { subject: 'accessToken', ...payload },
+      config.jwtSecret,
+      '1H',
+    );
 
     // generate a refresh token
     const refreshToken = await generateToken(
-      payload,
+      { subject: 'refreshToken', ...payload },
       config.jwtSecret,
       config.jwtExpirationTime,
     );
 
     // set the token in the cookie
     let cookieOptions = { httpOnly: true, secure: false, Path: '/' };
-
     res.cookie('accessToken', accessToken, cookieOptions);
     res.cookie('refreshToken', refreshToken, cookieOptions);
 
