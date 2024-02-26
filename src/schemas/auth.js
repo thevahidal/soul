@@ -18,7 +18,20 @@ const refreshAccessToken = Joi.object({
   body: Joi.object({}).required(),
 });
 
+const changePassword = Joi.object({
+  query: Joi.object().required(),
+  params: Joi.object({ userId: Joi.string().required() }).required(),
+
+  body: Joi.object({
+    fields: Joi.object({
+      currentPassword: Joi.string().required(),
+      newPassword: Joi.string().required(),
+    }).required(),
+  }).required(),
+});
+
 module.exports = {
   obtainAccessToken,
   refreshAccessToken,
+  changePassword,
 };

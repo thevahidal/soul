@@ -157,7 +157,7 @@ const registerUser = async (req, res) => {
     // hash the password
     const { salt, hashedPassword } = await hashPassword(password, 10);
 
-    // // create the user
+    // create the user
     const newUser = rowService.save({
       tableName: '_users',
       fields: {
@@ -311,10 +311,69 @@ const refreshAccessToken = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  const userInfo = req.user;
+  const { currentPassword, newPassword } = req.body.fields;
+
+  try {
+    // get the user from the Db
+    const users = rowService.get({
+      tableName: '_users',
+      whereString: 'WHERE id=?',
+      whereStringValues: [userInfo.userId],
+    });
+
+    if (users.length <= 0) {
+      return res.status(401).send({ message: 'User not found' });
+    }
+
+    const user = users[0];
+
+    // check if the users current password is valid
+    const isMatch = await comparePasswords(
+      currentPassword,
+      user.hashed_password,
+    );
+
+    if (!isMatch) {
+      return res.status(401).send({ message: 'Invalid current password' });
+    }
+
+    // check if the new password is strong
+    if (['Too weak', 'Weak'].includes(checkPasswordStrength(newPassword))) {
+      return res.status(400).send({
+        message: 'This password is weak, please use another password',
+      });
+    }
+
+    // hash the password
+    const { salt, hashedPassword } = await hashPassword(newPassword, 10);
+
+    user.salt = salt;
+    user.hashed_password = hashedPassword;
+
+    // update the user
+    rowService.update({
+      tableName: '_users',
+      lookupField: `id`,
+      fieldsString: `hashed_password = '${hashedPassword}', salt = '${salt}'`,
+      pks: `${user.id}`,
+    });
+
+    res.status(201).send({
+      message: 'Password updated successfully',
+      data: { id: user.id, username: user.username },
+    });
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
 module.exports = {
   createDefaultTables,
   updateUser,
   registerUser,
   obtainAccessToken,
   refreshAccessToken,
+  changePassword,
 };
