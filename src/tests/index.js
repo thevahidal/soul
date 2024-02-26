@@ -1,6 +1,5 @@
 const fs = require('fs');
 const { unlink } = require('fs/promises');
-
 const db = require('../db/index');
 const { testNames } = require('./testData');
 
@@ -27,13 +26,13 @@ const dropTestDatabase = async (path = 'test.db') => {
 
 const createTestTable = (table = 'users') => {
   db.prepare(
-    `CREATE TABLE ${table} (id INTEGER PRIMARY KEY, firstName TEXT, lastName TEXT, email TEXT, username TEXT, createdAt TEXT)`
+    `CREATE TABLE ${table} (id INTEGER PRIMARY KEY, firstName TEXT, lastName TEXT, email TEXT, username TEXT, createdAt TEXT)`,
   ).run();
 };
 
 const insertIntoTestTable = (table = 'users') => {
   const statement = db.prepare(
-    `INSERT INTO ${table} (firstName, lastName, createdAt) VALUES (?, ?, ?)`
+    `INSERT INTO ${table} (firstName, lastName, createdAt) VALUES (?, ?, ?)`,
   );
 
   for (const user of testNames) {
@@ -45,5 +44,5 @@ module.exports = {
   dropTestTable,
   dropTestDatabase,
   createTestTable,
-  insertIntoTestTable
+  insertIntoTestTable,
 };

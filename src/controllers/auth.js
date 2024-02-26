@@ -200,7 +200,7 @@ const obtainAccessToken = async (req, res) => {
 
   try {
     // check if the username exists in the Db
-    let users = rowService.get({
+    const users = rowService.get({
       tableName: '_users',
       whereString: 'WHERE username=?',
       whereStringValues: [username],
@@ -211,7 +211,7 @@ const obtainAccessToken = async (req, res) => {
     }
 
     // check if the password is valid
-    let user = users[0];
+    const user = users[0];
     const isMatch = await comparePasswords(password, user.hashed_password);
 
     if (!isMatch) {
@@ -219,16 +219,27 @@ const obtainAccessToken = async (req, res) => {
     }
 
     // get the users role from the DB
-    let usersRole = rowService.get({
+    const usersRole = rowService.get({
       tableName: '_users_roles',
       whereString: 'WHERE user_id=?',
       whereStringValues: [user.id],
     });
 
+    const roleId = usersRole[0].role_id;
+
+    // get the permission of the role
+    const permissions = rowService.get({
+      tableName: '_roles_permissions',
+      whereString: 'WHERE role_id=?',
+      whereStringValues: [roleId],
+    });
+
     const payload = {
       username: user.username,
       userId: user.id,
-      roleId: usersRole[0].role_id,
+      isSuperuser: user.is_superuser,
+      roleId,
+      permissions,
     };
 
     // generate an access token
