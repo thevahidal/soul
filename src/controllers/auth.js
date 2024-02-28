@@ -403,12 +403,10 @@ const changePassword = async (req, res) => {
   }
 };
 
-const createSuperuser = async () => {
+const createInitialUser = async () => {
   // extract some fields from the environment variables or from the CLI
-  const {
-    initialSuperuserUsername: username,
-    initialSuperuserPassword: password,
-  } = config;
+  const { initialUserUsername: username, initialUserPassword: password } =
+    config;
 
   try {
     // check if there is a superuser in the DB
@@ -422,7 +420,7 @@ const createSuperuser = async () => {
       // check if initial superuser username is passed from the  env or CLI
       if (!username) {
         console.error(
-          'Error: You should pass the superusers username either from the CLI with the --suu or from the environment variable using the INITIAL_SUPERUSER_USERNAME flag',
+          'Error: You should pass the initial users username either from the CLI with the --iuu or from the environment variable using the INITIAL_USER_USERNAME flag',
         );
         process.exit(1);
       }
@@ -430,7 +428,7 @@ const createSuperuser = async () => {
       // check if initial superuser password is passed from the env or CLI
       if (!password) {
         console.error(
-          'Error: You should pass the superusers password either from the CLI with the --sup or from the environment variable using the INITIAL_SUPERUSER_PASSWORD flag',
+          'Error: You should pass the initial users password either from the CLI with the --iup or from the environment variable using the INITIAL_USER_PASSWORD flag',
         );
         process.exit(1);
       }
@@ -444,7 +442,7 @@ const createSuperuser = async () => {
 
       if (users.length > 0) {
         console.error(
-          'Error: The username you passed for the superuser is already taken, please use another username',
+          'Error: The username you passed for the initial user is already taken, please use another username',
         );
         process.exit(1);
       }
@@ -452,7 +450,7 @@ const createSuperuser = async () => {
       // check if the password is strong
       if (['Too weak', 'Weak'].includes(checkPasswordStrength(password))) {
         console.error(
-          'Error: The password you passed for the superuser is weak, please use another password',
+          'Error: The password you passed for the initial user is weak, please use another password',
         );
         process.exit(1);
       }
@@ -471,9 +469,9 @@ const createSuperuser = async () => {
         },
       });
 
-      console.log('Initial superuser created');
+      console.log('Initial user created');
     } else {
-      console.log('Initial superuser is already created');
+      console.log('Initial user is already created');
     }
   } catch (error) {
     console.log(error);
@@ -488,5 +486,5 @@ module.exports = {
   obtainAccessToken,
   refreshAccessToken,
   changePassword,
-  createSuperuser,
+  createInitialUser,
 };

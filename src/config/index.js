@@ -33,8 +33,8 @@ const envVarsSchema = Joi.object()
     JWT_SECRET: Joi.string().default(null),
     JWT_EXPIRATION_TIME: Joi.string().default('1D'),
 
-    INITIAL_SUPERUSER_USERNAME: Joi.string(),
-    INITIAL_SUPERUSER_PASSWORD: Joi.string(),
+    INITIAL_USER_USERNAME: Joi.string(),
+    INITIAL_USER_PASSWORD: Joi.string(),
   })
   .unknown();
 
@@ -74,12 +74,12 @@ if (argv.jwtexpirationtime) {
   env.JWT_EXPIRATION_TIME = argv.jwtexpirationtime;
 }
 
-if (argv.initialSuperuserUsername) {
-  env.INITIAL_SUPERUSER_USERNAME = argv.initialsuperuserssername;
+if (argv.initialuserusername) {
+  env.INITIAL_USER_USERNAME = argv.initialuserusername;
 }
 
-if (argv.initialSuperuserPassword) {
-  env.INITIAL_SUPERUSER_PASSWORD = argv.initialsuperuserpassword;
+if (argv.initialuserpassword) {
+  env.INITIAL_USER_PASSWORD = argv.initialuserpassword;
 }
 
 const { value: envVars, error } = envVarsSchema
@@ -112,10 +112,10 @@ module.exports = {
   jwtSecret: argv.jwtsecret || envVars.JWT_SECRET,
   jwtExpirationTime: argv.jwtexpirationtime || envVars.JWT_EXPIRATION_TIME,
 
-  initialSuperuserUsername:
-    argv.initialsuperuserusername || envVars.INITIAL_SUPERUSER_USERNAME,
-  initialSuperuserPassword:
-    argv.initialsuperuserpassword || envVars.INITIAL_SUPERUSER_PASSWORD,
+  initialUserUsername:
+    argv.initialuserusername || envVars.INITIAL_USER_USERNAME,
+  initialUserPassword:
+    argv.initialuserpassword || envVars.INITIAL_USER_PASSWORD,
 
   rateLimit: {
     enabled: argv['rate-limit-enabled'] || envVars.RATE_LIMIT_ENABLED,

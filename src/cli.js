@@ -67,14 +67,14 @@ if (process.env.NO_CLI !== 'true') {
       default: '3D',
       demandOption: false,
     })
-    .options('suu', {
-      alias: 'initialsuperuserusername',
+    .options('iuu', {
+      alias: 'initialuserusername',
       describe: 'Initial superuser username',
       type: 'string',
       demandOption: false,
     })
-    .options('sup', {
-      alias: 'initialsuperuserpassword',
+    .options('iup', {
+      alias: 'initialuserpassword',
       describe: 'Initial superuser password',
       type: 'string',
       demandOption: false,

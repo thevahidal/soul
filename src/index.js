@@ -22,7 +22,7 @@ const { setupExtensions } = require('./extensions');
 const {
   createDefaultTables,
   updateUser,
-  createSuperuser,
+  createInitialUser,
 } = require('./controllers/auth');
 const { yargs } = require('./cli');
 
@@ -84,7 +84,7 @@ if (config.rateLimit.enabled) {
 //If Auth mode is activated then create auth tables in the DB & create a super user if there are no users in the DB
 if (config.auth) {
   createDefaultTables();
-  createSuperuser();
+  createInitialUser();
 } else {
   console.warn(
     'Warning: Soul is running in open mode without authentication or authorization for API endpoints. Please be aware that your API endpoints will not be secure.',
