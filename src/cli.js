@@ -67,6 +67,18 @@ if (process.env.NO_CLI !== 'true') {
       default: '3D',
       demandOption: false,
     })
+    .options('suu', {
+      alias: 'initialsuperuserusername',
+      describe: 'Initial superuser username',
+      type: 'string',
+      demandOption: false,
+    })
+    .options('sup', {
+      alias: 'initialsuperuserpassword',
+      describe: 'Initial superuser password',
+      type: 'string',
+      demandOption: false,
+    })
     .options('S', {
       alias: 'studio',
       describe: 'Start Soul Studio in parallel',

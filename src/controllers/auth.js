@@ -8,6 +8,7 @@ const {
   comparePasswords,
   generateToken,
   decodeToken,
+  toBoolean,
 } = require('../utils');
 
 const createDefaultTables = async () => {
@@ -25,7 +26,17 @@ const createDefaultTables = async () => {
 
   if (!usersRolesTable) {
     // create the _users_roles table
-    tableService.createTable('_users_roles', dbTables.usersRoleSchema);
+    tableService.createTable(
+      '_users_roles',
+
+      dbTables.usersRoleSchema,
+      {
+        multipleUniqueConstraints: {
+          name: 'unique_users_role',
+          fields: ['user_id', 'role_id'],
+        },
+      },
+    );
   }
 
   if (!roleTable && !rolesPermissionTable) {
@@ -136,6 +147,14 @@ const registerUser = async (req, res) => {
   const { username, password } = req.body.fields;
 
   try {
+    if (!username) {
+      return res.status(400).send({ message: 'username is required' });
+    }
+
+    if (!password) {
+      return res.status(400).send({ message: 'password is required' });
+    }
+
     // check if the username is taken
     let user = rowService.get({
       tableName: '_users',
@@ -218,27 +237,31 @@ const obtainAccessToken = async (req, res) => {
       return res.status(401).send({ message: 'Invalid username or password' });
     }
 
-    // get the users role from the DB
-    const usersRole = rowService.get({
-      tableName: '_users_roles',
-      whereString: 'WHERE user_id=?',
-      whereStringValues: [user.id],
-    });
+    let userRoles, permissions, roleIds;
 
-    const roleId = usersRole[0].role_id;
+    // if the user is not a superuser get the role and its permission from the DB
+    if (!toBoolean(user.is_superuser)) {
+      userRoles = rowService.get({
+        tableName: '_users_roles',
+        whereString: 'WHERE user_id=?',
+        whereStringValues: [user.id],
+      });
 
-    // get the permission of the role
-    const permissions = rowService.get({
-      tableName: '_roles_permissions',
-      whereString: 'WHERE role_id=?',
-      whereStringValues: [roleId],
-    });
+      roleIds = userRoles.map((role) => role.role_id);
+
+      // get the permission of the role
+      permissions = rowService.get({
+        tableName: '_roles_permissions',
+        whereString: `WHERE role_id IN (${roleIds.map(() => '?')})`,
+        whereStringValues: [...roleIds],
+      });
+    }
 
     const payload = {
       username: user.username,
       userId: user.id,
       isSuperuser: user.is_superuser,
-      roleId,
+      roleIds,
       permissions,
     };
 
@@ -380,6 +403,84 @@ const changePassword = async (req, res) => {
   }
 };
 
+const createSuperuser = async () => {
+  // extract some fields from the environment variables or from the CLI
+  const {
+    initialSuperuserUsername: username,
+    initialSuperuserPassword: password,
+  } = config;
+
+  try {
+    // check if there is a superuser in the DB
+    const superusers = rowService.get({
+      tableName: '_users',
+      whereString: 'WHERE is_superuser=?',
+      whereStringValues: ['true'],
+    });
+
+    if (superusers.length <= 0) {
+      // check if initial superuser username is passed from the  env or CLI
+      if (!username) {
+        console.error(
+          'Error: You should pass the superusers username either from the CLI with the --suu or from the environment variable using the INITIAL_SUPERUSER_USERNAME flag',
+        );
+        process.exit(1);
+      }
+
+      // check if initial superuser password is passed from the env or CLI
+      if (!password) {
+        console.error(
+          'Error: You should pass the superusers password either from the CLI with the --sup or from the environment variable using the INITIAL_SUPERUSER_PASSWORD flag',
+        );
+        process.exit(1);
+      }
+
+      // checkf if the usernmae is taken
+      const users = rowService.get({
+        tableName: '_users',
+        whereString: 'WHERE username=?',
+        whereStringValues: [username],
+      });
+
+      if (users.length > 0) {
+        console.error(
+          'Error: The username you passed for the superuser is already taken, please use another username',
+        );
+        process.exit(1);
+      }
+
+      // check if the password is strong
+      if (['Too weak', 'Weak'].includes(checkPasswordStrength(password))) {
+        console.error(
+          'Error: The password you passed for the superuser is weak, please use another password',
+        );
+        process.exit(1);
+      }
+
+      // hash the password
+      const { hashedPassword, salt } = await hashPassword(password, 10);
+
+      // create the superuser
+      rowService.save({
+        tableName: '_users',
+        fields: {
+          username,
+          hashed_password: hashedPassword,
+          salt,
+          is_superuser: 'true',
+        },
+      });
+
+      console.log('Initial superuser created');
+    } else {
+      console.log('Initial superuser is already created');
+    }
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
+};
+
 module.exports = {
   createDefaultTables,
   updateUser,
@@ -387,4 +488,5 @@ module.exports = {
   obtainAccessToken,
   refreshAccessToken,
   changePassword,
+  createSuperuser,
 };

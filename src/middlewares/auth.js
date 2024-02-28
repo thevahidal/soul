@@ -38,10 +38,19 @@ const isAuthorized = async (req, res, next) => {
           .send({ message: 'Permission not defined for this role' });
       }
 
-      const permission = permissions[0];
-      const httpMethod = httpVerbs[verb].toLowerCase();
+      // If the user has permission on the table in at least in one of the roles then allow access on the table
+      let hasPermission = false;
 
-      if (toBoolean(permission[httpMethod])) {
+      permissions.some((resource) => {
+        const httpMethod = httpVerbs[verb].toLowerCase();
+
+        if (toBoolean(resource[httpMethod])) {
+          hasPermission = true;
+          return true;
+        }
+      });
+
+      if (hasPermission) {
         next();
       } else {
         return res.status(403).send({ message: 'Not authorized' });

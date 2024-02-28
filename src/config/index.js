@@ -32,6 +32,9 @@ const envVarsSchema = Joi.object()
 
     JWT_SECRET: Joi.string().default(null),
     JWT_EXPIRATION_TIME: Joi.string().default('1D'),
+
+    INITIAL_SUPERUSER_USERNAME: Joi.string(),
+    INITIAL_SUPERUSER_PASSWORD: Joi.string(),
   })
   .unknown();
 
@@ -71,6 +74,14 @@ if (argv.jwtexpirationtime) {
   env.JWT_EXPIRATION_TIME = argv.jwtexpirationtime;
 }
 
+if (argv.initialSuperuserUsername) {
+  env.INITIAL_SUPERUSER_USERNAME = argv.initialsuperuserssername;
+}
+
+if (argv.initialSuperuserPassword) {
+  env.INITIAL_SUPERUSER_PASSWORD = argv.initialsuperuserpassword;
+}
+
 const { value: envVars, error } = envVarsSchema
   .prefs({ errors: { label: 'key' } })
   .validate(env);
@@ -100,6 +111,11 @@ module.exports = {
   auth: argv.auth || envVars.AUTH,
   jwtSecret: argv.jwtsecret || envVars.JWT_SECRET,
   jwtExpirationTime: argv.jwtexpirationtime || envVars.JWT_EXPIRATION_TIME,
+
+  initialSuperuserUsername:
+    argv.initialsuperuserusername || envVars.INITIAL_SUPERUSER_USERNAME,
+  initialSuperuserPassword:
+    argv.initialsuperuserpassword || envVars.INITIAL_SUPERUSER_PASSWORD,
 
   rateLimit: {
     enabled: argv['rate-limit-enabled'] || envVars.RATE_LIMIT_ENABLED,
