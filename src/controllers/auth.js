@@ -68,7 +68,7 @@ const createDefaultTables = async () => {
   }
 };
 
-const updateUser = async (fields) => {
+const updateSuperuser = async (fields) => {
   const { id, password, is_superuser } = fields;
   let newHashedPassword, newSalt;
   let fieldsString = '';
@@ -125,4 +125,4 @@ const updateUser = async (fields) => {
   }
 };
 
-module.exports = { createDefaultTables, updateUser };
+module.exports = { createDefaultTables, updateSuperuser };
