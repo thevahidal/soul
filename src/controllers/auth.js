@@ -1,9 +1,12 @@
 const { tableService } = require('../services');
 const { rowService } = require('../services');
-const { dbTables } = require('../constants');
+
 const { hashPassword, checkPasswordStrength } = require('../utils');
+const { dbTables, constantRoles } = require('../constants');
 
 const createDefaultTables = async () => {
+  let roleId;
+
   // check if the default tables are already created
   const roleTable = tableService.checkTableExists('_roles');
   const usersTable = tableService.checkTableExists('_users');
@@ -11,27 +14,33 @@ const createDefaultTables = async () => {
     tableService.checkTableExists('_roles_permissions');
   const usersRolesTable = tableService.checkTableExists('_users_roles');
 
+  // create _users table
   if (!usersTable) {
     // create the _users table
     tableService.createTable('_users', dbTables.userSchema);
   }
 
+  // create _users_roles table
   if (!usersRolesTable) {
     // create the _users_roles table
     tableService.createTable('_users_roles', dbTables.usersRoleSchema);
   }
 
-  if (!roleTable && !rolesPermissionTable) {
+  // create _roles table
+  if (!roleTable) {
     // create the _role table
     tableService.createTable('_roles', dbTables.roleSchema);
 
     // create a default role in the _roles table
     const role = rowService.save({
       tableName: '_roles',
-      fields: { name: 'default' },
+      fields: { name: constantRoles.DEFAULT_ROLE },
     });
-    const roleId = role.lastInsertRowid;
+    roleId = role.lastInsertRowid;
+  }
 
+  // create _roles_permissions table
+  if (!rolesPermissionTable && roleId) {
     // create the _roles_permissions table
     tableService.createTable(
       '_roles_permissions',
@@ -68,7 +77,7 @@ const createDefaultTables = async () => {
   }
 };
 
-const updateUser = async (fields) => {
+const updateSuperuser = async (fields) => {
   const { id, password, is_superuser } = fields;
   let newHashedPassword, newSalt;
   let fieldsString = '';
@@ -187,4 +196,4 @@ const registerUser = async (req, res) => {
   }
 };
 
-module.exports = { createDefaultTables, updateUser, registerUser };
+module.exports = { createDefaultTables, updateSuperuser, registerUser };

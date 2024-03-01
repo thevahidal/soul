@@ -59,20 +59,20 @@ if (process.env.NO_CLI !== 'true') {
       type: 'boolean',
       demandOption: false,
     })
-    .command('updateuser', 'Update a user', (yargs) => {
+    .command('updatesuperuser', 'Update a superuser', (yargs) => {
       return yargs
         .option('id', {
-          describe: 'The ID of the user you want to update',
+          describe: 'The ID of the superuser you want to update',
           type: 'number',
           demandOption: true,
         })
         .option('password', {
-          describe: 'The new password for the user you want to update',
+          describe: 'The new password for the superuser you want to update',
           type: 'string',
           demandOption: false,
         })
         .option('is_superuser', {
-          describe: 'The role of the user you want to update',
+          describe: 'The role of the superuser you want to update',
           type: 'boolean',
           demandOption: false,
         });
