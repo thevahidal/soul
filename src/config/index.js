@@ -30,8 +30,10 @@ const envVarsSchema = Joi.object()
 
     START_WITH_STUDIO: Joi.boolean().default(false),
 
-    JWT_SECRET: Joi.string().default(null),
-    JWT_EXPIRATION_TIME: Joi.string().default('1D'),
+    ACCESS_TOKEN_SECRET: Joi.string().default(null),
+    ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().default('5H'),
+    REFRESH_TOKEN_SECRET: Joi.string().default(null),
+    REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().default('3D'),
   })
   .unknown();
 
@@ -63,12 +65,20 @@ if (argv['rate-limit-enabled']) {
   env.RATE_LIMIT_ENABLED = argv['rate-limit-enabled'];
 }
 
-if (argv.jwtsecret) {
-  env.JWT_SECRET = argv.jwtsecret;
+if (argv.accesstokensecret) {
+  env.ACCESS_TOKEN_SECRET = argv.accesstokensecret;
 }
 
-if (argv.jwtexpirationtime) {
-  env.JWT_EXPIRATION_TIME = argv.jwtexpirationtime;
+if (argv.accesstokenexpirationtime) {
+  env.ACCESS_TOKEN_EXPIRATION_TIME = argv.accesstokenexpirationtime;
+}
+
+if (argv.refreshtokensecret) {
+  env.REFRESH_TOKEN_SECRET = argv.refreshtokensecret;
+}
+
+if (argv.refreshtokenexpirationtime) {
+  env.REFRESH_TOKEN_EXPIRATION_TIME = argv.refreshtokenexpirationtime;
 }
 
 const { value: envVars, error } = envVarsSchema
@@ -98,8 +108,12 @@ module.exports = {
   },
 
   auth: argv.auth || envVars.AUTH,
-  jwtSecret: argv.jwtsecret || envVars.JWT_SECRET,
-  jwtExpirationTime: argv.jwtexpirationtime || envVars.JWT_EXPIRATION_TIME,
+  accessTokenSecret: argv.accesstokensecret || envVars.ACCESS_TOKEN_SECRET,
+  accessTokenExpirationTime:
+    argv.accesstokenexpirationtime || envVars.ACCESS_TOKEN_EXPIRATION_TIME,
+  refreshTokenSecret: argv.refreshtokensecret || envVars.REFRESH_TOKEN_SECRET,
+  refreshTokenExpirationTime:
+    argv.refreshtokenexpirationtime || envVars.REFRESH_TOKEN_EXPIRATION_TIME,
 
   rateLimit: {
     enabled: argv['rate-limit-enabled'] || envVars.RATE_LIMIT_ENABLED,

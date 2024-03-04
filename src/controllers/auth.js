@@ -1,6 +1,6 @@
 const { tableService } = require('../services');
 const { rowService } = require('../services');
-const { dbTables } = require('../constants');
+const { dbTables, constantRoles } = require('../constants');
 const config = require('../config');
 const {
   hashPassword,
@@ -11,6 +11,8 @@ const {
 } = require('../utils');
 
 const createDefaultTables = async () => {
+  let roleId;
+
   // check if the default tables are already created
   const roleTable = tableService.checkTableExists('_roles');
   const usersTable = tableService.checkTableExists('_users');
@@ -18,27 +20,33 @@ const createDefaultTables = async () => {
     tableService.checkTableExists('_roles_permissions');
   const usersRolesTable = tableService.checkTableExists('_users_roles');
 
+  // create _users table
   if (!usersTable) {
     // create the _users table
     tableService.createTable('_users', dbTables.userSchema);
   }
 
+  // create _users_roles table
   if (!usersRolesTable) {
     // create the _users_roles table
     tableService.createTable('_users_roles', dbTables.usersRoleSchema);
   }
 
-  if (!roleTable && !rolesPermissionTable) {
+  // create _roles table
+  if (!roleTable) {
     // create the _role table
     tableService.createTable('_roles', dbTables.roleSchema);
 
     // create a default role in the _roles table
     const role = rowService.save({
       tableName: '_roles',
-      fields: { name: 'default' },
+      fields: { name: constantRoles.DEFAULT_ROLE },
     });
-    const roleId = role.lastInsertRowid;
+    roleId = role.lastInsertRowid;
+  }
 
+  // create _roles_permissions table
+  if (!rolesPermissionTable && roleId) {
     // create the _roles_permissions table
     tableService.createTable(
       '_roles_permissions',
@@ -75,7 +83,7 @@ const createDefaultTables = async () => {
   }
 };
 
-const updateUser = async (fields) => {
+const updateSuperuser = async (fields) => {
   const { id, password, is_superuser } = fields;
   let newHashedPassword, newSalt;
   let fieldsString = '';
@@ -218,31 +226,35 @@ const obtainAccessToken = async (req, res) => {
       return res.status(401).send({ message: 'Invalid username or password' });
     }
 
-    // get the users role from the DB
-    let usersRole = rowService.get({
+    // get the user roles from the DB
+    const userRoles = rowService.get({
       tableName: '_users_roles',
       whereString: 'WHERE user_id=?',
       whereStringValues: [user.id],
     });
 
+    if (userRoles < 0) {
+      return res.status(404).send({ message: 'Default role not found' });
+    }
+
     const payload = {
       username: user.username,
       userId: user.id,
-      roleId: usersRole[0].role_id,
+      roleId: userRoles,
     };
 
     // generate an access token
     const accessToken = await generateToken(
       { subject: 'accessToken', ...payload },
-      config.jwtSecret,
-      '1H',
+      config.accessTokenSecret,
+      config.accessTokenExpirationTime,
     );
 
     // generate a refresh token
     const refreshToken = await generateToken(
       { subject: 'refreshToken', ...payload },
-      config.jwtSecret,
-      config.jwtExpirationTime,
+      config.refreshTokenSecret,
+      config.refreshTokenExpirationTime,
     );
 
     // set the token in the cookie
@@ -276,7 +288,9 @@ const refreshAccessToken = async (req, res) => {
     });
 
     if (users.length <= 0) {
-      return res.status(401).send({ message: 'User not found' });
+      return res
+        .status(401)
+        .send({ message: `User with userId = ${payload.userId} not found` });
     }
 
     const user = users[0];
@@ -289,15 +303,15 @@ const refreshAccessToken = async (req, res) => {
     // generate an access token
     const accessToken = await generateToken(
       { subject: 'accessToken', ...newPaylod },
-      config.jwtSecret,
-      '1H',
+      config.accessTokenSecret,
+      config.accessTokenExpirationTime,
     );
 
     // generate a refresh token
     const refreshToken = await generateToken(
       { subject: 'refreshToken', ...newPaylod },
-      config.jwtSecret,
-      config.jwtExpirationTime,
+      config.refreshTokenSecret,
+      config.refreshTokenExpirationTime,
     );
 
     // set the token in the cookie
@@ -371,7 +385,7 @@ const changePassword = async (req, res) => {
 
 module.exports = {
   createDefaultTables,
-  updateUser,
+  updateSuperuser,
   registerUser,
   obtainAccessToken,
   refreshAccessToken,
