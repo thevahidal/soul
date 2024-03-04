@@ -497,7 +497,7 @@ const createInitialUser = async () => {
           username,
           hashed_password: hashedPassword,
           salt,
-          is_superuser: 'true',
+          is_superuser: 'false',
         },
       });
 
