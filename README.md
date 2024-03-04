@@ -35,8 +35,10 @@ Options:
   -r, --rate-limit-enabled  Enable rate limiting                       [boolean]
   -c, --cors                CORS whitelist origins                [string]
   -a, --auth                Enable authentication and authorization [boolean]
-  -js, --jwtsecret          JWT Secret                               [string]
-  -jet, --jwtexpirationtime JWT Expiration Time                      [string]
+  -ats, --accesstokensecret          Access Token Secret                              [string]
+  -atet, --accesstokenexpirationtime        Access Token Expiration Time                      [string]
+  -rts, --refreshtokensecret         Refresh Token Secret                              [string]
+  -rtet, --refreshtokenexpirationtime       Refresh Token Expiration Time                     [string]
   -S, --studio              Start Soul Studio in parallel
       --help                Show help
 
@@ -57,7 +59,7 @@ To run Soul in auth mode, allowing login and signup features with authorization 
 Run the Soul command with the necessary parameters:
 
 ```
-soul --d foobar.db -a -js=<your_jwt_secret_value> -jet=3D
+soul --d foobar.db -a -ats <your_jwt_access_token_secret_value> -atet=4H -rts <your_jwt_refresh_token_secret_value> -rtet=3D
 ```
 
 Note: When configuring your JWT Secret, it is recommended to use a long string value for enhanced security. It is advisable to use a secret that is at least 10 characters in length.
@@ -65,16 +67,18 @@ Note: When configuring your JWT Secret, it is recommended to use a long string v
 In this example:
 
 The `-a` flag instructs Soul to run in auth mode.
-The `-js` flag allows you to pass a JWT secret value for token generation and verification. Replace <your_jwt_secret_value> with your desired secret value.
-The `-jet` flag sets the JWT expiration time. In this case, it is set to one day (3D), meaning the tokens will expire after 72 hours. (`jet` is used for the JWT Refresh Token)
+The `-ats` flag allows you to pass a JWT secret value for the `access token` generation and verification. Replace <your_jwt_access_token_secret_value> with your desired secret value.
+The `-atet` flag sets the JWT expiration time for the access token. In this case, it is set to four hours (4H), meaning the token will expire after 4 hours.
+The `-rts` flag allows you to pass a JWT secret value for the `refresh token` generation and verification. Replace <your_jwt_refresh_token_secret_value> with your desired secret value.
+Teh `-rtet` flag sets the JWT expiration time for the refresh token. In this case, it is set to three days (3D), meaning the token will expire after 3 days.
 
-Here are some example values for the `-jet` flag
+Here are some example values for the `-atet` and `rtet` flags
 
 - 60M: Represents a duration of 60 minutes.
 - 5H: Represents a duration of 5 hours.
 - 1D: Represents a duration of 1 day.
 
-NOTE: It is crucial to securely store a copy of the JWT secret value used in Soul. Once you pass this value, make sure to keep a backup because you will need it every time you restart Soul. Losing this secret value can result in a situation where all of your users are blocked from accessing Soul.
+NOTE: It is crucial to securely store a copy of the `Access token secret` and `Refresh token secret` values used in Soul. Once you pass this values, make sure to keep a backup because you will need it every time you restart Soul. Losing this secret values can result in a situation where all of your users are blocked from accessing Soul.
 
 ### 3. Updating Super Users
 

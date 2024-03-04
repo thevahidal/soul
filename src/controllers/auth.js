@@ -217,35 +217,35 @@ const obtainAccessToken = async (req, res) => {
       return res.status(401).send({ message: 'Invalid username or password' });
     }
 
-    // get the users role from the DB
-    let usersRole = rowService.get({
+    // get the user roles from the DB
+    const userRoles = rowService.get({
       tableName: '_users_roles',
       whereString: 'WHERE user_id=?',
       whereStringValues: [user.id],
     });
 
-    if (usersRole < 0) {
-      res.status(404).send({ message: 'Default role not found' });
+    if (userRoles < 0) {
+      return res.status(404).send({ message: 'Default role not found' });
     }
 
     const payload = {
       username: user.username,
       userId: user.id,
-      roleId: usersRole.role_id,
+      roleId: userRoles.role_id,
     };
 
     // generate an access token
     const accessToken = await generateToken(
       { subject: 'accessToken', ...payload },
-      config.jwtSecret,
-      '1H',
+      config.accessTokenSecret,
+      config.accessTokenExpirationTime,
     );
 
     // generate a refresh token
     const refreshToken = await generateToken(
       { subject: 'refreshToken', ...payload },
-      config.jwtSecret,
-      config.jwtExpirationTime,
+      config.refreshTokenSecret,
+      config.refreshTokenExpirationTime,
     );
 
     // set the token in the cookie
