@@ -1,6 +1,6 @@
 const { tableService } = require('../services');
 const { rowService } = require('../services');
-const { dbTables } = require('../constants');
+const { dbTables, constantRoles } = require('../constants');
 const config = require('../config');
 const {
   hashPassword,
@@ -12,6 +12,8 @@ const {
 } = require('../utils');
 
 const createDefaultTables = async () => {
+  let roleId;
+
   // check if the default tables are already created
   const roleTable = tableService.checkTableExists('_roles');
   const usersTable = tableService.checkTableExists('_users');
@@ -19,11 +21,13 @@ const createDefaultTables = async () => {
     tableService.checkTableExists('_roles_permissions');
   const usersRolesTable = tableService.checkTableExists('_users_roles');
 
+  // create _users table
   if (!usersTable) {
     // create the _users table
     tableService.createTable('_users', dbTables.userSchema);
   }
 
+  // create _users_roles table
   if (!usersRolesTable) {
     // create the _users_roles table
     tableService.createTable(
@@ -39,17 +43,21 @@ const createDefaultTables = async () => {
     );
   }
 
-  if (!roleTable && !rolesPermissionTable) {
+  // create _roles table
+  if (!roleTable) {
     // create the _role table
     tableService.createTable('_roles', dbTables.roleSchema);
 
     // create a default role in the _roles table
     const role = rowService.save({
       tableName: '_roles',
-      fields: { name: 'default' },
+      fields: { name: constantRoles.DEFAULT_ROLE },
     });
-    const roleId = role.lastInsertRowid;
+    roleId = role.lastInsertRowid;
+  }
 
+  // create _roles_permissions table
+  if (!rolesPermissionTable && roleId) {
     // create the _roles_permissions table
     tableService.createTable(
       '_roles_permissions',
@@ -86,7 +94,7 @@ const createDefaultTables = async () => {
   }
 };
 
-const updateUser = async (fields) => {
+const updateSuperuser = async (fields) => {
   const { id, password, is_superuser } = fields;
   let newHashedPassword, newSalt;
   let fieldsString = '';
@@ -268,15 +276,15 @@ const obtainAccessToken = async (req, res) => {
     // generate an access token
     const accessToken = await generateToken(
       { subject: 'accessToken', ...payload },
-      config.jwtSecret,
-      '1H',
+      config.accessTokenSecret,
+      config.accessTokenExpirationTime,
     );
 
     // generate a refresh token
     const refreshToken = await generateToken(
       { subject: 'refreshToken', ...payload },
-      config.jwtSecret,
-      config.jwtExpirationTime,
+      config.refreshTokenSecret,
+      config.refreshTokenExpirationTime,
     );
 
     // set the token in the cookie
@@ -299,7 +307,7 @@ const refreshAccessToken = async (req, res) => {
     // extract the payload from the token and verify it
     const payload = await decodeToken(
       req.cookies.refreshToken,
-      config.jwtSecret,
+      config.refreshTokenSecret,
     );
 
     // find the user
@@ -310,28 +318,52 @@ const refreshAccessToken = async (req, res) => {
     });
 
     if (users.length <= 0) {
-      return res.status(401).send({ message: 'User not found' });
+      return res
+        .status(401)
+        .send({ message: `User with userId = ${payload.userId} not found` });
     }
 
+    let userRoles, permissions, roleIds;
     const user = users[0];
 
-    const newPaylod = {
-      username: payload.username,
-      userId: payload.userId,
-      roleId: payload.roleId,
+    // if the user is not a superuser get the role and its permission from the DB
+    if (!toBoolean(user.is_superuser)) {
+      userRoles = rowService.get({
+        tableName: '_users_roles',
+        whereString: 'WHERE user_id=?',
+        whereStringValues: [user.id],
+      });
+
+      roleIds = userRoles.map((role) => role.role_id);
+
+      // get the permission of the role
+      permissions = rowService.get({
+        tableName: '_roles_permissions',
+        whereString: `WHERE role_id IN (${roleIds.map(() => '?')})`,
+        whereStringValues: [...roleIds],
+      });
+    }
+
+    const newPayload = {
+      username: user.username,
+      userId: user.id,
+      isSuperuser: user.is_superuser,
+      roleIds,
+      permissions,
     };
+
     // generate an access token
     const accessToken = await generateToken(
-      { subject: 'accessToken', ...newPaylod },
-      config.jwtSecret,
-      '1H',
+      { subject: 'accessToken', ...newPayload },
+      config.accessTokenSecret,
+      config.accessTokenExpirationTime,
     );
 
     // generate a refresh token
     const refreshToken = await generateToken(
-      { subject: 'refreshToken', ...newPaylod },
-      config.jwtSecret,
-      config.jwtExpirationTime,
+      { subject: 'refreshToken', ...newPayload },
+      config.refreshTokenSecret,
+      config.refreshTokenExpirationTime,
     );
 
     // set the token in the cookie
@@ -475,13 +507,12 @@ const createInitialUser = async () => {
     }
   } catch (error) {
     console.log(error);
-    process.exit(1);
   }
 };
 
 module.exports = {
   createDefaultTables,
-  updateUser,
+  updateSuperuser,
   registerUser,
   obtainAccessToken,
   refreshAccessToken,

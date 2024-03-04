@@ -19,6 +19,8 @@ Install Soul CLI with npm
 
 ## Usage
 
+### 1. Running Soul
+
 Soul is command line tool, after installing it,
 Run `soul -d sqlite.db -p 8000` and it'll start a REST API on [http://localhost:8000](http://localhost:8000) and a Websocket server on [ws://localhost:8000](ws://localhost:8000).
 
@@ -33,20 +35,18 @@ Options:
   -r, --rate-limit-enabled  Enable rate limiting                       [boolean]
   -c, --cors                CORS whitelist origins                [string]
   -a, --auth                Enable authentication and authorization [boolean]
-  -js, --jwtsecret          JWT Secret                               [string]
-  -jet, --jwtexpirationtime JWT Expiration Time                      [string]
-  -suu, --superuserusername Initial user username               [string]
-  -sup, --superuserpassword Initial user password               [string]
+
+  -iuu, --initialuserusername Initial user username               [string]
+  -iup, --initialuserpassword Initial user password               [string]
+
+  -ats, --accesstokensecret                 Access Token Secret                              [string]
+  -atet, --accesstokenexpirationtime        Access Token Expiration Time                      [string]
+  -rts, --refreshtokensecret                Refresh Token Secret                              [string]
+  -rtet, --refreshtokenexpirationtime       Refresh Token Expiration Time                     [string]
   -S, --studio              Start Soul Studio in parallel
       --help                Show help
 
 ```
-
-NOTE: When specifying the JWT expiration time in Soul, it must be in a specific format. Here are some examples:
-
-60M: Represents a duration of 60 minutes.
-5H: Represents a duration of 5 hours.
-1D: Represents a duration of 1 day.
 
 Then to test Soul is working run the following command
 
@@ -56,36 +56,46 @@ curl http://localhost:8000/api/tables
 
 It should return a list of the tables inside `sqlite.db` database.
 
-**Running Soul in Auth mode**
+### 2. Running Soul in Auth mode
 
 To run Soul in auth mode, allowing login and signup features with authorization capabilities in your database tables, follow these steps:
 
 Run the Soul command with the necessary parameters:
 
 ```
-soul --d foobar.db -a -js=<your_jwt_secret_value> -jet=3D -iuu=john -iup=<your_password>
+soul --d foobar.db -a -ats <your_jwt_access_token_secret_value> -atet=4H -rts <your_jwt_refresh_token_secret_value> -rtet=3D -iuu=john -iup=<your_password>
 ```
+
+Note: When configuring your JWT Secret, it is recommended to use a long string value for enhanced security. It is advisable to use a secret that is at least 10 characters in length.
 
 In this example:
 
-The `-a` flag enables Soul to run in auth mode.
-The `-js` flag allows you to pass a JWT secret value for token generation and verification. Replace <your_jwt_secret_value> with your desired secret value.
-The `-jet` flag sets the JWT expiration time. In this case, it is set to one day (3D), meaning the tokens will expire after 72 hours. (`jet` is used for the JWT Refresh Token)
+The `-a` flag instructs Soul to run in auth mode.
+The `-ats` flag allows you to pass a JWT secret value for the `access token` generation and verification. Replace <your_jwt_access_token_secret_value> with your desired secret value.
+The `-atet` flag sets the JWT expiration time for the access token. In this case, it is set to four hours (4H), meaning the token will expire after 4 hours.
+The `-rts` flag allows you to pass a JWT secret value for the `refresh token` generation and verification. Replace <your_jwt_refresh_token_secret_value> with your desired secret value.
+The `-rtet` flag sets the JWT expiration time for the refresh token. In this case, it is set to three days (3D), meaning the token will expire after 3 days.
 The `-iuu` flag is used to pass a username for the initial user
-The `--iup` flag is used to pass a password for the initial user
+The `-iup` flag is used to pass a password for the initial user
 
-**NOTE: It is crucial to securely store a copy of the JWT secret value used in Soul. Once you pass this value, make sure to keep a backup because you will need it every time you restart Soul. Losing this secret value can result in a situation where all of your users are blocked from accessing Soul.**
+Here are some example values for the `-atet` and `rtet` flags
 
-**Updating Super Users**
+- 60M: Represents a duration of 60 minutes.
+- 5H: Represents a duration of 5 hours.
+- 1D: Represents a duration of 1 day.
 
-To modify user information in a database, you can utilize the `updateuser` command. This command allows you to change a user's `password` and upgrade a normal user to a `superuser`. Below is an example of how to use it:
+NOTE: It is crucial to securely store a copy of the `Access token secret` and `Refresh token secret` values used in Soul. Once you pass this values, make sure to keep a backup because you will need it every time you restart Soul. Losing this secret values can result in a situation where all of your users are blocked from accessing Soul.
+
+### 3. Updating Super Users
+
+To modify a superuser information in a database, you can utilize the `updatesuperuser` command. This command allows you to change a superuser's `password` or upgrade/downgrade a normal user to a `superuser`. Below is an example of how to use it:
 
 ```
-soul --d foobar.db updateuser --id=1 password=<new_password_for_the_user> // Update the password for the user with ID 1
+soul --d foobar.db updatesuperuser --id=1 password=<new_password_for_the_user> // Update the password for the superuser with ID 1
 
-soul --d foobar.db updateuser --id=1 --is_superuser=true // Upgrade the user with ID 1 to a superuser
+soul --d foobar.db updatesuperuser --id=1 --is_superuser=true // Upgrade the user with ID 1 to a superuser
 
-soul --d foobar.db updateuser --id=1 --is_superuser=false // Revoke the superuser role from the user with ID 1
+soul --d foobar.db updatesuperuser --id=1 --is_superuser=false // Revoke the superuser role from the superuser with ID 1
 ```
 
 ## Documentation
