@@ -82,14 +82,14 @@ NOTE: It is crucial to securely store a copy of the `Access token secret` and `R
 
 ### 3. Updating Super Users
 
-To modify user information in a database, you can utilize the `updateuser` command. This command allows you to change a user's `password` and upgrade a normal user to a `superuser`. Below is an example of how to use it:
+To modify a superuser information in a database, you can utilize the `updatesuperuser` command. This command allows you to change a superuser's `password` or upgrade/downgrade a normal user to a `superuser`. Below is an example of how to use it:
 
 ```
-soul --d foobar.db updateuser --id=1 password=<new_password_for_the_user> // Update the password for the user with ID 1
+soul --d foobar.db updatesuperuser --id=1 password=<new_password_for_the_user> // Update the password for the superuser with ID 1
 
-soul --d foobar.db updateuser --id=1 --is_superuser=true // Upgrade the user with ID 1 to a superuser
+soul --d foobar.db updatesuperuser --id=1 --is_superuser=true // Upgrade the user with ID 1 to a superuser
 
-soul --d foobar.db updateuser --id=1 --is_superuser=false // Revoke the superuser role from the user with ID 1
+soul --d foobar.db updatesuperuser --id=1 --is_superuser=false // Revoke the superuser role from the superuser with ID 1
 ```
 
 ## Documentation

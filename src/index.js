@@ -18,12 +18,10 @@ const authRoutes = require('./routes/auth');
 
 const swaggerFile = require('./swagger/swagger.json');
 const { setupExtensions } = require('./extensions');
-const { createDefaultTables, updateUser } = require('./controllers/auth');
-const { yargs } = require('./cli');
+const { createDefaultTables } = require('./controllers/auth');
+const { runCLICommands } = require('./commands');
 
 const app = express();
-const { argv } = yargs;
-
 app.get('/health', (req, res) => {
   res.send('OK');
 });
@@ -84,19 +82,8 @@ if (config.auth) {
   );
 }
 
-//If the updateuser command is passed from the CLI execute the updateuser function
-if (argv._.includes('updateuser')) {
-  const { id, password, is_superuser } = argv;
-
-  if (!password && !is_superuser) {
-    console.log(
-      'Please provide either the --password or --is_superuser flag when using the updateuser command.',
-    );
-    process.exit(1);
-  } else {
-    updateUser({ id, password, is_superuser });
-  }
-}
+// If the user has passed custom CLI commands run the command and exit to avoid running the server
+runCLICommands();
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 app.use('/api', rootRoutes);

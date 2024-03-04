@@ -1,11 +1,20 @@
+const config = require('../config');
 const { registerUser } = require('../controllers/auth');
+const { apiConstants } = require('../constants/');
 
 const processRequest = async (req, res, next) => {
   const resource = req.params.name;
   const method = req.method;
 
+  // If the user sends a request when auth is set to false, throw an error
+  if (apiConstants.defaultRoutes.includes(resource) && !config.auth) {
+    return res.status(401).send({
+      message: 'You can not access this endpoint while AUTH is set to false',
+    });
+  }
+
   // Execute user registration function
-  if (resource === '_users' && method === 'POST') {
+  if (resource === '_users' && method === 'POST' && config.auth) {
     return registerUser(req, res);
   }
 

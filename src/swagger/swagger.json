@@ -241,6 +241,9 @@
         "responses": {
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       },
@@ -277,6 +280,9 @@
             "schema": {
               "$ref": "#/definitions/InsertRowErrorResponse"
             }
+          },
+          "401": {
+            "description": "Unauthorized"
           }
         }
       }
