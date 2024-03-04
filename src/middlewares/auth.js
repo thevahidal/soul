@@ -11,7 +11,10 @@ const isAuthorized = async (req, res, next) => {
     if (config.auth) {
       // extract the payload from the token and verify it
       try {
-        payload = await decodeToken(req.cookies.accessToken, config.jwtSecret);
+        payload = await decodeToken(
+          req.cookies.accessToken,
+          config.accessTokenSecret,
+        );
         req.user = payload;
       } catch (error) {
         return res.status(403).send({ message: 'Invalid access token' });
