@@ -57,6 +57,16 @@ const toBoolean = (value) => {
   throw new Error('Invalid value. Cannot convert to boolean.');
 };
 
+const removeFields = async (rows, fields) => {
+  const newPayload = rows.map((row) => {
+    fields.map((field) => {
+      delete row[field];
+    });
+  });
+
+  return newPayload;
+};
+
 module.exports = {
   hashPassword,
   comparePasswords,
@@ -64,4 +74,5 @@ module.exports = {
   generateToken,
   decodeToken,
   toBoolean,
+  removeFields,
 };

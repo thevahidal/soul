@@ -3,7 +3,7 @@ const express = require('express');
 const controllers = require('../controllers/rows');
 const { broadcast } = require('../middlewares/broadcast');
 const { validator } = require('../middlewares/validation');
-const { processRequest, processResponse } = require('../middlewares/api');
+const { processRowRequest, processRowResponse } = require('../middlewares/api');
 const { isAuthorized } = require('../middlewares/auth');
 const schema = require('../schemas/rows');
 
@@ -13,15 +13,15 @@ router.get(
   '/:name/rows',
   isAuthorized,
   validator(schema.listTableRows),
-  processRequest,
+  processRowRequest,
   controllers.listTableRows,
-  processResponse,
+  processRowResponse,
 );
 router.post(
   '/:name/rows',
   isAuthorized,
   validator(schema.insertRowInTable),
-  processRequest,
+  processRowRequest,
   controllers.insertRowInTable,
   broadcast,
 );
@@ -30,12 +30,13 @@ router.get(
   isAuthorized,
   validator(schema.getRowInTableByPK),
   controllers.getRowInTableByPK,
-  processResponse,
+  processRowResponse,
 );
 router.put(
   '/:name/rows/:pks',
   isAuthorized,
   validator(schema.updateRowInTableByPK),
+  processRowRequest,
   controllers.updateRowInTableByPK,
   broadcast,
 );

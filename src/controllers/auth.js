@@ -1,6 +1,7 @@
 const { tableService } = require('../services');
 const { rowService } = require('../services');
-const { dbTables, constantRoles } = require('../constants');
+const { constantRoles } = require('../constants');
+const schema = require('../db/schema');
 const config = require('../config');
 const {
   hashPassword,
@@ -24,7 +25,7 @@ const createDefaultTables = async () => {
   // create _users table
   if (!usersTable) {
     // create the _users table
-    tableService.createTable('_users', dbTables.userSchema);
+    tableService.createTable('_users', schema.userSchema);
   }
 
   // create _users_roles table
@@ -33,7 +34,7 @@ const createDefaultTables = async () => {
     tableService.createTable(
       '_users_roles',
 
-      dbTables.usersRoleSchema,
+      schema.usersRoleSchema,
       {
         multipleUniqueConstraints: {
           name: 'unique_users_role',
@@ -46,7 +47,7 @@ const createDefaultTables = async () => {
   // create _roles table
   if (!roleTable) {
     // create the _role table
-    tableService.createTable('_roles', dbTables.roleSchema);
+    tableService.createTable('_roles', schema.roleSchema);
 
     // create a default role in the _roles table
     const role = rowService.save({
@@ -61,7 +62,7 @@ const createDefaultTables = async () => {
     // create the _roles_permissions table
     tableService.createTable(
       '_roles_permissions',
-      dbTables.rolePermissionSchema,
+      schema.rolePermissionSchema,
       {
         multipleUniqueConstraints: {
           name: 'unique_role_table',
@@ -510,6 +511,16 @@ const createInitialUser = async () => {
   }
 };
 
+const isUsernameTaken = (username) => {
+  let user = rowService.get({
+    tableName: '_users',
+    whereString: 'WHERE username=?',
+    whereStringValues: [username],
+  });
+
+  return user.length > 0;
+};
+
 module.exports = {
   createDefaultTables,
   updateSuperuser,
@@ -518,4 +529,5 @@ module.exports = {
   refreshAccessToken,
   changePassword,
   createInitialUser,
+  isUsernameTaken,
 };
