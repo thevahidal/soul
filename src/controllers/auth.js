@@ -372,7 +372,7 @@ const refreshAccessToken = async (req, res) => {
     res.cookie('accessToken', accessToken, cookieOptions);
     res.cookie('refreshToken', refreshToken, cookieOptions);
 
-    res.status(201).send({ message: 'Success', data: { userId: user.id } });
+    res.status(200).send({ message: 'Success', data: { userId: user.id } });
   } catch (error) {
     res.status(401).send({ message: 'Invalid refresh token' });
   }
@@ -427,7 +427,7 @@ const changePassword = async (req, res) => {
       pks: `${user.id}`,
     });
 
-    res.status(201).send({
+    res.status(200).send({
       message: 'Password updated successfully',
       data: { id: user.id, username: user.username },
     });

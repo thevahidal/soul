@@ -136,6 +136,14 @@ npm install # Install dependencies
 npm run dev # Start the dev server
 ```
 
+## Testing
+
+Set the `AUTH` variable to `true` in your `.env` file and use the command below to run the tests
+
+```
+ npm run test
+```
+
 ## Community
 
 [Join](https://bit.ly/soul-discord) the discussion in our Discord server and help making Soul together.
