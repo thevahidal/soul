@@ -443,13 +443,13 @@ const createInitialUser = async () => {
 
   try {
     // check if there is a superuser in the DB
-    const superusers = rowService.get({
+    const users = rowService.get({
       tableName: '_users',
-      whereString: 'WHERE is_superuser=?',
-      whereStringValues: ['true'],
+      whereString: '',
+      whereStringValues: [],
     });
 
-    if (superusers.length <= 0) {
+    if (users.length <= 0) {
       // check if initial superuser username is passed from the  env or CLI
       if (!username) {
         console.error(
