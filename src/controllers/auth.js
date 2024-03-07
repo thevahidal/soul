@@ -442,7 +442,7 @@ const createInitialUser = async () => {
     config;
 
   try {
-    // check if there is a superuser in the DB
+    // check if there is are users in the DB
     const users = rowService.get({
       tableName: '_users',
       whereString: '',
@@ -450,7 +450,7 @@ const createInitialUser = async () => {
     });
 
     if (users.length <= 0) {
-      // check if initial superuser username is passed from the  env or CLI
+      // check if initial users username is passed from the  env or CLI
       if (!username) {
         console.error(
           'Error: You should pass the initial users username either from the CLI with the --iuu or from the environment variable using the INITIAL_USER_USERNAME flag',
@@ -458,7 +458,7 @@ const createInitialUser = async () => {
         process.exit(1);
       }
 
-      // check if initial superuser password is passed from the env or CLI
+      // check if initial users password is passed from the env or CLI
       if (!password) {
         console.error(
           'Error: You should pass the initial users password either from the CLI with the --iup or from the environment variable using the INITIAL_USER_PASSWORD flag',
@@ -491,7 +491,7 @@ const createInitialUser = async () => {
       // hash the password
       const { hashedPassword, salt } = await hashPassword(password, 10);
 
-      // create the superuser
+      // create the initial user
       rowService.save({
         tableName: '_users',
         fields: {
