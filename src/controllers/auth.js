@@ -1,6 +1,4 @@
-const { tableService } = require('../services');
-const { rowService } = require('../services');
-const { dbTables, constantRoles } = require('../constants');
+const { tableService, rowService } = require('../services');
 const config = require('../config');
 const {
   hashPassword,
@@ -9,6 +7,8 @@ const {
   generateToken,
   decodeToken,
 } = require('../utils');
+
+const { dbTables, constantRoles, apiConstants } = require('../constants');
 
 const createDefaultTables = async () => {
   let roleId;
@@ -90,28 +90,31 @@ const updateSuperuser = async (fields) => {
 
   try {
     // find the user by using the id field
-    let user = rowService.get({
+    const users = rowService.get({
       tableName: '_users',
       whereString: 'WHERE id=?',
       whereStringValues: [id],
     });
 
     // abort if the id is invalid
-    if (user.length === 0) {
+    if (users.length === 0) {
       console.log('The user id you passed does not exist in the database');
       process.exit(1);
     }
 
-    user = user[0];
-
     // check if the is_superuser field is passed
     if (is_superuser !== undefined) {
-      fieldsString = `is_superuser = '${is_superuser}', `;
+      fieldsString = `is_superuser = '${is_superuser}'`;
     }
 
     // if the password is sent from the CLI, update it
     if (password) {
-      if (password.length < 8) {
+      // check if the password is weak
+      if (
+        [apiConstants.PASSWORD.TOO_WEAK, apiConstants.PASSWORD.WEAK].includes(
+          checkPasswordStrength(password),
+        )
+      ) {
         console.log('Your password should be at least 8 charachters long');
         process.exit(1);
       }
@@ -120,7 +123,10 @@ const updateSuperuser = async (fields) => {
       const { hashedPassword, salt } = await hashPassword(password, 10);
       newHashedPassword = hashedPassword;
       newSalt = salt;
-      fieldsString += `hashed_password = '${newHashedPassword}', salt = '${newSalt}'`;
+
+      fieldsString = `${
+        fieldsString ? fieldsString + ', ' : ''
+      }hashed_password = '${newHashedPassword}', salt = '${newSalt}'`;
     }
 
     // update the user
@@ -156,7 +162,11 @@ const registerUser = async (req, res) => {
     }
 
     // check if the password is weak
-    if (['Too weak', 'Weak'].includes(checkPasswordStrength(password))) {
+    if (
+      [apiConstants.PASSWORD.TOO_WEAK, apiConstants.PASSWORD.WEAK].includes(
+        checkPasswordStrength(password),
+      )
+    ) {
       return res.status(400).send({
         message: 'This password is weak, please use another password',
       });
@@ -165,7 +175,7 @@ const registerUser = async (req, res) => {
     // hash the password
     const { salt, hashedPassword } = await hashPassword(password, 10);
 
-    // // create the user
+    // create the user
     const newUser = rowService.save({
       tableName: '_users',
       fields: {
@@ -180,7 +190,7 @@ const registerUser = async (req, res) => {
     let defaultRole = rowService.get({
       tableName: '_roles',
       whereString: 'WHERE name=?',
-      whereStringValues: ['default'],
+      whereStringValues: [constantRoles.DEFAULT_ROLE],
     });
 
     if (defaultRole.length <= 0) {
@@ -246,14 +256,14 @@ const obtainAccessToken = async (req, res) => {
     // generate an access token
     const accessToken = await generateToken(
       { subject: 'accessToken', ...payload },
-      config.accessTokenSecret,
+      config.tokenSecret,
       config.accessTokenExpirationTime,
     );
 
     // generate a refresh token
     const refreshToken = await generateToken(
       { subject: 'refreshToken', ...payload },
-      config.refreshTokenSecret,
+      config.tokenSecret,
       config.refreshTokenExpirationTime,
     );
 
