@@ -2,7 +2,7 @@ const config = require('../config');
 const { decodeToken, toBoolean } = require('../utils/index');
 const httpVerbs = require('../constants/httpVerbs');
 
-const isAuthorized = async (req, res, next) => {
+const isAuthenticated = async (req, res, next) => {
   let payload;
   const { name: tableName } = req.params;
   const verb = req.method;
@@ -13,7 +13,7 @@ const isAuthorized = async (req, res, next) => {
       try {
         payload = await decodeToken(
           req.cookies.accessToken,
-          config.accessTokenSecret,
+          config.tokenSecret,
         );
         req.user = payload;
       } catch (error) {
@@ -57,4 +57,4 @@ const isAuthorized = async (req, res, next) => {
   }
 };
 
-module.exports = { isAuthorized };
+module.exports = { isAuthenticated };
