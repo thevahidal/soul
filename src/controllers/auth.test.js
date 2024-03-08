@@ -264,7 +264,7 @@ describe('Auth Endpoints', () => {
   });
 
   describe('Change Password Endpoint', () => {
-    it('PUT /auth//change-password/ should change a password', async () => {
+    it('PUT /auth/change-password/ should change a password', async () => {
       const accessToken = await generateToken(
         { username: 'John', userId: 2, isSuperuser: true },
         config.tokenSecret,

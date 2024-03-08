@@ -19,7 +19,7 @@ describe('Rows Endpoints', () => {
   it('GET /tables/:name/rows should return a list of all rows', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -39,7 +39,7 @@ describe('Rows Endpoints', () => {
   it('GET /tables/:name/rows?_limit=8&_schema=firstName,lastName&_ordering:-firstName&_page=2: should query the rows by the provided query params', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -80,7 +80,7 @@ describe('Rows Endpoints', () => {
   it('GET /tables/:name/rows: should return a null field', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -96,7 +96,7 @@ describe('Rows Endpoints', () => {
   it('GET /tables/:name/rows: should successfully retrieve users created after 2010-01-01 00:00:00.', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -121,7 +121,7 @@ describe('Rows Endpoints', () => {
   it('GET /tables/:name/rows: should successfully retrieve users created before 2008-01-20 00:00:00.', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -146,7 +146,7 @@ describe('Rows Endpoints', () => {
   it('GET /tables/:name/rows: should successfully retrieve users created at 2013-01-08 00:00:00', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -171,7 +171,7 @@ describe('Rows Endpoints', () => {
   it('GET /tables/:name/rows: should successfully retrieve users created at 2007-01-08 00:00:00', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -188,7 +188,7 @@ describe('Rows Endpoints', () => {
   it('GET /tables/:name/rows: should successfully retrieve users that are not created at 2021-01-08 00:00:00', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -213,7 +213,7 @@ describe('Rows Endpoints', () => {
   it('POST /tables/:name/rows should insert a new row and return the lastInsertRowid', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -230,7 +230,7 @@ describe('Rows Endpoints', () => {
   it('GET /tables/:name/rows/:pks should return a row by its primary key', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -249,7 +249,7 @@ describe('Rows Endpoints', () => {
   it('PUT /tables/:name/rows/:pks should update a row by its primary key and return the number of changes', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
     const res = await requestWithSupertest
@@ -263,7 +263,7 @@ describe('Rows Endpoints', () => {
   it('DELETE /tables/:name/rows/:pks should delete a row by its primary key and return the number of changes', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -277,7 +277,7 @@ describe('Rows Endpoints', () => {
   it('POST /tables/:name/rows should insert a new row if any of the value of the object being inserted is null', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
     const res = await requestWithSupertest
@@ -299,7 +299,7 @@ describe('Rows Endpoints', () => {
   it('GET /tables/:name/rows should return values if any of the IDs from the array match the user ID.', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -315,7 +315,7 @@ describe('Rows Endpoints', () => {
   it('GET /tables/:name/rows should return values if the provided ID matches the user ID.', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 

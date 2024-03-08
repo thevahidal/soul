@@ -13,7 +13,7 @@ const isAuthenticated = async (req, res, next) => {
       try {
         payload = await decodeToken(
           req.cookies.accessToken,
-          config.accessTokenSecret,
+          config.tokenSecret,
         );
         req.user = payload;
       } catch (error) {
