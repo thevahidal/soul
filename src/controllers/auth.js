@@ -287,7 +287,7 @@ const refreshAccessToken = async (req, res) => {
     // extract the payload from the token and verify it
     const payload = await decodeToken(
       req.cookies.refreshToken,
-      config.jwtSecret,
+      config.tokenSecret,
     );
 
     // find the user
@@ -313,14 +313,14 @@ const refreshAccessToken = async (req, res) => {
     // generate an access token
     const accessToken = await generateToken(
       { subject: 'accessToken', ...newPaylod },
-      config.accessTokenSecret,
+      config.tokenSecret,
       config.accessTokenExpirationTime,
     );
 
     // generate a refresh token
     const refreshToken = await generateToken(
       { subject: 'refreshToken', ...newPaylod },
-      config.refreshTokenSecret,
+      config.tokenSecret,
       config.refreshTokenExpirationTime,
     );
 
