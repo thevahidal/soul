@@ -1,3 +1,5 @@
+const { apiConstants } = require('../constants');
+
 module.exports = (db) => {
   return {
     get(data) {
@@ -10,8 +12,8 @@ module.exports = (db) => {
       const statement = db.prepare(query);
       const result = statement.all(
         ...data.whereStringValues,
-        data.limit || 10,
-        data.page || 0,
+        data.limit || apiConstants.DEFAULT_PAGE_LIMIT,
+        data.page || apiConstants.DEFAULT_PAGE_INDEX,
       );
 
       return result;

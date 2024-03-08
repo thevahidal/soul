@@ -13,7 +13,7 @@ const processRowRequest = async (req, res, next) => {
 
   // If the user sends a request when auth is set to false, throw an error
   if (apiConstants.defaultRoutes.includes(resource) && !config.auth) {
-    return res.status(401).send({
+    return res.status(403).send({
       message: 'You can not access this endpoint while AUTH is set to false',
     });
   }
@@ -34,7 +34,10 @@ const processRowRequest = async (req, res, next) => {
       }
     }
 
-    // remove some user fields from the request like (is_superuser, hashed_password, salt). NOTE: password can be updated via the /change-password API and superuser status can be only updated from the CLI
+    /**
+     * remove some user fields from the request like (is_superuser, hashed_password, salt).
+     * NOTE: password can be updated via the /change-password API and superuser status can be only updated from the CLI
+     */
     removeFields([req.body.fields], [SALT, IS_SUPERUSER, HASHED_PASSWORD]);
   }
 

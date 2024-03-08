@@ -537,6 +537,9 @@
               "$ref": "#/definitions/InvalidCredentialErrorResponse"
             }
           },
+          "404": {
+            "description": "Not Found"
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -551,9 +554,9 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Access token refreshed ",
+            "description": "Access token refreshed",
             "schema": {
-              "$ref": "#/definitions/UserNotFoundErrorResponse"
+              "$ref": "#/definitions/RefreshAccessTokenSuccessResponse"
             }
           },
           "400": {
@@ -564,22 +567,19 @@
             "schema": {
               "$ref": "#/definitions/InvalidRefreshTokenErrorResponse"
             }
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       }
     },
-    "/api/auth/{userId}/change-password": {
+    "/api/auth/change-password": {
       "put": {
         "tags": ["Auth"],
         "summary": "Change Password",
         "description": "Endpoint to change a password",
         "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
           {
             "name": "body",
             "in": "body",
@@ -603,7 +603,10 @@
             }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "User not found error",
+            "schema": {
+              "$ref": "#/definitions/InvalidPasswordErrorResponse"
+            }
           },
           "403": {
             "description": "Forbidden"
@@ -1052,6 +1055,15 @@
               "example": 1
             }
           }
+        }
+      }
+    },
+    "InvalidPasswordErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Invalid password"
         }
       }
     }

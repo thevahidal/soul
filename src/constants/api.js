@@ -8,4 +8,10 @@ module.exports = {
       HASHED_PASSWORD: 'hashed_password',
     },
   },
+  DEFAULT_PAGE_LIMIT: 10,
+  DEFAULT_PAGE_INDEX: 0,
+  PASSWORD: {
+    TOO_WEAK: 'Too weak',
+    WEAK: 'Weak',
+  },
 };

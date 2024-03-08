@@ -12,7 +12,7 @@ describe('Auth Endpoints', () => {
     it('POST /tables/_users/rows should register a user', async () => {
       const accessToken = await generateToken(
         { username: 'John', userId: 1, isSuperuser: true },
-        config.accessTokenSecret,
+        config.tokenSecret,
         '1H',
       );
 
@@ -35,7 +35,7 @@ describe('Auth Endpoints', () => {
     it('POST /tables/_users/rows should throw 400 error if username is not passed', async () => {
       const accessToken = await generateToken(
         { username: 'John', isSuperuser: true },
-        config.accessTokenSecret,
+        config.tokenSecret,
         '1H',
       );
 
@@ -53,7 +53,7 @@ describe('Auth Endpoints', () => {
     it('POST /tables/_users/rows should throw 400 error if the password is not strong', async () => {
       const accessToken = await generateToken(
         { username: 'John', isSuperuser: true },
-        config.accessTokenSecret,
+        config.tokenSecret,
         '1H',
       );
 
@@ -76,7 +76,7 @@ describe('Auth Endpoints', () => {
     it('POST /tables/_users/rows should throw 409 error if the username is taken', async () => {
       const accessToken = await generateToken(
         { username: 'John', isSuperuser: true },
-        config.accessTokenSecret,
+        config.tokenSecret,
         '1H',
       );
 
@@ -97,7 +97,7 @@ describe('Auth Endpoints', () => {
     it('GET /tables/_users/rows should return list of users', async () => {
       const accessToken = await generateToken(
         { username: 'John', isSuperuser: true },
-        config.accessTokenSecret,
+        config.tokenSecret,
         '1H',
       );
 
@@ -115,7 +115,7 @@ describe('Auth Endpoints', () => {
     it('GET /tables/_users/rows/:id should retrive a single user', async () => {
       const accessToken = await generateToken(
         { username: 'John', isSuperuser: true },
-        config.accessTokenSecret,
+        config.tokenSecret,
         '1H',
       );
 
@@ -133,7 +133,7 @@ describe('Auth Endpoints', () => {
     it('PUT /tables/_users/rows/:id should update a user', async () => {
       const accessToken = await generateToken(
         { username: 'John', isSuperuser: true },
-        config.accessTokenSecret,
+        config.tokenSecret,
         '1H',
       );
 
@@ -152,7 +152,7 @@ describe('Auth Endpoints', () => {
     it('PUT /tables/_users/rows/:id should throw a 409 error if the username is taken', async () => {
       const accessToken = await generateToken(
         { username: 'John', isSuperuser: true },
-        config.accessTokenSecret,
+        config.tokenSecret,
         '1H',
       );
 
@@ -172,7 +172,7 @@ describe('Auth Endpoints', () => {
     it('DELETE /tables/_users/rows/:id should remove a user', async () => {
       const accessToken = await generateToken(
         { username: 'John', isSuperuser: true },
-        config.accessTokenSecret,
+        config.tokenSecret,
         '1H',
       );
 
@@ -239,13 +239,13 @@ describe('Auth Endpoints', () => {
     it('GET /auth/token/refresh should refresh the access and refresh tokens', async () => {
       const accessToken = await generateToken(
         { username: 'John', userId: 1, isSuperuser: true },
-        config.accessTokenSecret,
+        config.tokenSecret,
         '1H',
       );
 
       const refreshToken = await generateToken(
         { username: 'John', userId: 1, isSuperuser: true },
-        config.refreshTokenSecret,
+        config.tokenSecret,
         '1H',
       );
 
@@ -264,15 +264,15 @@ describe('Auth Endpoints', () => {
   });
 
   describe('Change Password Endpoint', () => {
-    it('PUT /auth/:userId/change-password/ should change a password', async () => {
+    it('PUT /auth/change-password/ should change a password', async () => {
       const accessToken = await generateToken(
         { username: 'John', userId: 2, isSuperuser: true },
-        config.accessTokenSecret,
+        config.tokenSecret,
         '1H',
       );
 
       const res = await requestWithSupertest
-        .put('/api/auth/2/change-password')
+        .put('/api/auth/change-password')
         .set('Cookie', [`accessToken=${accessToken}`])
         .send({
           fields: {
@@ -287,15 +287,15 @@ describe('Auth Endpoints', () => {
       expect(res.body.message).toBe('Password updated successfully');
     });
 
-    it('PUT /auth/:userId/change-password/ should throw  401 error if the current password is not valid', async () => {
+    it('PUT /auth/change-password/ should throw  401 error if the current password is not valid', async () => {
       const accessToken = await generateToken(
         { username: 'John', userId: 2, isSuperuser: true },
-        config.accessTokenSecret,
+        config.tokenSecret,
         '1H',
       );
 
       const res = await requestWithSupertest
-        .put('/api/auth/2/change-password')
+        .put('/api/auth/change-password')
         .set('Cookie', [`accessToken=${accessToken}`])
         .send({
           fields: {
