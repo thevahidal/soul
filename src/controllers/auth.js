@@ -489,7 +489,7 @@ const createInitialUser = async () => {
         process.exit(1);
       }
 
-      // checkf if the usernmae is taken
+      // check if the usernmae is taken
       const users = rowService.get({
         tableName: USER_TABLE,
         whereString: 'WHERE username=?',

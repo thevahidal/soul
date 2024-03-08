@@ -34,7 +34,10 @@ const processRowRequest = async (req, res, next) => {
       }
     }
 
-    // remove some user fields from the request like (is_superuser, hashed_password, salt). NOTE: password can be updated via the /change-password API and superuser status can be only updated from the CLI
+    /**
+     * remove some user fields from the request like (is_superuser, hashed_password, salt).
+     * NOTE: password can be updated via the /change-password API and superuser status can be only updated from the CLI
+     */
     removeFields([req.body.fields], [SALT, IS_SUPERUSER, HASHED_PASSWORD]);
   }
 
