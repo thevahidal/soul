@@ -1,12 +1,6 @@
 const db = require('../db/index');
 const { rowService } = require('../services');
 
-// const quotePrimaryKeys = (pks) => {
-//   const primaryKeys = pks.split(',');
-//   const quotedPks = primaryKeys.map((id) => `'${id}'`).join(',');
-//   return quotedPks;
-// };
-
 const operators = {
   eq: '=',
   lt: '<',
@@ -327,13 +321,6 @@ const listTableRows = async (req, res, next) => {
           }`
         : null;
 
-    // res.json({
-    //   data,
-    //   total,
-    //   next: nextPage,
-    //   previous
-    // });
-
     req.response = {
       status: 200,
       payload: { data, total, next: nextPage, previous },
@@ -598,10 +585,6 @@ const getRowInTableByPK = async (req, res, next) => {
         error: 'not_found',
       });
     } else {
-      // res.json({
-      //   data
-      // });
-
       req.response = { status: 200, payload: { data } };
       next();
     }
