@@ -1,7 +1,7 @@
 const { tableService } = require('../services');
 const { rowService } = require('../services');
 const { dbTables, constantRoles } = require('../constants');
-const { hashPassword } = require('../utils');
+const { hashPassword, checkPasswordStrength } = require('../utils');
 
 const createDefaultTables = async () => {
   let roleId;
@@ -83,28 +83,27 @@ const updateSuperuser = async (fields) => {
 
   try {
     // find the user by using the id field
-    let user = rowService.get({
+    const users = rowService.get({
       tableName: '_users',
       whereString: 'WHERE id=?',
       whereStringValues: [id],
     });
 
     // abort if the id is invalid
-    if (user.length === 0) {
+    if (users.length === 0) {
       console.log('The user id you passed does not exist in the database');
       process.exit(1);
     }
 
-    user = user[0];
-
     // check if the is_superuser field is passed
     if (is_superuser !== undefined) {
-      fieldsString = `is_superuser = '${is_superuser}', `;
+      fieldsString = `is_superuser = '${is_superuser}'`;
     }
 
     // if the password is sent from the CLI, update it
     if (password) {
-      if (password.length < 8) {
+      // check if the password is weak
+      if (['Too weak', 'Weak'].includes(checkPasswordStrength(password))) {
         console.log('Your password should be at least 8 charachters long');
         process.exit(1);
       }
@@ -113,7 +112,10 @@ const updateSuperuser = async (fields) => {
       const { hashedPassword, salt } = await hashPassword(password, 10);
       newHashedPassword = hashedPassword;
       newSalt = salt;
-      fieldsString += `hashed_password = '${newHashedPassword}', salt = '${newSalt}'`;
+
+      fieldsString = `${
+        fieldsString ? fieldsString + ', ' : ''
+      }hashed_password = '${newHashedPassword}', salt = '${newSalt}'`;
     }
 
     // update the user
