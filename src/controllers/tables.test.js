@@ -10,7 +10,7 @@ describe('Tables Endpoints', () => {
   it('GET /tables should return a list of all tables', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -28,7 +28,7 @@ describe('Tables Endpoints', () => {
   it('POST /tables should create a new table and return generated schema', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 
@@ -76,7 +76,7 @@ describe('Tables Endpoints', () => {
   it('GET /tables/:name should return schema of the table', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
-      config.accessTokenSecret,
+      config.tokenSecret,
       '1H',
     );
 

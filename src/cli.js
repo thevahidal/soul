@@ -53,9 +53,9 @@ if (process.env.NO_CLI !== 'true') {
       default: false,
       demandOption: false,
     })
-    .options('ats', {
-      alias: 'accesstokensecret',
-      describe: 'JWT secret for access token',
+    .options('ts', {
+      alias: 'tokensecret',
+      describe: 'JWT secret for the access and refresh tokens',
       type: 'string',
       default: null,
       demandOption: false,
@@ -65,13 +65,6 @@ if (process.env.NO_CLI !== 'true') {
       describe: 'JWT expiration time for access token',
       type: 'string',
       default: '5H',
-      demandOption: false,
-    })
-    .options('rts', {
-      alias: 'refreshtokensecret',
-      describe: 'JWT secret for refresh token',
-      type: 'string',
-      default: null,
       demandOption: false,
     })
     .options('rtet', {

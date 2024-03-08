@@ -8,7 +8,7 @@ const processRequest = async (req, res, next) => {
 
   // If the user sends a request when auth is set to false, throw an error
   if (apiConstants.defaultRoutes.includes(resource) && !config.auth) {
-    return res.status(401).send({
+    return res.status(403).send({
       message: 'You can not access this endpoint while AUTH is set to false',
     });
   }
