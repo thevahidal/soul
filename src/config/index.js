@@ -33,9 +33,8 @@ const envVarsSchema = Joi.object()
     INITIAL_USER_USERNAME: Joi.string(),
     INITIAL_USER_PASSWORD: Joi.string(),
 
-    ACCESS_TOKEN_SECRET: Joi.string().default(null),
+    TOKEN_SECRET: Joi.string().default(null),
     ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().default('5H'),
-    REFRESH_TOKEN_SECRET: Joi.string().default(null),
     REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().default('3D'),
   })
   .unknown();
@@ -68,16 +67,12 @@ if (argv['rate-limit-enabled']) {
   env.RATE_LIMIT_ENABLED = argv['rate-limit-enabled'];
 }
 
-if (argv.accesstokensecret) {
-  env.ACCESS_TOKEN_SECRET = argv.accesstokensecret;
+if (argv.tokensecret) {
+  env.TOKEN_SECRET = argv.tokensecret;
 }
 
 if (argv.accesstokenexpirationtime) {
   env.ACCESS_TOKEN_EXPIRATION_TIME = argv.accesstokenexpirationtime;
-}
-
-if (argv.refreshtokensecret) {
-  env.REFRESH_TOKEN_SECRET = argv.refreshtokensecret;
 }
 
 if (argv.refreshtokenexpirationtime) {
@@ -119,10 +114,9 @@ module.exports = {
   },
 
   auth: argv.auth || envVars.AUTH,
-  accessTokenSecret: argv.accesstokensecret || envVars.ACCESS_TOKEN_SECRET,
+  tokenSecret: argv.tokensecret || envVars.TOKEN_SECRET,
   accessTokenExpirationTime:
     argv.accesstokenexpirationtime || envVars.ACCESS_TOKEN_EXPIRATION_TIME,
-  refreshTokenSecret: argv.refreshtokensecret || envVars.REFRESH_TOKEN_SECRET,
   refreshTokenExpirationTime:
     argv.refreshtokenexpirationtime || envVars.REFRESH_TOKEN_EXPIRATION_TIME,
 

@@ -143,9 +143,6 @@
           },
           "403": {
             "description": "Forbidden"
-          },
-          "409": {
-            "description": "Conflict"
           }
         }
       }
@@ -552,16 +549,10 @@
         }
       }
     },
-    "/api/auth/{userId}/change-password": {
+    "/api/auth/change-password": {
       "put": {
         "description": "",
         "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
           {
             "name": "body",
             "in": "body",
