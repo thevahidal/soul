@@ -364,7 +364,11 @@ const changePassword = async (req, res) => {
     }
 
     // check if the new password is strong
-    if (['Too weak', 'Weak'].includes(checkPasswordStrength(newPassword))) {
+    if (
+      [apiConstants.PASSWORD.TOO_WEAK, apiConstants.PASSWORD.WEAK].includes(
+        checkPasswordStrength(newPassword),
+      )
+    ) {
       return res.status(400).send({
         message: 'This password is weak, please use another password',
       });

@@ -1,7 +1,7 @@
 const config = require('../config');
 const { decodeToken } = require('../utils/index');
 
-const isAuthorized = async (req, res, next) => {
+const isAuthenticated = async (req, res, next) => {
   try {
     // extract the payload from the token and verify it
     const payload = await decodeToken(
@@ -17,4 +17,4 @@ const isAuthorized = async (req, res, next) => {
   }
 };
 
-module.exports = { isAuthorized };
+module.exports = { isAuthenticated };
