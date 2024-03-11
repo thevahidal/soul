@@ -17,7 +17,7 @@ const dropTestDatabase = async (path = 'test.db') => {
 
   if (fs.existsSync(path + '-wal')) {
     try {
-      await Promise.allSettled(unlink(path + '-wal'), unlink(path + '-shm'));
+      await Promise.allSettled([unlink(path + '-wal'), unlink(path + '-shm')]);
     } catch (error) {
       console.error('there was an error:', error);
     }

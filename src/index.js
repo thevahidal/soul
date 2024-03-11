@@ -19,7 +19,11 @@ const authRoutes = require('./routes/auth');
 
 const swaggerFile = require('./swagger/swagger.json');
 const { setupExtensions } = require('./extensions');
-const { createDefaultTables } = require('./controllers/auth');
+const {
+  createDefaultTables,
+  createInitialUser,
+} = require('./controllers/auth');
+
 const { runCLICommands } = require('./commands');
 
 const app = express();
@@ -75,9 +79,10 @@ if (config.rateLimit.enabled) {
   app.use(limiter);
 }
 
-//If Auth mode is activated then create auth tables in the DB
+//If Auth mode is activated then create auth tables in the DB & create a super user if there are no users in the DB
 if (config.auth) {
   createDefaultTables();
+  createInitialUser();
 } else {
   console.warn(
     'Warning: Soul is running in open mode without authentication or authorization for API endpoints. Please be aware that your API endpoints will not be secure.',

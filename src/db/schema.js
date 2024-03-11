@@ -98,7 +98,7 @@ module.exports = {
       type: 'NUMERIC',
       primaryKey: false,
       notNull: true,
-      unique: true,
+      unique: false,
       foreignKey: { table: '_users', column: 'id' },
     },
 
