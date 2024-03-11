@@ -1,4 +1,6 @@
 const { tableService, rowService } = require('../services');
+const { constantRoles, apiConstants, dbConstants } = require('../constants');
+const schema = require('../db/schema');
 const config = require('../config');
 const {
   hashPassword,
@@ -9,31 +11,33 @@ const {
   toBoolean,
 } = require('../utils');
 
-const { dbTables, constantRoles, apiConstants } = require('../constants');
+const { USER_TABLE, ROLE_TABLE, USERS_ROLES_TABLE, ROLE_PERMISSIONS_TABLE } =
+  dbConstants;
 
 const createDefaultTables = async () => {
   let roleId;
 
   // check if the default tables are already created
-  const roleTable = tableService.checkTableExists('_roles');
-  const usersTable = tableService.checkTableExists('_users');
-  const rolesPermissionTable =
-    tableService.checkTableExists('_roles_permissions');
-  const usersRolesTable = tableService.checkTableExists('_users_roles');
+  const roleTable = tableService.checkTableExists(ROLE_TABLE);
+  const usersTable = tableService.checkTableExists(USER_TABLE);
+  const rolesPermissionTable = tableService.checkTableExists(
+    ROLE_PERMISSIONS_TABLE,
+  );
+  const usersRolesTable = tableService.checkTableExists(USERS_ROLES_TABLE);
 
   // create _users table
   if (!usersTable) {
     // create the _users table
-    tableService.createTable('_users', dbTables.userSchema);
+    tableService.createTable(USER_TABLE, schema.userSchema);
   }
 
   // create _users_roles table
   if (!usersRolesTable) {
     // create the _users_roles table
     tableService.createTable(
-      '_users_roles',
+      USERS_ROLES_TABLE,
 
-      dbTables.usersRoleSchema,
+      schema.usersRoleSchema,
       {
         multipleUniqueConstraints: {
           name: 'unique_users_role',
@@ -46,11 +50,11 @@ const createDefaultTables = async () => {
   // create _roles table
   if (!roleTable) {
     // create the _role table
-    tableService.createTable('_roles', dbTables.roleSchema);
+    tableService.createTable(ROLE_TABLE, schema.roleSchema);
 
     // create a default role in the _roles table
     const role = rowService.save({
-      tableName: '_roles',
+      tableName: ROLE_TABLE,
       fields: { name: constantRoles.DEFAULT_ROLE },
     });
     roleId = role.lastInsertRowid;
@@ -60,8 +64,8 @@ const createDefaultTables = async () => {
   if (!rolesPermissionTable && roleId) {
     // create the _roles_permissions table
     tableService.createTable(
-      '_roles_permissions',
-      dbTables.rolePermissionSchema,
+      ROLE_PERMISSIONS_TABLE,
+      schema.rolePermissionSchema,
       {
         multipleUniqueConstraints: {
           name: 'unique_role_table',
@@ -88,7 +92,7 @@ const createDefaultTables = async () => {
 
     // store the permissions in the db
     rowService.bulkWrite({
-      tableName: '_roles_permissions',
+      tableName: ROLE_PERMISSIONS_TABLE,
       fields: permissions,
     });
   }
@@ -102,7 +106,7 @@ const updateSuperuser = async (fields) => {
   try {
     // find the user by using the id field
     const users = rowService.get({
-      tableName: '_users',
+      tableName: USER_TABLE,
       whereString: 'WHERE id=?',
       whereStringValues: [id],
     });
@@ -142,7 +146,7 @@ const updateSuperuser = async (fields) => {
 
     // update the user
     rowService.update({
-      tableName: '_users',
+      tableName: USER_TABLE,
       lookupField: `id`,
       fieldsString,
       pks: `${id}`,
@@ -158,6 +162,19 @@ const updateSuperuser = async (fields) => {
 };
 
 const registerUser = async (req, res) => {
+  /* 	
+    #swagger.tags = ['Auth']
+    #swagger.summary = 'Register User' 
+    #swagger.description = 'Endpoint to signup'
+
+     #swagger.parameters['username'] = {
+      in: 'body',
+      required: true,
+      type: 'object',
+      schema: { $ref: '#/definitions/UserRegistrationRequestBody' }
+    }
+  */
+
   const { username, password } = req.body.fields;
 
   try {
@@ -171,13 +188,22 @@ const registerUser = async (req, res) => {
 
     // check if the username is taken
     let user = rowService.get({
-      tableName: '_users',
+      tableName: USER_TABLE,
       whereString: 'WHERE username=?',
       whereStringValues: [username],
     });
 
     if (user.length > 0) {
       return res.status(409).send({ message: 'This username is taken' });
+
+      /*
+      #swagger.responses[409] = {
+        description: 'Username taken error',
+        schema: {
+          $ref: '#/definitions/UsernameTakenErrorResponse'
+        }
+      }
+    */
     }
 
     // check if the password is weak
@@ -189,6 +215,15 @@ const registerUser = async (req, res) => {
       return res.status(400).send({
         message: 'This password is weak, please use another password',
       });
+
+      /*
+      #swagger.responses[400] = {
+        description: 'Weak password error',
+        schema: {
+          $ref: '#/definitions/WeakPasswordErrorResponse'
+        }
+      }
+    */
     }
 
     // hash the password
@@ -196,7 +231,7 @@ const registerUser = async (req, res) => {
 
     // create the user
     const newUser = rowService.save({
-      tableName: '_users',
+      tableName: USER_TABLE,
       fields: {
         username,
         salt,
@@ -207,7 +242,7 @@ const registerUser = async (req, res) => {
 
     // find the default role from the DB
     let defaultRole = rowService.get({
-      tableName: '_roles',
+      tableName: ROLE_TABLE,
       whereString: 'WHERE name=?',
       whereStringValues: [constantRoles.DEFAULT_ROLE],
     });
@@ -216,15 +251,32 @@ const registerUser = async (req, res) => {
       return res.status(500).send({
         message: 'Please restart soul so a default role can be created',
       });
+      /*
+      #swagger.responses[500] = {
+        description: 'Server error',
+        schema: {
+          $ref: '#/definitions/DefaultRoleNotCreatedErrorResponse'
+        }
+      }
+    */
     }
 
     // create a role for the user
     rowService.save({
-      tableName: '_users_roles',
+      tableName: USERS_ROLES_TABLE,
       fields: { user_id: newUser.lastInsertRowid, role_id: defaultRole[0].id },
     });
 
     res.status(201).send({ message: 'Row Inserted' });
+
+    /*
+      #swagger.responses[201] = {
+        description: 'Row inserted',
+        schema: {
+          $ref: '#/definitions/InsertRowSuccessResponse'
+        }
+      }
+    */
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: error.message });
@@ -232,13 +284,26 @@ const registerUser = async (req, res) => {
 };
 
 const obtainAccessToken = async (req, res) => {
+  /* 	
+    #swagger.tags = ['Auth']
+    #swagger.summary = 'Obtain Access Token' 
+    #swagger.description = 'Endpoint to generate access and refresh tokens'
+
+     #swagger.parameters['body'] = {
+      in: 'body',
+      required: true,
+      type: 'object',
+      schema: { $ref: '#/definitions/ObtainAccessTokenRequestBody' }
+    }
+  */
+
   // extract payload
   const { username, password } = req.body.fields;
 
   try {
     // check if the username exists in the Db
     const users = rowService.get({
-      tableName: '_users',
+      tableName: USER_TABLE,
       whereString: 'WHERE username=?',
       whereStringValues: [username],
     });
@@ -253,6 +318,14 @@ const obtainAccessToken = async (req, res) => {
 
     if (!isMatch) {
       return res.status(401).send({ message: 'Invalid username or password' });
+      /*
+      #swagger.responses[401] = {
+        description: 'Invalid username or password error',
+        schema: {
+          $ref: '#/definitions/InvalidCredentialErrorResponse'
+        }
+      }
+    */
     }
 
     let userRoles, permissions, roleIds;
@@ -260,16 +333,22 @@ const obtainAccessToken = async (req, res) => {
     // if the user is not a superuser get the role and its permission from the DB
     if (!toBoolean(user.is_superuser)) {
       userRoles = rowService.get({
-        tableName: '_users_roles',
+        tableName: USERS_ROLES_TABLE,
         whereString: 'WHERE user_id=?',
         whereStringValues: [user.id],
       });
+
+      if (userRoles <= 0) {
+        return res
+          .status(404)
+          .send({ message: 'Role not found for this user' });
+      }
 
       roleIds = userRoles.map((role) => role.role_id);
 
       // get the permission of the role
       permissions = rowService.get({
-        tableName: '_roles_permissions',
+        tableName: ROLE_PERMISSIONS_TABLE,
         whereString: `WHERE role_id IN (${roleIds.map(() => '?')})`,
         whereStringValues: [...roleIds],
       });
@@ -303,6 +382,15 @@ const obtainAccessToken = async (req, res) => {
     res.cookie('refreshToken', refreshToken, cookieOptions);
 
     res.status(201).send({ message: 'Success', data: { userId: user.id } });
+
+    /*
+      #swagger.responses[201] = {
+        description: 'Access token and Refresh token generated',
+        schema: {
+          $ref: '#/definitions/ObtainAccessTokenSuccessResponse'
+        }
+      }
+    */
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -313,6 +401,12 @@ const obtainAccessToken = async (req, res) => {
 };
 
 const refreshAccessToken = async (req, res) => {
+  /* 	
+    #swagger.tags = ['Auth']
+    #swagger.summary = 'Refresh Access Token' 
+    #swagger.description = 'Endpoint to refresh access and refresh tokens'
+  */
+
   try {
     // extract the payload from the token and verify it
     const payload = await decodeToken(
@@ -322,7 +416,7 @@ const refreshAccessToken = async (req, res) => {
 
     // find the user
     const users = rowService.get({
-      tableName: '_users',
+      tableName: USER_TABLE,
       whereString: 'WHERE id=?',
       whereStringValues: [payload.userId],
     });
@@ -331,6 +425,15 @@ const refreshAccessToken = async (req, res) => {
       return res
         .status(401)
         .send({ message: `User with userId = ${payload.userId} not found` });
+
+      /*
+      #swagger.responses[401] = {
+        description: 'User not found error',
+        schema: {
+          $ref: '#/definitions/UserNotFoundErrorResponse'
+        }
+      }
+    */
     }
 
     let userRoles, permissions, roleIds;
@@ -339,7 +442,7 @@ const refreshAccessToken = async (req, res) => {
     // if the user is not a superuser get the role and its permission from the DB
     if (!toBoolean(user.is_superuser)) {
       userRoles = rowService.get({
-        tableName: '_users_roles',
+        tableName: USERS_ROLES_TABLE,
         whereString: 'WHERE user_id=?',
         whereStringValues: [user.id],
       });
@@ -348,7 +451,7 @@ const refreshAccessToken = async (req, res) => {
 
       // get the permission of the role
       permissions = rowService.get({
-        tableName: '_roles_permissions',
+        tableName: ROLE_PERMISSIONS_TABLE,
         whereString: `WHERE role_id IN (${roleIds.map(() => '?')})`,
         whereStringValues: [...roleIds],
       });
@@ -381,20 +484,52 @@ const refreshAccessToken = async (req, res) => {
     res.cookie('accessToken', accessToken, cookieOptions);
     res.cookie('refreshToken', refreshToken, cookieOptions);
 
-    res.status(201).send({ message: 'Success', data: { userId: user.id } });
+    res.status(200).send({ message: 'Success', data: { userId: user.id } });
+
+    /*
+      #swagger.responses[200] = {
+        description: 'Access token refreshed',
+        schema: {
+          $ref: '#/definitions/RefreshAccessTokenSuccessResponse'
+        }
+      }
+    */
   } catch (error) {
-    res.status(401).send({ message: 'Invalid refresh token' });
+    res.status(403).send({ message: 'Invalid refresh token' });
+    /*
+      #swagger.responses[401] = {
+        description: 'Invalid refresh token error',
+        schema: {
+          $ref: '#/definitions/InvalidRefreshTokenErrorResponse'
+        }
+      }
+    */
   }
 };
 
 const changePassword = async (req, res) => {
+  /* 	
+    #swagger.tags = ['Auth']
+    #swagger.summary = 'Change Password' 
+    #swagger.description = 'Endpoint to change a password'
+
+     #swagger.parameters['body'] = {
+      in: 'body',
+      required: true,
+      type: 'object',
+      schema: {
+          $ref: '#/definitions/ChangePasswordRequestBody'
+      }
+    }
+  */
+
   const userInfo = req.user;
   const { currentPassword, newPassword } = req.body.fields;
 
   try {
     // get the user from the Db
     const users = rowService.get({
-      tableName: '_users',
+      tableName: USER_TABLE,
       whereString: 'WHERE id=?',
       whereStringValues: [userInfo.userId],
     });
@@ -413,6 +548,14 @@ const changePassword = async (req, res) => {
 
     if (!isMatch) {
       return res.status(401).send({ message: 'Invalid current password' });
+      /*
+      #swagger.responses[401] = {
+        description: 'User not found error',
+        schema: {
+          $ref: '#/definitions/InvalidPasswordErrorResponse'
+        }
+      }
+    */
     }
 
     // check if the new password is strong
@@ -424,6 +567,15 @@ const changePassword = async (req, res) => {
       return res.status(400).send({
         message: 'This password is weak, please use another password',
       });
+
+      /*
+      #swagger.responses[400] = {
+        description: 'Weak password error',
+        schema: {
+          $ref: '#/definitions/WeakPasswordErrorResponse'
+        }
+      }
+    */
     }
 
     // hash the password
@@ -434,16 +586,25 @@ const changePassword = async (req, res) => {
 
     // update the user
     rowService.update({
-      tableName: '_users',
+      tableName: USER_TABLE,
       lookupField: `id`,
       fieldsString: `hashed_password = '${hashedPassword}', salt = '${salt}'`,
       pks: `${user.id}`,
     });
 
-    res.status(201).send({
+    res.status(200).send({
       message: 'Password updated successfully',
       data: { id: user.id, username: user.username },
     });
+
+    /*
+      #swagger.responses[200] = {
+        description: 'Weak password error',
+        schema: {
+          $ref: '#/definitions/ChangePasswordSuccessResponse'
+        }
+      }
+    */
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
@@ -455,15 +616,15 @@ const createInitialUser = async () => {
     config;
 
   try {
-    // check if there is a superuser in the DB
+    // check if there is are users in the DB
     const users = rowService.get({
-      tableName: '_users',
+      tableName: USER_TABLE,
       whereString: '',
       whereStringValues: [],
     });
 
     if (users.length <= 0) {
-      // check if initial superuser username is passed from the  env or CLI
+      // check if initial users username is passed from the  env or CLI
       if (!username) {
         console.error(
           'Error: You should pass the initial users username either from the CLI with the --iuu or from the environment variable using the INITIAL_USER_USERNAME flag',
@@ -471,7 +632,7 @@ const createInitialUser = async () => {
         process.exit(1);
       }
 
-      // check if initial superuser password is passed from the env or CLI
+      // check if initial users password is passed from the env or CLI
       if (!password) {
         console.error(
           'Error: You should pass the initial users password either from the CLI with the --iup or from the environment variable using the INITIAL_USER_PASSWORD flag',
@@ -481,7 +642,7 @@ const createInitialUser = async () => {
 
       // check if the usernmae is taken
       const users = rowService.get({
-        tableName: '_users',
+        tableName: USER_TABLE,
         whereString: 'WHERE username=?',
         whereStringValues: [username],
       });
@@ -494,7 +655,11 @@ const createInitialUser = async () => {
       }
 
       // check if the password is strong
-      if (['Too weak', 'Weak'].includes(checkPasswordStrength(password))) {
+      if (
+        [apiConstants.PASSWORD.TOO_WEAK, apiConstants.PASSWORD.WEAK].includes(
+          checkPasswordStrength(password),
+        )
+      ) {
         console.error(
           'Error: The password you passed for the initial user is weak, please use another password',
         );
@@ -504,9 +669,9 @@ const createInitialUser = async () => {
       // hash the password
       const { hashedPassword, salt } = await hashPassword(password, 10);
 
-      // create the superuser
+      // create the initial user
       rowService.save({
-        tableName: '_users',
+        tableName: USER_TABLE,
         fields: {
           username,
           hashed_password: hashedPassword,
@@ -524,6 +689,16 @@ const createInitialUser = async () => {
   }
 };
 
+const isUsernameTaken = (username) => {
+  let user = rowService.get({
+    tableName: USER_TABLE,
+    whereString: 'WHERE username=?',
+    whereStringValues: [username],
+  });
+
+  return user.length > 0;
+};
+
 module.exports = {
   createDefaultTables,
   updateSuperuser,
@@ -532,4 +707,5 @@ module.exports = {
   refreshAccessToken,
   changePassword,
   createInitialUser,
+  isUsernameTaken,
 };
