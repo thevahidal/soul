@@ -62,9 +62,12 @@ To run Soul in auth mode, allowing login and signup features with authorization 
 
 Run the Soul command with the necessary parameters:
 
-```
-soul --d foobar.db -a -ts <your_jwt_secret_value> -atet=4H -rtet=3D -iuu=john -iup=<your_password>
-```
+
+ ```
+
+   soul --d foobar.db -a -ts <your_jwt_secret_value> -atet=4H -rtet=3D -iuu=john -iup=<your_password>
+
+ ```
 
 Note: When configuring your JWT Secret, it is recommended to use a long string value for enhanced security. It is advisable to use a secret that is at least 10 characters in length.
 
