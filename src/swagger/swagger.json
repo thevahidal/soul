@@ -19,6 +19,10 @@
     {
       "name": "Rows",
       "description": "Rows endpoints"
+    },
+    {
+      "name": "Auth",
+      "description": "Auth endpoints"
     }
   ],
   "schemes": ["http", "https"],
@@ -504,30 +508,34 @@
     },
     "/api/auth/token/obtain": {
       "post": {
-        "description": "",
+        "tags": ["Auth"],
+        "summary": "Obtain Access Token",
+        "description": "Endpoint to generate access and refresh tokens",
         "parameters": [
           {
             "name": "body",
             "in": "body",
+            "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "fields": {
-                  "example": "any"
-                }
-              }
+              "$ref": "#/definitions/ObtainAccessTokenRequestBody"
             }
           }
         ],
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Access token and Refresh token generated",
+            "schema": {
+              "$ref": "#/definitions/ObtainAccessTokenSuccessResponse"
+            }
           },
           "400": {
             "description": "Bad Request"
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Invalid username or password error",
+            "schema": {
+              "$ref": "#/definitions/InvalidCredentialErrorResponse"
+            }
           },
           "404": {
             "description": "Not Found"
@@ -540,17 +548,25 @@
     },
     "/api/auth/token/refresh": {
       "get": {
-        "description": "",
+        "tags": ["Auth"],
+        "summary": "Refresh Access Token",
+        "description": "Endpoint to refresh access and refresh tokens",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Access token refreshed",
+            "schema": {
+              "$ref": "#/definitions/RefreshAccessTokenSuccessResponse"
+            }
           },
           "400": {
             "description": "Bad Request"
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "Invalid refresh token error",
+            "schema": {
+              "$ref": "#/definitions/InvalidRefreshTokenErrorResponse"
+            }
           },
           "403": {
             "description": "Forbidden"
@@ -560,30 +576,37 @@
     },
     "/api/auth/change-password": {
       "put": {
-        "description": "",
+        "tags": ["Auth"],
+        "summary": "Change Password",
+        "description": "Endpoint to change a password",
         "parameters": [
           {
             "name": "body",
             "in": "body",
+            "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "fields": {
-                  "example": "any"
-                }
-              }
+              "$ref": "#/definitions/ChangePasswordRequestBody"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Weak password error",
+            "schema": {
+              "$ref": "#/definitions/ChangePasswordSuccessResponse"
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Weak password error",
+            "schema": {
+              "$ref": "#/definitions/WeakPasswordErrorResponse"
+            }
           },
           "401": {
-            "description": "Unauthorized"
+            "description": "User not found error",
+            "schema": {
+              "$ref": "#/definitions/InvalidPasswordErrorResponse"
+            }
           },
           "403": {
             "description": "Forbidden"
@@ -868,6 +891,181 @@
     },
     "TransactionRequestBody": {
       "$ref": "#/definitions/Transaction"
+    },
+    "ObtainAccessTokenRequestBody": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string",
+              "example": "@john"
+            },
+            "password": {
+              "type": "string",
+              "example": "Ak22#cPM33@v*#"
+            }
+          }
+        }
+      }
+    },
+    "ObtainAccessTokenSuccessResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Success"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "number",
+              "example": 1
+            }
+          }
+        }
+      }
+    },
+    "InvalidCredentialErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Invalid username or password"
+        }
+      }
+    },
+    "UserRegisterationRequestBody": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string",
+              "example": "@john"
+            },
+            "password": {
+              "type": "string",
+              "example": "Ak22#cPM33@v*#"
+            }
+          }
+        }
+      }
+    },
+    "WeakPasswordErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "This password is weak, please use another password"
+        }
+      }
+    },
+    "UsernameTakenErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "This username is taken"
+        }
+      }
+    },
+    "DefaultRoleNotCreatedErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Please restart soul so a default role can be created"
+        }
+      }
+    },
+    "UserNotFoundErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "User not found"
+        }
+      }
+    },
+    "InvalidRefreshTokenErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Invalid refresh token"
+        }
+      }
+    },
+    "ChangePasswordRequestBody": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "object",
+          "properties": {
+            "currentPassword": {
+              "type": "string",
+              "example": "Ak22#cPM33@v*#"
+            },
+            "newPassword": {
+              "type": "string",
+              "example": "hKB33o@3245CD$"
+            }
+          }
+        }
+      }
+    },
+    "ChangePasswordSuccessResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Password updated successfully"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "example": 1
+            },
+            "username": {
+              "type": "string",
+              "example": "@john"
+            }
+          }
+        }
+      }
+    },
+    "RefreshAccessTokenSuccessResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Success"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "number",
+              "example": 1
+            }
+          }
+        }
+      }
+    },
+    "InvalidPasswordErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Invalid password"
+        }
+      }
     }
   }
 }

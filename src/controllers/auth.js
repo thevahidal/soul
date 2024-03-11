@@ -162,6 +162,19 @@ const updateSuperuser = async (fields) => {
 };
 
 const registerUser = async (req, res) => {
+  /* 	
+    #swagger.tags = ['Auth']
+    #swagger.summary = 'Register User' 
+    #swagger.description = 'Endpoint to signup'
+
+     #swagger.parameters['username'] = {
+      in: 'body',
+      required: true,
+      type: 'object',
+      schema: { $ref: '#/definitions/UserRegistrationRequestBody' }
+    }
+  */
+
   const { username, password } = req.body.fields;
 
   try {
@@ -182,6 +195,15 @@ const registerUser = async (req, res) => {
 
     if (user.length > 0) {
       return res.status(409).send({ message: 'This username is taken' });
+
+      /*
+      #swagger.responses[409] = {
+        description: 'Username taken error',
+        schema: {
+          $ref: '#/definitions/UsernameTakenErrorResponse'
+        }
+      }
+    */
     }
 
     // check if the password is weak
@@ -193,6 +215,15 @@ const registerUser = async (req, res) => {
       return res.status(400).send({
         message: 'This password is weak, please use another password',
       });
+
+      /*
+      #swagger.responses[400] = {
+        description: 'Weak password error',
+        schema: {
+          $ref: '#/definitions/WeakPasswordErrorResponse'
+        }
+      }
+    */
     }
 
     // hash the password
@@ -220,6 +251,14 @@ const registerUser = async (req, res) => {
       return res.status(500).send({
         message: 'Please restart soul so a default role can be created',
       });
+      /*
+      #swagger.responses[500] = {
+        description: 'Server error',
+        schema: {
+          $ref: '#/definitions/DefaultRoleNotCreatedErrorResponse'
+        }
+      }
+    */
     }
 
     // create a role for the user
@@ -229,6 +268,15 @@ const registerUser = async (req, res) => {
     });
 
     res.status(201).send({ message: 'Row Inserted' });
+
+    /*
+      #swagger.responses[201] = {
+        description: 'Row inserted',
+        schema: {
+          $ref: '#/definitions/InsertRowSuccessResponse'
+        }
+      }
+    */
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: error.message });
@@ -236,6 +284,19 @@ const registerUser = async (req, res) => {
 };
 
 const obtainAccessToken = async (req, res) => {
+  /* 	
+    #swagger.tags = ['Auth']
+    #swagger.summary = 'Obtain Access Token' 
+    #swagger.description = 'Endpoint to generate access and refresh tokens'
+
+     #swagger.parameters['body'] = {
+      in: 'body',
+      required: true,
+      type: 'object',
+      schema: { $ref: '#/definitions/ObtainAccessTokenRequestBody' }
+    }
+  */
+
   // extract payload
   const { username, password } = req.body.fields;
 
@@ -257,6 +318,14 @@ const obtainAccessToken = async (req, res) => {
 
     if (!isMatch) {
       return res.status(401).send({ message: 'Invalid username or password' });
+      /*
+      #swagger.responses[401] = {
+        description: 'Invalid username or password error',
+        schema: {
+          $ref: '#/definitions/InvalidCredentialErrorResponse'
+        }
+      }
+    */
     }
 
     let userRoles, permissions, roleIds;
@@ -313,6 +382,15 @@ const obtainAccessToken = async (req, res) => {
     res.cookie('refreshToken', refreshToken, cookieOptions);
 
     res.status(201).send({ message: 'Success', data: { userId: user.id } });
+
+    /*
+      #swagger.responses[201] = {
+        description: 'Access token and Refresh token generated',
+        schema: {
+          $ref: '#/definitions/ObtainAccessTokenSuccessResponse'
+        }
+      }
+    */
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -323,6 +401,12 @@ const obtainAccessToken = async (req, res) => {
 };
 
 const refreshAccessToken = async (req, res) => {
+  /* 	
+    #swagger.tags = ['Auth']
+    #swagger.summary = 'Refresh Access Token' 
+    #swagger.description = 'Endpoint to refresh access and refresh tokens'
+  */
+
   try {
     // extract the payload from the token and verify it
     const payload = await decodeToken(
@@ -341,6 +425,15 @@ const refreshAccessToken = async (req, res) => {
       return res
         .status(401)
         .send({ message: `User with userId = ${payload.userId} not found` });
+
+      /*
+      #swagger.responses[401] = {
+        description: 'User not found error',
+        schema: {
+          $ref: '#/definitions/UserNotFoundErrorResponse'
+        }
+      }
+    */
     }
 
     let userRoles, permissions, roleIds;
@@ -392,12 +485,44 @@ const refreshAccessToken = async (req, res) => {
     res.cookie('refreshToken', refreshToken, cookieOptions);
 
     res.status(200).send({ message: 'Success', data: { userId: user.id } });
+
+    /*
+      #swagger.responses[200] = {
+        description: 'Access token refreshed',
+        schema: {
+          $ref: '#/definitions/RefreshAccessTokenSuccessResponse'
+        }
+      }
+    */
   } catch (error) {
     res.status(403).send({ message: 'Invalid refresh token' });
+    /*
+      #swagger.responses[401] = {
+        description: 'Invalid refresh token error',
+        schema: {
+          $ref: '#/definitions/InvalidRefreshTokenErrorResponse'
+        }
+      }
+    */
   }
 };
 
 const changePassword = async (req, res) => {
+  /* 	
+    #swagger.tags = ['Auth']
+    #swagger.summary = 'Change Password' 
+    #swagger.description = 'Endpoint to change a password'
+
+     #swagger.parameters['body'] = {
+      in: 'body',
+      required: true,
+      type: 'object',
+      schema: {
+          $ref: '#/definitions/ChangePasswordRequestBody'
+      }
+    }
+  */
+
   const userInfo = req.user;
   const { currentPassword, newPassword } = req.body.fields;
 
@@ -423,6 +548,14 @@ const changePassword = async (req, res) => {
 
     if (!isMatch) {
       return res.status(401).send({ message: 'Invalid current password' });
+      /*
+      #swagger.responses[401] = {
+        description: 'User not found error',
+        schema: {
+          $ref: '#/definitions/InvalidPasswordErrorResponse'
+        }
+      }
+    */
     }
 
     // check if the new password is strong
@@ -434,6 +567,15 @@ const changePassword = async (req, res) => {
       return res.status(400).send({
         message: 'This password is weak, please use another password',
       });
+
+      /*
+      #swagger.responses[400] = {
+        description: 'Weak password error',
+        schema: {
+          $ref: '#/definitions/WeakPasswordErrorResponse'
+        }
+      }
+    */
     }
 
     // hash the password
@@ -454,6 +596,15 @@ const changePassword = async (req, res) => {
       message: 'Password updated successfully',
       data: { id: user.id, username: user.username },
     });
+
+    /*
+      #swagger.responses[200] = {
+        description: 'Weak password error',
+        schema: {
+          $ref: '#/definitions/ChangePasswordSuccessResponse'
+        }
+      }
+    */
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
