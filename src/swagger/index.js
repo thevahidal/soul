@@ -31,6 +31,10 @@ const doc = {
       name: 'Rows',
       description: 'Rows endpoints',
     },
+    {
+      name: 'Auth',
+      description: 'Auth endpoints',
+    },
   ],
   securityDefinitions: {},
   definitions: {
@@ -122,6 +126,69 @@ const doc = {
     TransactionRequestBody: {
       $ref: '#/definitions/Transaction',
     },
+    ObtainAccessTokenRequestBody: {
+      fields: {
+        username: '@john',
+        password: 'Ak22#cPM33@v*#',
+      },
+    },
+
+    ObtainAccessTokenSuccessResponse: {
+      message: 'Success',
+      data: {
+        userId: 1,
+      },
+    },
+
+    InvalidCredentialErrorResponse: {
+      message: 'Invalid username or password',
+    },
+
+    UserRegisterationRequestBody: {
+      fields: {
+        username: '@john',
+        password: 'Ak22#cPM33@v*#',
+      },
+    },
+
+    WeakPasswordErrorResponse: {
+      message: 'This password is weak, please use another password',
+    },
+
+    UsernameTakenErrorResponse: {
+      message: 'This username is taken',
+    },
+
+    DefaultRoleNotCreatedErrorResponse: {
+      message: 'Please restart soul so a default role can be created',
+    },
+
+    UserNotFoundErrorResponse: {
+      message: 'User not found',
+    },
+
+    InvalidRefreshTokenErrorResponse: {
+      message: 'Invalid refresh token',
+    },
+
+    ChangePasswordRequestBody: {
+      fields: {
+        currentPassword: 'Ak22#cPM33@v*#',
+        newPassword: 'hKB33o@3245CD$',
+      },
+    },
+
+    ChangePasswordSuccessResponse: {
+      message: 'Password updated successfully',
+      data: { id: 1, username: '@john' },
+    },
+
+    RefreshAccessTokenSuccessResponse: {
+      message: 'Success',
+      data: { userId: 1 },
+    },
+
+    InvalidPasswordErrorResponse: { message: 'Invalid password' },
   },
 };
 

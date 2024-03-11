@@ -19,19 +19,16 @@
     {
       "name": "Rows",
       "description": "Rows endpoints"
+    },
+    {
+      "name": "Auth",
+      "description": "Auth endpoints"
     }
   ],
-  "schemes": [
-    "http",
-    "https"
-  ],
+  "schemes": ["http", "https"],
   "securityDefinitions": {},
-  "consumes": [
-    "application/json"
-  ],
-  "produces": [
-    "application/json"
-  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
   "paths": {
     "/health": {
       "get": {
@@ -46,9 +43,7 @@
     },
     "/api/": {
       "get": {
-        "tags": [
-          "Root"
-        ],
+        "tags": ["Root"],
         "summary": "Timestamp",
         "description": "Endpoint to return server timestamp",
         "parameters": [],
@@ -61,9 +56,7 @@
     },
     "/api/transaction": {
       "post": {
-        "tags": [
-          "Root"
-        ],
+        "tags": ["Root"],
         "summary": "Transaction",
         "description": "Endpoint to run any transaction, e.g. [{ \"query\": \"\" }, { \"statement\": \"\", \"values\": {} }, { \"query\": \"\" }]",
         "parameters": [
@@ -88,9 +81,7 @@
     },
     "/api/tables/": {
       "get": {
-        "tags": [
-          "Tables"
-        ],
+        "tags": ["Tables"],
         "summary": "List Tables",
         "description": "Endpoint to list all tables",
         "parameters": [
@@ -115,13 +106,17 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       },
       "post": {
-        "tags": [
-          "Tables"
-        ],
+        "tags": ["Tables"],
         "summary": "Create Table",
         "description": "Endpoint to create a table",
         "parameters": [
@@ -146,15 +141,22 @@
             "schema": {
               "$ref": "#/definitions/CreateTableErrorResponse"
             }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
     },
     "/api/tables/{name}": {
       "get": {
-        "tags": [
-          "Tables"
-        ],
+        "tags": ["Tables"],
         "summary": "Get Table Schema",
         "description": "Endpoint to get the schema of a table",
         "parameters": [
@@ -172,13 +174,17 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       },
       "delete": {
-        "tags": [
-          "Tables"
-        ],
+        "tags": ["Tables"],
         "summary": "Delete Table",
         "description": "Endpoint to delete a table",
         "parameters": [
@@ -196,15 +202,19 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           }
         }
       }
     },
     "/api/tables/{name}/rows": {
       "get": {
-        "tags": [
-          "Rows"
-        ],
+        "tags": ["Rows"],
         "summary": "List Rows",
         "description": "Endpoint to list rows of a table.",
         "parameters": [
@@ -260,18 +270,22 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       },
       "post": {
-        "tags": [
-          "Rows"
-        ],
+        "tags": ["Rows"],
         "summary": "Insert Row",
         "description": "Insert a new row in a table",
         "parameters": [
@@ -303,15 +317,22 @@
             "schema": {
               "$ref": "#/definitions/InsertRowErrorResponse"
             }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
     },
     "/api/tables/{name}/rows/{pks}": {
       "get": {
-        "tags": [
-          "Rows"
-        ],
+        "tags": ["Rows"],
         "summary": "Retrieve Row",
         "description": "Retrieve a row by primary key",
         "parameters": [
@@ -352,11 +373,14 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
           },
           "404": {
             "description": "Not Found"
@@ -364,9 +388,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Rows"
-        ],
+        "tags": ["Rows"],
         "summary": "Update Row",
         "description": "Update a row by primary key",
         "parameters": [
@@ -426,13 +448,20 @@
           },
           "400": {
             "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       },
       "delete": {
-        "tags": [
-          "Rows"
-        ],
+        "tags": ["Rows"],
         "summary": "Delete Row",
         "description": "Delete a row by primary key",
         "parameters": [
@@ -465,8 +494,125 @@
           "400": {
             "description": "Bad Request"
           },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
           "404": {
             "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/auth/token/obtain": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Obtain Access Token",
+        "description": "Endpoint to generate access and refresh tokens",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ObtainAccessTokenRequestBody"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Access token and Refresh token generated",
+            "schema": {
+              "$ref": "#/definitions/ObtainAccessTokenSuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Invalid username or password error",
+            "schema": {
+              "$ref": "#/definitions/InvalidCredentialErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/auth/token/refresh": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Refresh Access Token",
+        "description": "Endpoint to refresh access and refresh tokens",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Access token refreshed",
+            "schema": {
+              "$ref": "#/definitions/RefreshAccessTokenSuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Invalid refresh token error",
+            "schema": {
+              "$ref": "#/definitions/InvalidRefreshTokenErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/api/auth/change-password": {
+      "put": {
+        "tags": ["Auth"],
+        "summary": "Change Password",
+        "description": "Endpoint to change a password",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ChangePasswordRequestBody"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Weak password error",
+            "schema": {
+              "$ref": "#/definitions/ChangePasswordSuccessResponse"
+            }
+          },
+          "400": {
+            "description": "Weak password error",
+            "schema": {
+              "$ref": "#/definitions/WeakPasswordErrorResponse"
+            }
+          },
+          "401": {
+            "description": "User not found error",
+            "schema": {
+              "$ref": "#/definitions/InvalidPasswordErrorResponse"
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -718,11 +864,7 @@
       "properties": {
         "pks": {
           "type": "array",
-          "example": [
-            1,
-            2,
-            3
-          ],
+          "example": [1, 2, 3],
           "items": {
             "type": "number"
           }
@@ -740,11 +882,7 @@
       "properties": {
         "pks": {
           "type": "array",
-          "example": [
-            1,
-            2,
-            3
-          ],
+          "example": [1, 2, 3],
           "items": {
             "type": "number"
           }
@@ -753,6 +891,181 @@
     },
     "TransactionRequestBody": {
       "$ref": "#/definitions/Transaction"
+    },
+    "ObtainAccessTokenRequestBody": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string",
+              "example": "@john"
+            },
+            "password": {
+              "type": "string",
+              "example": "Ak22#cPM33@v*#"
+            }
+          }
+        }
+      }
+    },
+    "ObtainAccessTokenSuccessResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Success"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "number",
+              "example": 1
+            }
+          }
+        }
+      }
+    },
+    "InvalidCredentialErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Invalid username or password"
+        }
+      }
+    },
+    "UserRegisterationRequestBody": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string",
+              "example": "@john"
+            },
+            "password": {
+              "type": "string",
+              "example": "Ak22#cPM33@v*#"
+            }
+          }
+        }
+      }
+    },
+    "WeakPasswordErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "This password is weak, please use another password"
+        }
+      }
+    },
+    "UsernameTakenErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "This username is taken"
+        }
+      }
+    },
+    "DefaultRoleNotCreatedErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Please restart soul so a default role can be created"
+        }
+      }
+    },
+    "UserNotFoundErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "User not found"
+        }
+      }
+    },
+    "InvalidRefreshTokenErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Invalid refresh token"
+        }
+      }
+    },
+    "ChangePasswordRequestBody": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "object",
+          "properties": {
+            "currentPassword": {
+              "type": "string",
+              "example": "Ak22#cPM33@v*#"
+            },
+            "newPassword": {
+              "type": "string",
+              "example": "hKB33o@3245CD$"
+            }
+          }
+        }
+      }
+    },
+    "ChangePasswordSuccessResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Password updated successfully"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "example": 1
+            },
+            "username": {
+              "type": "string",
+              "example": "@john"
+            }
+          }
+        }
+      }
+    },
+    "RefreshAccessTokenSuccessResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Success"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "number",
+              "example": 1
+            }
+          }
+        }
+      }
+    },
+    "InvalidPasswordErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Invalid password"
+        }
+      }
     }
   }
 }

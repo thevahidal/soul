@@ -1,6 +1,6 @@
 const { websocketSubscribers } = require('../websocket');
 
-const broadcast = (req, res, next) => {
+const broadcast = (req) => {
   const data = req.broadcast;
   const { name: tableName } = req.params;
 
