@@ -26,7 +26,7 @@ module.exports = {
     },
     {
       name: 'salt',
-      type: 'NUMERIC',
+      type: 'TEXT',
       primaryKey: false,
       notNull: true,
       unique: false,
@@ -98,7 +98,7 @@ module.exports = {
       type: 'NUMERIC',
       primaryKey: false,
       notNull: true,
-      unique: true,
+      unique: false,
       foreignKey: { table: '_users', column: 'id' },
     },
 

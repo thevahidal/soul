@@ -1,13 +1,21 @@
+const { apiConstants } = require('../constants');
+
 module.exports = (db) => {
   return {
     get(data) {
-      const query = `SELECT ${data.schemaString} FROM ${data.tableName} ${data.extendString} ${data.whereString} ${data.orderString} LIMIT ? OFFSET ?`;
+      const query = `SELECT ${data.schemaString || '*'} FROM ${
+        data.tableName
+      } ${data.extendString || ''} ${data.whereString || ''} ${
+        data.orderString || ''
+      } LIMIT ? OFFSET ?`;
+
       const statement = db.prepare(query);
       const result = statement.all(
         ...data.whereStringValues,
-        data.limit,
-        data.page,
+        data.limit || apiConstants.DEFAULT_PAGE_LIMIT,
+        data.page || apiConstants.DEFAULT_PAGE_INDEX,
       );
+
       return result;
     },
 
@@ -29,7 +37,9 @@ module.exports = (db) => {
 
     save(data) {
       // wrap text values in quotes
-      const fieldsString = Object.keys(data.fields).join(', ');
+      const fieldsString = Object.keys(data.fields)
+        .map((field) => `'${field}'`)
+        .join(', ');
 
       // wrap text values in quotes
       const valuesString = Object.values(data.fields).map((value) => value);
