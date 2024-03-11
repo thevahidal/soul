@@ -20,7 +20,7 @@ const refreshAccessToken = Joi.object({
 
 const changePassword = Joi.object({
   query: Joi.object().required(),
-  params: Joi.object({ userId: Joi.string().required() }).required(),
+  params: Joi.object().required(),
 
   body: Joi.object({
     fields: Joi.object({

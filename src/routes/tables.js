@@ -4,6 +4,7 @@ const controllers = require('../controllers/tables');
 const { validator } = require('../middlewares/validation');
 const schema = require('../schemas/tables');
 const { isAuthenticated } = require('../middlewares/auth');
+const { processTableRequest } = require('../middlewares/api');
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.get(
 
 router.post(
   '/',
+  processTableRequest,
   isAuthenticated,
   validator(schema.createTable),
   controllers.createTable,
