@@ -37,7 +37,9 @@ module.exports = (db) => {
 
     save(data) {
       // wrap text values in quotes
-      const fieldsString = Object.keys(data.fields).join(', ');
+      const fieldsString = Object.keys(data.fields)
+        .map((field) => `'${field}'`)
+        .join(', ');
 
       // wrap text values in quotes
       const valuesString = Object.values(data.fields).map((value) => value);

@@ -29,6 +29,13 @@ const envVarsSchema = Joi.object()
     EXTENSIONS: Joi.string().default(null),
 
     START_WITH_STUDIO: Joi.boolean().default(false),
+
+    INITIAL_USER_USERNAME: Joi.string(),
+    INITIAL_USER_PASSWORD: Joi.string(),
+
+    TOKEN_SECRET: Joi.string().default(null),
+    ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().default('5H'),
+    REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().default('3D'),
   })
   .unknown();
 
@@ -60,6 +67,26 @@ if (argv['rate-limit-enabled']) {
   env.RATE_LIMIT_ENABLED = argv['rate-limit-enabled'];
 }
 
+if (argv.tokensecret) {
+  env.TOKEN_SECRET = argv.tokensecret;
+}
+
+if (argv.accesstokenexpirationtime) {
+  env.ACCESS_TOKEN_EXPIRATION_TIME = argv.accesstokenexpirationtime;
+}
+
+if (argv.refreshtokenexpirationtime) {
+  env.REFRESH_TOKEN_EXPIRATION_TIME = argv.refreshtokenexpirationtime;
+}
+
+if (argv.initialuserusername) {
+  env.INITIAL_USER_USERNAME = argv.initialuserusername;
+}
+
+if (argv.initialuserpassword) {
+  env.INITIAL_USER_PASSWORD = argv.initialuserpassword;
+}
+
 const { value: envVars, error } = envVarsSchema
   .prefs({ errors: { label: 'key' } })
   .validate(env);
@@ -87,6 +114,16 @@ module.exports = {
   },
 
   auth: argv.auth || envVars.AUTH,
+  tokenSecret: argv.tokensecret || envVars.TOKEN_SECRET,
+  accessTokenExpirationTime:
+    argv.accesstokenexpirationtime || envVars.ACCESS_TOKEN_EXPIRATION_TIME,
+  refreshTokenExpirationTime:
+    argv.refreshtokenexpirationtime || envVars.REFRESH_TOKEN_EXPIRATION_TIME,
+
+  initialUserUsername:
+    argv.initialuserusername || envVars.INITIAL_USER_USERNAME,
+  initialUserPassword:
+    argv.initialuserpassword || envVars.INITIAL_USER_PASSWORD,
 
   rateLimit: {
     enabled: argv['rate-limit-enabled'] || envVars.RATE_LIMIT_ENABLED,

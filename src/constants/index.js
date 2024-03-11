@@ -1,5 +1,5 @@
-const dbTables = require('./dbTables');
-const constantRoles = require('./roles');
+const dbConstants = require('./tables');
 const apiConstants = require('./api');
+const constantRoles = require('./roles');
 
-module.exports = { dbTables, constantRoles, apiConstants };
+module.exports = { dbConstants, apiConstants, constantRoles };
