@@ -8,6 +8,6 @@ module.exports = {
 
   USER_TABLE: '_users',
   ROLE_TABLE: '_roles',
-  USER_ROLES_TABLE: '_users_roles',
+  USERS_ROLES_TABLE: '_users_roles',
   ROLE_PERMISSIONS_TABLE: '_roles_permissions',
 };

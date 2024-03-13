@@ -27,13 +27,11 @@ const createDefaultTables = async () => {
 
   // create _users table
   if (!usersTable) {
-    // create the _users table
     tableService.createTable(USER_TABLE, schema.userSchema);
   }
 
   // create _users_roles table
   if (!usersRolesTable) {
-    // create the _users_roles table
     tableService.createTable(
       USERS_ROLES_TABLE,
 
@@ -49,7 +47,6 @@ const createDefaultTables = async () => {
 
   // create _roles table
   if (!roleTable) {
-    // create the _role table
     tableService.createTable(ROLE_TABLE, schema.roleSchema);
 
     // create a default role in the _roles table
@@ -62,7 +59,6 @@ const createDefaultTables = async () => {
 
   // create _roles_permissions table
   if (!rolesPermissionTable && roleId) {
-    // create the _roles_permissions table
     tableService.createTable(
       ROLE_PERMISSIONS_TABLE,
       schema.rolePermissionSchema,

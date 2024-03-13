@@ -4,7 +4,7 @@ const { updateSuperuser } = require('./controllers/auth');
 const { argv } = yargs;
 
 const runCLICommands = () => {
-  //If the updatesuperuser command is passed from the CLI execute the updatesuperuser function
+  // if the updatesuperuser command is passed from the CLI execute the updatesuperuser function
   if (argv._.includes('updatesuperuser')) {
     const { id, password, is_superuser } = argv;
 
