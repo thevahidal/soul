@@ -1,6 +1,7 @@
 module.exports = {
   defaultRoutes: ['_users', '_roles', '_roles_permissions', '_users_roles'],
   baseTableUrl: '/api/tables',
+  universalAccessEndpoints: ['/api/auth/change-password'],
   fields: {
     _users: {
       SALT: 'salt',
@@ -13,5 +14,12 @@ module.exports = {
   PASSWORD: {
     TOO_WEAK: 'Too weak',
     WEAK: 'Weak',
+  },
+
+  httpVerbs: {
+    POST: 'CREATE',
+    GET: 'READ',
+    PUT: 'UPDATE',
+    DELETE: 'DELETE',
   },
 };

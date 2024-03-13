@@ -1,11 +1,12 @@
 const config = require('../config');
 const { decodeToken, toBoolean } = require('../utils/index');
-const httpVerbs = require('../constants/httpVerbs');
+const { apiConstants } = require('../constants');
 
 const isAuthenticated = async (req, res, next) => {
   let payload;
   const { name: tableName } = req.params;
   const verb = req.method;
+  const originalURL = req.originalUrl;
 
   try {
     if (config.auth) {
@@ -22,6 +23,11 @@ const isAuthenticated = async (req, res, next) => {
 
       // if the user is a super_user, allow access on the resource
       if (toBoolean(payload.isSuperuser)) {
+        return next();
+      }
+
+      // if the endpoint is set to be accessed by any user regardless of there roles, then allow access
+      if (apiConstants.universalAccessEndpoints.includes(originalURL)) {
         return next();
       }
 
@@ -45,7 +51,7 @@ const isAuthenticated = async (req, res, next) => {
       let hasPermission = false;
 
       permissions.some((resource) => {
-        const httpMethod = httpVerbs[verb].toLowerCase();
+        const httpMethod = apiConstants.httpVerbs[verb].toLowerCase();
 
         if (toBoolean(resource[httpMethod])) {
           hasPermission = true;
