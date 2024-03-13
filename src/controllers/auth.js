@@ -666,7 +666,7 @@ const createInitialUser = async () => {
       const { hashedPassword, salt } = await hashPassword(password, 10);
 
       // create the initial user
-      rowService.save({
+      const { lastInsertRowid: userId } = rowService.save({
         tableName: USER_TABLE,
         fields: {
           username,
@@ -674,6 +674,28 @@ const createInitialUser = async () => {
           salt,
           is_superuser: 'false',
         },
+      });
+
+      // get the default role from the DB
+      const roles = rowService.get({
+        tableName: ROLE_TABLE,
+        whereString: 'WHERE name=?',
+        whereStringValues: [constantRoles.DEFAULT_ROLE],
+      });
+
+      if (roles.length <= 0) {
+        console.log(
+          'Default role not found, please restart soul so a default role can be created',
+        );
+        process.exit(1);
+      }
+
+      const defaultRoleId = roles[0].id;
+
+      // create a _users_role for the initial user
+      rowService.save({
+        tableName: USERS_ROLES_TABLE,
+        fields: { user_id: userId, role_id: defaultRoleId },
       });
 
       console.log('Initial user created');
