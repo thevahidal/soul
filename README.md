@@ -29,22 +29,21 @@ Usage: soul [options]
 
 
 Options:
-      --version                               Show version number                                 [boolean]
-  -d, --database                              SQLite database file or :memory:                    [string] [required]
-  -p, --port                                  Port to listen on                                   [number]
-  -r, --rate-limit-enabled                    Enable rate limiting                                [boolean]
-  -c, --cors                                  CORS whitelist origins                              [string]
-  -a, --auth                                  Enable authentication and authorization             [boolean]
+            --version                               Show version number                                 [boolean]
+  -d,       --database                              SQLite database file or :memory:                    [string] [required]
+  -p,       --port                                  Port to listen on                                   [number]
+  -r,       --rate-limit-enabled                    Enable rate limiting                                [boolean]
+  -c,       --cors                                  CORS whitelist origins                              [string]
+  -a,       --auth                                  Enable authentication and authorization             [boolean]
 
-  -iuu, --initialuserusername                 Initial user username                               [string]
-  -iup, --initialuserpassword                 Initial user password                               [string]
+  -iuu,     --initialuserusername                   Initial user username                               [string]
+  -iup,     --initialuserpassword                   Initial user password                               [string]
 
-  -ats, --accesstokensecret                   Access Token Secret                                 [string]
-  -atet, --accesstokenexpirationtime          Access Token Expiration Time    (Default: 5H)       [string]
-  -rts, --refreshtokensecret                  Refresh Token Secret                                [string]
-  -rtet, --refreshtokenexpirationtime         Refresh Token Expiration Time   (Default: 1D)       [string]
-  -S, --studio                                Start Soul Studio in parallel
-  --help                                      Show help
+  -ts,      --tokensecret                           Token Secret                                        [string]
+  -atet,    --accesstokenexpirationtime             Access Token Expiration Time    (Default: 5H)       [string]
+  -rtet,    --refreshtokenexpirationtime            Refresh Token Expiration Time   (Default: 1D)       [string]
+  -S,       --studio                                Start Soul Studio in parallel
+  --help                                            Show help
 
 ```
 
