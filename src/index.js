@@ -79,7 +79,7 @@ if (config.rateLimit.enabled) {
   app.use(limiter);
 }
 
-//If Auth mode is activated then create auth tables in the DB & create a super user if there are no users in the DB
+// If Auth mode is activated then create auth tables in the DB & create a super user if there are no users in the DB
 if (config.auth) {
   createDefaultTables();
   createInitialUser();

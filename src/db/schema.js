@@ -1,7 +1,11 @@
+const { dbConstants } = require('../constants');
+
+const { tableFields, ROLES_TABLE, USERS_TABLE } = dbConstants;
+
 module.exports = {
   roleSchema: [
     {
-      name: 'name',
+      name: tableFields.ROLE_NAME,
       type: 'TEXT',
       primaryKey: false,
       notNull: true,
@@ -11,21 +15,21 @@ module.exports = {
 
   userSchema: [
     {
-      name: 'username',
+      name: tableFields.USERNAME,
       type: 'TEXT',
       primaryKey: false,
       notNull: true,
       unique: true,
     },
     {
-      name: 'hashed_password',
+      name: tableFields.HASHED_PASSWORD,
       type: 'TEXT',
       primaryKey: false,
       notNull: true,
-      unique: true,
+      unique: false,
     },
     {
-      name: 'salt',
+      name: tableFields.SALT,
       type: 'TEXT',
       primaryKey: false,
       notNull: true,
@@ -33,7 +37,7 @@ module.exports = {
     },
 
     {
-      name: 'is_superuser',
+      name: tableFields.IS_SUPERUSER,
       type: 'BOOLEAN',
       primaryKey: false,
       notNull: true,
@@ -43,16 +47,16 @@ module.exports = {
 
   rolePermissionSchema: [
     {
-      name: 'role_id',
+      name: tableFields.ROLE_ID,
       type: 'NUMERIC',
       primaryKey: false,
       notNull: true,
       unique: false,
-      foreignKey: { table: '_roles', column: 'id' },
+      foreignKey: { table: ROLES_TABLE, column: tableFields.ID },
     },
 
     {
-      name: 'table_name',
+      name: tableFields.TABLE_NAME,
       type: 'TEXT',
       primaryKey: false,
       notNull: true,
@@ -60,7 +64,7 @@ module.exports = {
     },
 
     {
-      name: 'create',
+      name: tableFields.CREATE,
       type: 'BOOLEAN',
       primaryKey: false,
       notNull: true,
@@ -68,7 +72,7 @@ module.exports = {
     },
 
     {
-      name: 'read',
+      name: tableFields.READ,
       type: 'BOOLEAN',
       primaryKey: false,
       notNull: true,
@@ -76,7 +80,7 @@ module.exports = {
     },
 
     {
-      name: 'update',
+      name: tableFields.UPDATE,
       type: 'BOOLEAN',
       primaryKey: false,
       notNull: true,
@@ -84,7 +88,7 @@ module.exports = {
     },
 
     {
-      name: 'delete',
+      name: tableFields.DELETE,
       type: 'BOOLEAN',
       primaryKey: false,
       notNull: true,
@@ -94,21 +98,21 @@ module.exports = {
 
   usersRoleSchema: [
     {
-      name: 'user_id',
+      name: tableFields.USER_ID,
       type: 'NUMERIC',
       primaryKey: false,
       notNull: true,
       unique: false,
-      foreignKey: { table: '_users', column: 'id' },
+      foreignKey: { table: USERS_TABLE, column: tableFields.ID },
     },
 
     {
-      name: 'role_id',
+      name: tableFields.ROLE_ID,
       type: 'NUMERIC',
       primaryKey: false,
       notNull: true,
       unique: false,
-      foreignKey: { table: '_roles', column: 'id' },
+      foreignKey: { table: ROLES_TABLE, column: tableFields.ID },
     },
   ],
 };

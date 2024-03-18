@@ -1,14 +1,8 @@
 module.exports = {
-  defaultRoutes: ['_users', '_roles', '_roles_permissions', '_users_roles'],
+  authEndpoints: ['_users', '_roles', '_roles_permissions', '_users_roles'],
   baseTableUrl: '/api/tables',
   universalAccessEndpoints: ['/api/auth/change-password'],
-  fields: {
-    _users: {
-      SALT: 'salt',
-      IS_SUPERUSER: 'is_superuser',
-      HASHED_PASSWORD: 'hashed_password',
-    },
-  },
+
   DEFAULT_PAGE_LIMIT: 10,
   DEFAULT_PAGE_INDEX: 0,
   PASSWORD: {
@@ -17,6 +11,13 @@ module.exports = {
   },
 
   httpVerbs: {
+    POST: 'POST',
+    GET: 'GET',
+    PUT: 'PUT',
+    DELETE: 'DELETE',
+  },
+
+  httpMethodDefinitions: {
     POST: 'CREATE',
     GET: 'READ',
     PUT: 'UPDATE',

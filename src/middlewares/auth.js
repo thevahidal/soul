@@ -1,8 +1,10 @@
 const config = require('../config');
 const { decodeToken, toBoolean } = require('../utils/index');
-const { apiConstants } = require('../constants');
+const { apiConstants, responseMessages } = require('../constants');
 
-const isAuthenticated = async (req, res, next) => {
+const { errorMessage } = responseMessages;
+
+const hasAccess = async (req, res, next) => {
   let payload;
   const { name: tableName } = req.params;
   const verb = req.method;
@@ -18,7 +20,9 @@ const isAuthenticated = async (req, res, next) => {
         );
         req.user = payload;
       } catch (error) {
-        return res.status(403).send({ message: 'Invalid access token' });
+        return res
+          .status(401)
+          .send({ message: errorMessage.INVALID_ACCESS_TOKEN_ERROR });
       }
 
       // if the user is a super_user, allow access on the resource
@@ -33,7 +37,9 @@ const isAuthenticated = async (req, res, next) => {
 
       // if table_name is not passed from the router throw unauthorized error
       if (!tableName) {
-        return res.status(403).send({ message: 'Not authorized' });
+        return res
+          .status(403)
+          .send({ message: errorMessage.NOT_AUTHORIZED_ERROR });
       }
 
       // if the user is not a super user, check the users permission on the resource
@@ -44,14 +50,15 @@ const isAuthenticated = async (req, res, next) => {
       if (permissions.length <= 0) {
         return res
           .status(403)
-          .send({ message: 'Permission not defined for this role' });
+          .send({ message: errorMessage.PERMISSION_NOT_DEFINED_ERROR });
       }
 
       // If the user has permission on the table in at least in one of the roles then allow access on the table
       let hasPermission = false;
 
       permissions.some((resource) => {
-        const httpMethod = apiConstants.httpVerbs[verb].toLowerCase();
+        const httpMethod =
+          apiConstants.httpMethodDefinitions[verb].toLowerCase();
 
         if (toBoolean(resource[httpMethod])) {
           hasPermission = true;
@@ -62,7 +69,9 @@ const isAuthenticated = async (req, res, next) => {
       if (hasPermission) {
         next();
       } else {
-        return res.status(403).send({ message: 'Not authorized' });
+        return res
+          .status(403)
+          .send({ message: errorMessage.NOT_AUTHORIZED_ERROR });
       }
     } else {
       next();
@@ -73,4 +82,4 @@ const isAuthenticated = async (req, res, next) => {
   }
 };
 
-module.exports = { isAuthenticated };
+module.exports = { hasAccess };

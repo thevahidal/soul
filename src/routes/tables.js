@@ -3,14 +3,14 @@ const express = require('express');
 const controllers = require('../controllers/tables');
 const { validator } = require('../middlewares/validation');
 const schema = require('../schemas/tables');
-const { isAuthenticated } = require('../middlewares/auth');
+const { hasAccess } = require('../middlewares/auth');
 const { processTableRequest } = require('../middlewares/api');
 
 const router = express.Router();
 
 router.get(
   '/',
-  isAuthenticated,
+  hasAccess,
   validator(schema.listTables),
   controllers.listTables,
 );
@@ -18,21 +18,21 @@ router.get(
 router.post(
   '/',
   processTableRequest,
-  isAuthenticated,
+  hasAccess,
   validator(schema.createTable),
   controllers.createTable,
 );
 
 router.get(
   '/:name',
-  isAuthenticated,
+  hasAccess,
   validator(schema.getTableSchema),
   controllers.getTableSchema,
 );
 
 router.delete(
   '/:name',
-  isAuthenticated,
+  hasAccess,
   validator(schema.deleteTable),
   controllers.deleteTable,
 );

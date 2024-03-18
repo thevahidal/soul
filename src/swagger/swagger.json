@@ -278,9 +278,6 @@
           },
           "403": {
             "description": "Forbidden"
-          },
-          "409": {
-            "description": "Conflict"
           }
         }
       },
@@ -323,9 +320,6 @@
           },
           "403": {
             "description": "Forbidden"
-          },
-          "409": {
-            "description": "Conflict"
           }
         }
       }
@@ -454,9 +448,6 @@
           },
           "403": {
             "description": "Forbidden"
-          },
-          "409": {
-            "description": "Conflict"
           }
         }
       },
@@ -508,111 +499,39 @@
     },
     "/api/auth/token/obtain": {
       "post": {
-        "tags": ["Auth"],
-        "summary": "Obtain Access Token",
-        "description": "Endpoint to generate access and refresh tokens",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/ObtainAccessTokenRequestBody"
-            }
-          }
-        ],
+        "description": "",
+        "parameters": [],
         "responses": {
-          "201": {
-            "description": "Access token and Refresh token generated",
-            "schema": {
-              "$ref": "#/definitions/ObtainAccessTokenSuccessResponse"
-            }
-          },
           "400": {
             "description": "Bad Request"
-          },
-          "401": {
-            "description": "Invalid username or password error",
-            "schema": {
-              "$ref": "#/definitions/InvalidCredentialErrorResponse"
-            }
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }
     },
     "/api/auth/token/refresh": {
       "get": {
-        "tags": ["Auth"],
-        "summary": "Refresh Access Token",
-        "description": "Endpoint to refresh access and refresh tokens",
+        "description": "",
         "parameters": [],
         "responses": {
-          "200": {
-            "description": "Access token refreshed",
-            "schema": {
-              "$ref": "#/definitions/RefreshAccessTokenSuccessResponse"
-            }
-          },
           "400": {
             "description": "Bad Request"
-          },
-          "401": {
-            "description": "Invalid refresh token error",
-            "schema": {
-              "$ref": "#/definitions/InvalidRefreshTokenErrorResponse"
-            }
-          },
-          "403": {
-            "description": "Forbidden"
           }
         }
       }
     },
     "/api/auth/change-password": {
       "put": {
-        "tags": ["Auth"],
-        "summary": "Change Password",
-        "description": "Endpoint to change a password",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/ChangePasswordRequestBody"
-            }
-          }
-        ],
+        "description": "",
+        "parameters": [],
         "responses": {
-          "200": {
-            "description": "Weak password error",
-            "schema": {
-              "$ref": "#/definitions/ChangePasswordSuccessResponse"
-            }
-          },
           "400": {
-            "description": "Weak password error",
-            "schema": {
-              "$ref": "#/definitions/WeakPasswordErrorResponse"
-            }
+            "description": "Bad Request"
           },
           "401": {
-            "description": "User not found error",
-            "schema": {
-              "$ref": "#/definitions/InvalidPasswordErrorResponse"
-            }
+            "description": "Unauthorized"
           },
           "403": {
             "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal Server Error"
           }
         }
       }

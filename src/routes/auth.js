@@ -3,7 +3,7 @@ const express = require('express');
 const controllers = require('../controllers/auth');
 const { validator } = require('../middlewares/validation');
 const schema = require('../schemas/auth');
-const { isAuthenticated } = require('../middlewares/auth');
+const { hasAccess } = require('../middlewares/auth');
 
 const router = express.Router();
 
@@ -21,8 +21,8 @@ router.get(
 
 router.put(
   '/change-password',
+  hasAccess,
   validator(schema.changePassword),
-  isAuthenticated,
   controllers.changePassword,
 );
 

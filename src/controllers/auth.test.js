@@ -182,30 +182,6 @@ describe('Auth Endpoints', () => {
       expect(res.body).not.toHaveProperty('salt');
     });
 
-    it('PUT /tables/_users/rows/:id should throw a 409 error if the username is taken', async () => {
-      const accessToken = await generateToken(
-        { username: 'John', isSuperuser: true },
-        config.tokenSecret,
-        '1H',
-      );
-
-      const res = await requestWithSupertest
-        .put('/api/tables/_users/rows/1')
-        .set('Cookie', [`accessToken=${accessToken}`])
-        .send({
-          fields: {
-            username: testData.users.user1.username, //A user with user1.username is already created in the first test suite
-          },
-        });
-
-      expect(res.status).toEqual(409);
-      expect(res.body.message).toEqual('This username is already taken');
-
-      expect(res.body).not.toHaveProperty('password');
-      expect(res.body).not.toHaveProperty('hashed_password');
-      expect(res.body).not.toHaveProperty('salt');
-    });
-
     it('DELETE /tables/_users/rows/:id should remove a user', async () => {
       const accessToken = await generateToken(
         { username: 'John', isSuperuser: true },

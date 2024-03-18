@@ -4,14 +4,14 @@ const controllers = require('../controllers/rows');
 const { broadcast } = require('../middlewares/broadcast');
 const { validator } = require('../middlewares/validation');
 const { processRowRequest, processRowResponse } = require('../middlewares/api');
-const { isAuthenticated } = require('../middlewares/auth');
+const { hasAccess } = require('../middlewares/auth');
 const schema = require('../schemas/rows');
 
 const router = express.Router();
 
 router.get(
   '/:name/rows',
-  isAuthenticated,
+  hasAccess,
   validator(schema.listTableRows),
   processRowRequest,
   controllers.listTableRows,
@@ -19,7 +19,7 @@ router.get(
 );
 router.post(
   '/:name/rows',
-  isAuthenticated,
+  hasAccess,
   validator(schema.insertRowInTable),
   processRowRequest,
   controllers.insertRowInTable,
@@ -27,14 +27,14 @@ router.post(
 );
 router.get(
   '/:name/rows/:pks',
-  isAuthenticated,
+  hasAccess,
   validator(schema.getRowInTableByPK),
   controllers.getRowInTableByPK,
   processRowResponse,
 );
 router.put(
   '/:name/rows/:pks',
-  isAuthenticated,
+  hasAccess,
   validator(schema.updateRowInTableByPK),
   processRowRequest,
   controllers.updateRowInTableByPK,
@@ -42,7 +42,7 @@ router.put(
 );
 router.delete(
   '/:name/rows/:pks',
-  isAuthenticated,
+  hasAccess,
   validator(schema.deleteRowInTableByPK),
   controllers.deleteRowInTableByPK,
   broadcast,
