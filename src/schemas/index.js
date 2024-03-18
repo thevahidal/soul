@@ -12,10 +12,15 @@ const transaction = Joi.object({
         }),
         Joi.object({
           query: Joi.string().required(),
-        })
+        }),
       )
       .required(),
   }).required(),
+
+  cookies: Joi.object({
+    refreshToken: Joi.string().optional(),
+    accessToken: Joi.string().optional(),
+  }),
 });
 
 module.exports = {

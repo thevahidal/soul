@@ -3,6 +3,9 @@
 # Top-most EditorConfig file
 root = true
 
+[*.{js,jsx,ts,tsx}]
+quote_type = single
+
 [*]
 # Set default charset to utf-8
 charset = utf-8

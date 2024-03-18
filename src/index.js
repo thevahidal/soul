@@ -1,37 +1,47 @@
 #! /usr/bin/env node
 
-const express = require("express");
-const bodyParser = require("body-parser");
-const winston = require("winston");
-const expressWinston = require("express-winston");
-const cors = require("cors");
-const rateLimit = require("express-rate-limit");
-const swaggerUi = require("swagger-ui-express");
+const express = require('express');
+const bodyParser = require('body-parser');
+const winston = require('winston');
+const expressWinston = require('express-winston');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const swaggerUi = require('swagger-ui-express');
+const cookieParser = require('cookie-parser');
 
-const config = require("./config/index");
-const db = require("./db/index");
-const rootRoutes = require("./routes/index");
-const tablesRoutes = require("./routes/tables");
-const rowsRoutes = require("./routes/rows");
-const swaggerFile = require("./swagger/swagger.json");
-const { setupExtensions } = require("./extensions");
+const config = require('./config/index');
+const db = require('./db/index');
+
+const rootRoutes = require('./routes/index');
+const tablesRoutes = require('./routes/tables');
+const rowsRoutes = require('./routes/rows');
+const authRoutes = require('./routes/auth');
+
+const swaggerFile = require('./swagger/swagger.json');
+const { setupExtensions } = require('./extensions');
+const {
+  createDefaultTables,
+  createInitialUser,
+} = require('./controllers/auth');
+
+const { runCLICommands } = require('./commands');
 
 const app = express();
-
-app.get("/health", (req, res) => {
-  res.send("OK");
+app.get('/health', (req, res) => {
+  res.send('OK');
 });
 
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 // Activate wal mode
-db.exec("PRAGMA journal_mode = WAL");
+db.exec('PRAGMA journal_mode = WAL');
 
 // Enable CORS
 let corsOrigin = config.cors.origin;
 
-if (corsOrigin.includes("*")) {
-  corsOrigin = "*";
+if (corsOrigin.includes('*')) {
+  corsOrigin = '*';
 }
 
 const corsOptions = { origin: corsOrigin };
@@ -49,13 +59,14 @@ if (config.verbose !== null) {
         winston.format.json(),
       ),
       meta: false,
-      msg: "HTTP {{req.method}} {{req.url}}",
+      msg: 'HTTP {{req.method}} {{req.url}}',
       expressFormat: true,
 
       colorize: false,
     }),
   );
 }
+
 if (config.rateLimit.enabled) {
   const limiter = rateLimit({
     windowMs: config.rateLimit.windowMs,
@@ -68,10 +79,25 @@ if (config.rateLimit.enabled) {
   app.use(limiter);
 }
 
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
-app.use("/api", rootRoutes);
-app.use("/api/tables", tablesRoutes);
-app.use("/api/tables", rowsRoutes);
+// If Auth mode is activated then create auth tables in the DB & create a super user if there are no users in the DB
+if (config.auth) {
+  createDefaultTables();
+  createInitialUser();
+} else {
+  console.warn(
+    'Warning: Soul is running in open mode without authentication or authorization for API endpoints. Please be aware that your API endpoints will not be secure.',
+  );
+}
+
+// If the user has passed custom CLI commands run the command and exit to avoid running the server
+runCLICommands();
+
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
+app.use('/api', rootRoutes);
+app.use('/api/tables', tablesRoutes);
+app.use('/api/tables', rowsRoutes);
+
+app.use('/api/auth', authRoutes);
 
 setupExtensions(app, db);
 

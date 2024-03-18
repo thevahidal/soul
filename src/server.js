@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const http = require('http');
-const express = require('express');
 
 const app = require('./index');
 const { wss } = require('./websocket');
@@ -9,7 +8,9 @@ const config = require('./config/index');
 
 if (config.startWithStudio) {
   (async () => {
-    const { handler: soulStudioHandler } = await import('soul-studio/build/handler.js');
+    const { handler: soulStudioHandler } = await import(
+      'soul-studio/build/handler.js'
+    );
     app.use('/studio', soulStudioHandler);
   })();
 }

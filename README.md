@@ -19,6 +19,8 @@ Install Soul CLI with npm
 
 ## Usage
 
+### 1. Running Soul
+
 Soul is command line tool, after installing it,
 Run `soul -d sqlite.db -p 8000` and it'll start a REST API on [http://localhost:8000](http://localhost:8000) and a Websocket server on [ws://localhost:8000](ws://localhost:8000).
 
@@ -27,13 +29,21 @@ Usage: soul [options]
 
 
 Options:
-      --version             Show version number                        [boolean]
-  -d, --database            SQLite database file or :memory: [string] [required]
-  -p, --port                Port to listen on                           [number]
-  -r, --rate-limit-enabled  Enable rate limiting                       [boolean]
-  -c, --cors                CORS whitelist origins                [string]
-  -S, --studio              Start Soul Studio in parallel
-      --help                Show help
+            --version                               Show version number                                 [boolean]
+  -d,       --database                              SQLite database file or :memory:                    [string] [required]
+  -p,       --port                                  Port to listen on                                   [number]
+  -r,       --rate-limit-enabled                    Enable rate limiting                                [boolean]
+  -c,       --cors                                  CORS whitelist origins                              [string]
+  -a,       --auth                                  Enable authentication and authorization             [boolean]
+
+  -iuu,     --initialuserusername                   Initial user username                               [string]
+  -iup,     --initialuserpassword                   Initial user password                               [string]
+
+  -ts,      --tokensecret                           Token Secret                                        [string]
+  -atet,    --accesstokenexpirationtime             Access Token Expiration Time    (Default: 5H)       [string]
+  -rtet,    --refreshtokenexpirationtime            Refresh Token Expiration Time   (Default: 1D)       [string]
+  -S,       --studio                                Start Soul Studio in parallel
+  --help                                            Show help
 
 ```
 
@@ -44,6 +54,49 @@ curl http://localhost:8000/api/tables
 ```
 
 It should return a list of the tables inside `sqlite.db` database.
+
+### 2. Running Soul in Auth mode
+
+To run Soul in auth mode, allowing login and signup features with authorization capabilities in your database tables, follow these steps:
+
+Run the Soul command with the necessary parameters:
+
+```
+
+  soul --d foobar.db -a -ts <your_jwt_secret_value> -atet=4H -rtet=3D -iuu=john -iup=<your_password>
+
+```
+
+Note: When configuring your JWT Secret, it is recommended to use a long string value for enhanced security. It is advisable to use a secret that is at least 10 characters in length.
+
+In this example:
+
+The `-a` flag instructs Soul to run in auth mode.
+The `-ts` flag allows you to pass a JWT secret value for the `access and refresh tokens` generation and verification. Replace <your_jwt_secret_value> with your desired secret value.
+The `-atet` flag sets the JWT expiration time for the access token. In this case, it is set to four hours (4H), meaning the token will expire after 4 hours.
+The `-rtet` flag sets the JWT expiration time for the refresh token. In this case, it is set to three days (3D), meaning the token will expire after 3 days.
+The `-iuu` flag is used to pass a username for the initial user
+The `-iup` flag is used to pass a password for the initial user
+
+Here are some example values for the `-atet` and `rtet` flags
+
+- 60M: Represents a duration of 60 minutes.
+- 5H: Represents a duration of 5 hours.
+- 1D: Represents a duration of 1 day.
+
+NOTE: It is crucial to securely store a copy of the `-ts`(`Token Secret`) value used in Soul. Once you pass this values, make sure to keep a backup because you will need it every time you restart Soul. Losing this secret values can result in a situation where all of your users are blocked from accessing Soul.
+
+### 3. Updating Super Users
+
+To modify a superuser information in a database, you can utilize the `updatesuperuser` command. This command allows you to change a superuser's `password` or upgrade/downgrade a normal user to a `superuser`. Below is an example of how to use it:
+
+```
+soul --d foobar.db updatesuperuser --id=1 password=<new_password_for_the_user> // Update the password for the superuser with ID 1
+
+soul --d foobar.db updatesuperuser --id=1 --is_superuser=true // Upgrade the user with ID 1 to a superuser
+
+soul --d foobar.db updatesuperuser --id=1 --is_superuser=false // Revoke the superuser role from the superuser with ID 1
+```
 
 ## Documentation
 
@@ -63,8 +116,8 @@ A collection of projects that revolve around the Soul ecosystem.
 
 - [Soul Studio](https://github.com/thevahidal/soul-studio) provides a GUI to work with your database.
 
-    Right now Soul Studio is in early stages of development and not useful to work with.
-    
+  Right now Soul Studio is in early stages of development and not useful to work with.
+
     <p align="center">
         <img src='docs/soul-studio.png' style="">
     </p>
@@ -83,6 +136,14 @@ npm install # Install dependencies
 npm run dev # Start the dev server
 ```
 
+## Testing
+
+Set the `AUTH` variable to `true` in your `.env` file and use the command below to run the tests
+
+```
+ npm run test
+```
+
 ## Community
 
 [Join](https://bit.ly/soul-discord) the discussion in our Discord server and help making Soul together.
@@ -90,7 +151,6 @@ npm run dev # Start the dev server
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
 
 ## Contributing
 

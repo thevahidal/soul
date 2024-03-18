@@ -7,6 +7,10 @@ const listTables = Joi.object({
   }).required(),
   params: Joi.object().required(),
   body: Joi.object().required(),
+  cookies: Joi.object({
+    refreshToken: Joi.string().optional(),
+    accessToken: Joi.string().optional(),
+  }),
 });
 
 const createTable = Joi.object({
@@ -38,7 +42,7 @@ const createTable = Joi.object({
               'BLOB',
               'BOOLEAN',
               'DATE',
-              'DATETIME'
+              'DATETIME',
             )
             .insensitive()
             .required(),
@@ -67,9 +71,13 @@ const createTable = Joi.object({
               .default('RESTRICT'),
           }),
           index: Joi.boolean(),
-        })
+        }),
       )
       .required(),
+  }),
+  cookies: Joi.object({
+    refreshToken: Joi.string().optional(),
+    accessToken: Joi.string().optional(),
   }),
 });
 
@@ -83,6 +91,10 @@ const getTableSchema = Joi.object({
       .required(),
   }),
   body: Joi.object().required(),
+  cookies: Joi.object({
+    refreshToken: Joi.string().optional(),
+    accessToken: Joi.string().optional(),
+  }),
 });
 
 const deleteTable = Joi.object({
@@ -95,6 +107,10 @@ const deleteTable = Joi.object({
       .required(),
   }),
   body: Joi.object().required(),
+  cookies: Joi.object({
+    refreshToken: Joi.string().optional(),
+    accessToken: Joi.string().optional(),
+  }),
 });
 
 module.exports = {

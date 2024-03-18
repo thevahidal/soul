@@ -1,6 +1,6 @@
 const validator = (schema) => (req, res, next) => {
-  const { body, params, query } = req;
-  const data = { body, params, query };
+  const { body, params, query, cookies } = req;
+  const data = { body, params, query, cookies };
 
   const { value, error } = schema.validate(data);
 
@@ -13,6 +13,7 @@ const validator = (schema) => (req, res, next) => {
     req.body = value.body;
     req.params = value.params;
     req.query = value.query;
+    req.cookies = value.cookies;
 
     next();
   }
