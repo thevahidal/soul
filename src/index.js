@@ -44,7 +44,11 @@ if (corsOrigin.includes('*')) {
   corsOrigin = '*';
 }
 
-const corsOptions = { origin: corsOrigin };
+const corsOptions = {
+  origin: corsOrigin,
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
 
 app.use(cors(corsOptions));
 
