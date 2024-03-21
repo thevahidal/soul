@@ -76,10 +76,10 @@ const createDefaultTables = async () => {
       permissions.push({
         role_id: roleId,
         table_name: table.name,
-        create: 'false',
-        read: 'true',
-        update: 'false',
-        delete: 'false',
+        create: 0,
+        read: 1,
+        update: 0,
+        delete: 0,
       });
     }
 
