@@ -6,9 +6,16 @@ const {
   responseMessages,
 } = require('../constants/');
 const { removeFields } = require('../utils');
+const { customValidator } = require('../middlewares/validation');
+const schema = require('../schemas/auth');
 
 const { httpVerbs } = apiConstants;
-const { reservedTableNames, USERS_TABLE, tableFields } = dbConstants;
+const {
+  reservedTableNames,
+  USERS_TABLE,
+  ROLES_PERMISSIONS_TABLE,
+  tableFields,
+} = dbConstants;
 const { errorMessage } = responseMessages;
 
 const processRowRequest = async (req, res, next) => {
@@ -37,6 +44,21 @@ const processRowRequest = async (req, res, next) => {
       [req.body.fields],
       [tableFields.SALT, tableFields.IS_SUPERUSER, tableFields.HASHED_PASSWORD],
     );
+  }
+
+  // Validate fields for the _roles_permission API on POST and PUT requests
+  if (
+    resource === ROLES_PERMISSIONS_TABLE &&
+    (method === httpVerbs.POST || method === httpVerbs.PUT)
+  ) {
+    const validation = customValidator(schema.updateRolePermissions)(req);
+
+    if (validation.errorStatus) {
+      return res.status(400).json({
+        message: validation.message,
+        error: validation.details,
+      });
+    }
   }
 
   next();

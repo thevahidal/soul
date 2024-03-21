@@ -19,6 +19,24 @@ const validator = (schema) => (req, res, next) => {
   }
 };
 
+const customValidator = (schema) => (req) => {
+  const response = { errorStatus: false, message: '', error: '' };
+
+  const { body, params, query, cookies } = req;
+  const data = { body, params, query, cookies };
+
+  const { error } = schema.validate(data);
+
+  if (error) {
+    response.errorStatus = true;
+    response.message = error.message;
+    response.error = error.details;
+  }
+
+  return response;
+};
+
 module.exports = {
   validator,
+  customValidator,
 };

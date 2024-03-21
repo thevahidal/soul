@@ -59,9 +59,30 @@ const registerUser = Joi.object({
   }).required(),
 });
 
+const updateRolePermissions = Joi.object({
+  query: Joi.object({}).required(),
+  params: Joi.object({ name: Joi.string(), pks: Joi.string() }).required(),
+  body: Joi.object({
+    fields: Joi.object({
+      role_id: Joi.number().required(),
+      table_name: Joi.string().required(),
+      create: Joi.number().valid(0, 1).required(),
+      read: Joi.number().valid(0, 1).required(),
+      update: Joi.number().valid(0, 1).required(),
+      delete: Joi.number().valid(0, 1).required(),
+    }).required(),
+  }).required(),
+
+  cookies: Joi.object({
+    accessToken: Joi.string().required(),
+    refreshToken: Joi.string().optional(),
+  }).required(),
+});
+
 module.exports = {
   obtainAccessToken,
   refreshAccessToken,
   changePassword,
   registerUser,
+  updateRolePermissions,
 };
