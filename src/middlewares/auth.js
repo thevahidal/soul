@@ -48,9 +48,9 @@ const hasAccess = async (req, res, next) => {
         roleIds: payload.roleIds,
       });
 
-      const resourcePermission = rolePermissions.filter((row) => {
-        return row.table_name === tableName;
-      });
+      const resourcePermission = rolePermissions.filter(
+        (row) => row.table_name === tableName,
+      );
 
       if (resourcePermission.length <= 0) {
         return res
