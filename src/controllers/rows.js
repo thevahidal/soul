@@ -657,7 +657,7 @@ const updateRowInTableByPK = async (req, res, next) => {
       if (typeof value === 'string') {
         value = `'${value}'`;
       }
-      return `${key} = ${value}`;
+      return `'${key}' = ${value}`;
     })
     .join(', ');
 

@@ -1,6 +1,7 @@
 const config = require('../config');
 const { decodeToken, toBoolean } = require('../utils/index');
 const { apiConstants, responseMessages } = require('../constants');
+const { authService } = require('../services');
 
 const { errorMessage } = responseMessages;
 
@@ -42,12 +43,16 @@ const hasAccess = async (req, res, next) => {
           .send({ message: errorMessage.NOT_AUTHORIZED_ERROR });
       }
 
-      // if the user is not a super user, check the users permission on the resource
-      const permissions = payload.permissions.filter((row) => {
-        return row.table_name === tableName;
+      // if the user is not a super user, fetch the permission of the user from the DB
+      const rolePermissions = authService.getPermissionByRoleIds({
+        roleIds: payload.roleIds,
       });
 
-      if (permissions.length <= 0) {
+      const resourcePermission = rolePermissions.filter(
+        (row) => row.table_name === tableName,
+      );
+
+      if (resourcePermission.length <= 0) {
         return res
           .status(403)
           .send({ message: errorMessage.PERMISSION_NOT_DEFINED_ERROR });
@@ -56,7 +61,7 @@ const hasAccess = async (req, res, next) => {
       // If the user has permission on the table in at least in one of the roles then allow access on the table
       let hasPermission = false;
 
-      permissions.some((resource) => {
+      resourcePermission.some((resource) => {
         const httpMethod =
           apiConstants.httpMethodDefinitions[verb].toLowerCase();
 

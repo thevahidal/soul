@@ -7,8 +7,7 @@ const runCLICommands = () => {
   // if the updatesuperuser command is passed from the CLI execute the updatesuperuser function
   if (argv._.includes('updatesuperuser')) {
     const { id, password, is_superuser } = argv;
-
-    if (!password && !is_superuser) {
+    if (!password && is_superuser === undefined) {
       console.log(
         'Please provide either the --password or --is_superuser flag when using the updateuser command.',
       );

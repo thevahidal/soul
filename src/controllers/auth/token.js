@@ -55,7 +55,7 @@ const obtainAccessToken = async (req, res) => {
     */
     }
 
-    let permissions, roleIds;
+    let roleIds;
 
     // if the user is not a superuser get the role and its permission from the DB
     if (!toBoolean(user.is_superuser)) {
@@ -64,7 +64,6 @@ const obtainAccessToken = async (req, res) => {
         res,
       });
 
-      permissions = roleData.permissions;
       roleIds = roleData.roleIds;
     }
 
@@ -73,7 +72,6 @@ const obtainAccessToken = async (req, res) => {
       userId: user.id,
       isSuperuser: user.is_superuser,
       roleIds,
-      permissions,
     };
 
     // generate an access token
@@ -151,7 +149,7 @@ const refreshAccessToken = async (req, res) => {
     */
     }
 
-    let permissions, roleIds;
+    let roleIds;
     const user = users[0];
 
     // if the user is not a superuser get the role and its permission from the DB
@@ -161,7 +159,6 @@ const refreshAccessToken = async (req, res) => {
         res,
       });
 
-      permissions = roleData.permissions;
       roleIds = roleData.roleIds;
     }
 
@@ -170,7 +167,6 @@ const refreshAccessToken = async (req, res) => {
       userId: user.id,
       isSuperuser: user.is_superuser,
       roleIds,
-      permissions,
     };
 
     // generate an access token
