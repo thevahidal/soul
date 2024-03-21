@@ -11,7 +11,9 @@ To follow the below examples we need to download a sample database and also inst
 ```bash
 wget https://raw.githubusercontent.com/lerocha/chinook-database/master/ChinookDatabase/DataSources/Chinook_Sqlite.sqlite # Download sample sqlite database
 ```
+
 ### Using Soul CLI
+
 ```bash
 npm install -g soul-cli
 soul -d ./Chinook_Sqlite.sqlite -p 8000
@@ -26,15 +28,14 @@ npm install # Install dependencies
 npm link # might need `sudo`
 soul -d ./Chinook_Sqlite.sqlite -p 8000
 ```
-</details>
 
+</details>
 
 ## Namespaces
 
-1. [/api/tables](/docs/api/tables-examples.md) Examples for Tables endpoints
-2. [/api/rows](/docs/api/rows-examples.md) Examples for Rows endpoints
-3. [/api/](/docs/api/root-examples.md) Examples for Root endpoints
-
+1. [/api/tables](docs/api/tables-examples.md) Examples for Tables endpoints
+2. [/api/rows](docs/api/rows-examples.md) Examples for Rows endpoints
+3. [/api/](docs/api/root-examples.md) Examples for Root endpoints
 
 ## Handling Errors
 
@@ -54,9 +55,9 @@ curl --request POST \
 
 ```json
 {
-	"message": "table artists already exists",
-	"error": {
-		"code": "SQLITE_ERROR"
-	}
+  "message": "table artists already exists",
+  "error": {
+    "code": "SQLITE_ERROR"
+  }
 }
 ```

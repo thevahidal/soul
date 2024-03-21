@@ -20,6 +20,7 @@ npm i -g wscat # Install websocket client
 ```
 
 ### Using Soul CLI
+
 ```bash
 npm install -g soul-cli
 soul -d ./Chinook_Sqlite.sqlite -p 8000
@@ -34,9 +35,9 @@ npm install # Install dependencies
 npm link # might need `sudo`
 soul -d ./Chinook_Sqlite.sqlite -p 8000
 ```
-</details>
 
+</details>
 
 ## Namespaces
 
-1. [/ws/tables](/docs/ws/rows-examples.md) Examples for Rows websockets
+1. [/ws/tables](docs/ws/rows-examples.md) Examples for Rows websockets
