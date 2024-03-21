@@ -33,9 +33,9 @@ soul -d ./Chinook_Sqlite.sqlite -p 8000
 
 ## Namespaces
 
-1. [/api/tables](docs/api/tables-examples.md) Examples for Tables endpoints
-2. [/api/rows](docs/api/rows-examples.md) Examples for Rows endpoints
-3. [/api/](docs/api/root-examples.md) Examples for Root endpoints
+1. [/api/tables](api/tables-examples.md) Examples for Tables endpoints
+2. [/api/rows](api/rows-examples.md) Examples for Rows endpoints
+3. [/api/](api/root-examples.md) Examples for Root endpoints
 
 ## Handling Errors
 
