@@ -25,7 +25,7 @@ const updateSuperuser = async (fields) => {
 
   try {
     // find the user by using the id field
-    const users = authService.getRoleByUserId({ id });
+    const users = authService.getUsersById({ userId: id });
 
     // abort if the id is invalid
     if (users.length === 0) {
