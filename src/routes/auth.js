@@ -28,7 +28,7 @@ router.put(
 
 router.get(
   '/logout',
-  validator(schema.refreshAccessToken),
+  validator(schema.removeAccessTokens),
   controllers.removeTokens,
 );
 
