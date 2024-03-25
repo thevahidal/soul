@@ -217,6 +217,34 @@ const refreshAccessToken = async (req, res) => {
   }
 };
 
+const removeTokens = async (req, res) => {
+  /*
+    #swagger.tags = ['Auth']
+    #swagger.summary = 'Remove Tokens'
+    #swagger.description = 'Endpoint to remove access and refresh tokens'
+  */
+
+  try {
+    res.clearCookie(authConstants.ACCESS_TOKEN_SUBJECT);
+    res.clearCookie(authConstants.REFRESH_TOKEN_SUBJECT);
+
+    res
+      .status(200)
+      .send({ message: responseMessages.successMessage.LOGOUT_MESSAGE });
+
+    /*
+      #swagger.responses[200] = {
+        description: 'Tokens Removed',
+        schema: {
+          $ref: '#/definitions/RemoveTokensResponse'
+        }
+      }
+    */
+  } catch (error) {
+    res.status(500).send({ message: errorMessage.SERVER_ERROR });
+  }
+};
+
 const getUsersRoleAndPermission = ({ userId, res }) => {
   const userRoles = authService.getUserRoleByUserId({ userId });
 
@@ -236,4 +264,5 @@ const getUsersRoleAndPermission = ({ userId, res }) => {
 module.exports = {
   obtainAccessToken,
   refreshAccessToken,
+  removeTokens,
 };

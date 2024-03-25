@@ -79,10 +79,21 @@ const updateRolePermissions = Joi.object({
   }).required(),
 });
 
+const removeAccessTokens = Joi.object({
+  query: Joi.object().required(),
+  params: Joi.object({}).required(),
+  body: Joi.object({}).required(),
+  cookies: Joi.object({
+    refreshToken: Joi.string().required(),
+    accessToken: Joi.string().required(),
+  }).required(),
+});
+
 module.exports = {
   obtainAccessToken,
   refreshAccessToken,
   changePassword,
   registerUser,
   updateRolePermissions,
+  removeAccessTokens,
 };

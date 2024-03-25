@@ -189,6 +189,10 @@ const doc = {
     },
 
     InvalidPasswordErrorResponse: { message: 'Invalid password' },
+
+    RemoveTokensResponse: {
+      message: 'Logout successful',
+    },
   },
 };
 

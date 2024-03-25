@@ -5,6 +5,7 @@ module.exports = {
     PASSWORD_UPDATE_SUCCESS: 'Password updated successfully',
     USER_UPDATE_SUCCESS: 'User updated successfully',
     INITIAL_USER_CREATED_SUCCESS: 'Initial user created successfully',
+    LOGOUT_MESSAGE: 'Logout successful',
   },
 
   errorMessage: {

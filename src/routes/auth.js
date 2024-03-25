@@ -26,4 +26,10 @@ router.put(
   controllers.changePassword,
 );
 
+router.get(
+  '/logout',
+  validator(schema.refreshAccessToken),
+  controllers.removeTokens,
+);
+
 module.exports = router;
