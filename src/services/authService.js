@@ -50,6 +50,7 @@ module.exports = () => {
           () => '?',
         )})`,
         whereStringValues: [...roleIds],
+        limit: 10000,
       });
 
       return permissions;
