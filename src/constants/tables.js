@@ -2,12 +2,15 @@ const USERS_TABLE = '_users';
 const ROLES_TABLE = '_roles';
 const USERS_ROLES_TABLE = '_users_roles';
 const ROLES_PERMISSIONS_TABLE = '_roles_permissions';
+const REVOKED_REFRESH_TOKENS_TABLE = '_revoked_refresh_tokens';
 
 module.exports = {
+  // db table names
   USERS_TABLE,
   ROLES_TABLE,
   USERS_ROLES_TABLE,
   ROLES_PERMISSIONS_TABLE,
+  REVOKED_REFRESH_TOKENS_TABLE,
 
   reservedTableNames: [
     USERS_TABLE,
@@ -43,5 +46,9 @@ module.exports = {
 
     // _users_roles fields
     USER_ID: 'user_id',
+
+    //_revoked_refresh_tokens
+    REFRESH_TOKEN: 'refresh_token',
+    EXPIRES_AT: 'expires_at',
   },
 };

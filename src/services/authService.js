@@ -8,6 +8,7 @@ const {
   ROLES_TABLE,
   USERS_ROLES_TABLE,
   ROLES_PERMISSIONS_TABLE,
+  REVOKED_REFRESH_TOKENS_TABLE,
   tableFields,
 } = dbConstants;
 
@@ -74,6 +75,28 @@ module.exports = () => {
       });
 
       return defaultRole;
+    },
+
+    saveRevokedRefreshToken({ refreshToken, expiresAt }) {
+      const { lastInsertRowid } = rowService.save({
+        tableName: REVOKED_REFRESH_TOKENS_TABLE,
+        fields: {
+          refresh_token: refreshToken,
+          expires_at: expiresAt,
+        },
+      });
+
+      return { id: lastInsertRowid };
+    },
+
+    getRevokedRefreshToken({ refreshToken }) {
+      const token = rowService.get({
+        tableName: REVOKED_REFRESH_TOKENS_TABLE,
+        whereString: `WHERE ${tableFields.REFRESH_TOKEN}=?`,
+        whereStringValues: [refreshToken],
+      });
+
+      return token;
     },
   };
 };

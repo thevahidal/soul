@@ -7,6 +7,7 @@ const {
   ROLES_TABLE,
   USERS_ROLES_TABLE,
   ROLES_PERMISSIONS_TABLE,
+  REVOKED_REFRESH_TOKENS_TABLE,
   constraints,
   tableFields,
 } = dbConstants;
@@ -21,6 +22,9 @@ const createDefaultTables = async () => {
     ROLES_PERMISSIONS_TABLE,
   );
   const usersRolesTable = tableService.checkTableExists(USERS_ROLES_TABLE);
+  const revokedRefreshTokensTable = tableService.checkTableExists(
+    REVOKED_REFRESH_TOKENS_TABLE,
+  );
 
   // create _users table
   if (!usersTable) {
@@ -88,6 +92,14 @@ const createDefaultTables = async () => {
       tableName: ROLES_PERMISSIONS_TABLE,
       fields: permissions,
     });
+  }
+
+  // create _revoked_refresh_tokens table
+  if (!revokedRefreshTokensTable) {
+    tableService.createTable(
+      REVOKED_REFRESH_TOKENS_TABLE,
+      schema.revokedRefreshTokensSchema,
+    );
   }
 };
 

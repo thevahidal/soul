@@ -123,13 +123,18 @@ const refreshAccessToken = async (req, res) => {
     #swagger.summary = 'Refresh Access Token' 
     #swagger.description = 'Endpoint to refresh access and refresh tokens'
   */
+  const refToken = req.cookies.refreshToken;
 
   try {
+    // check if the refresh token is revoked
+    if (isRefreshTokenRevoked({ refreshToken: refToken })) {
+      return res
+        .status(403)
+        .send({ message: errorMessage.INVALID_REFRESH_TOKEN_ERROR });
+    }
+
     // extract the payload from the token and verify it
-    const payload = await decodeToken(
-      req.cookies.refreshToken,
-      config.tokenSecret,
-    );
+    const payload = await decodeToken(refToken, config.tokenSecret);
 
     // find the user
     const users = authService.getUsersById({ userId: payload.userId });
@@ -224,7 +229,19 @@ const removeTokens = async (req, res) => {
     #swagger.description = 'Endpoint to remove access and refresh tokens'
   */
 
+  const refreshToken = req.cookies.refreshToken;
+
   try {
+    // decode the token
+    const payload = await decodeToken(refreshToken, config.tokenSecret);
+
+    // store the refresh token in the _revoked_refresh_tokens table
+    authService.saveRevokedRefreshToken({
+      refreshToken,
+      expiresAt: payload.exp,
+    });
+
+    // remove the token from the cookie
     res.clearCookie(authConstants.ACCESS_TOKEN_SUBJECT);
     res.clearCookie(authConstants.REFRESH_TOKEN_SUBJECT);
 
@@ -259,6 +276,11 @@ const getUsersRoleAndPermission = ({ userId, res }) => {
   const permissions = authService.getPermissionByRoleIds({ roleIds });
 
   return { userRoles, roleIds, permissions };
+};
+
+const isRefreshTokenRevoked = ({ refreshToken }) => {
+  const tokens = authService.getRevokedRefreshToken({ refreshToken });
+  return tokens.length > 0;
 };
 
 module.exports = {
