@@ -44,6 +44,7 @@ module.exports = () => {
       return users;
     },
 
+    // TODO: bypass pagination by providing query param for number of rows
     getPermissionByRoleIds({ roleIds }) {
       const permissions = rowService.get({
         tableName: ROLES_PERMISSIONS_TABLE,
