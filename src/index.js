@@ -22,6 +22,7 @@ const { setupExtensions } = require('./extensions');
 const {
   createDefaultTables,
   createInitialUser,
+  removeRevokedRefreshTokens,
 } = require('./controllers/auth');
 
 const { runCLICommands } = require('./commands');
@@ -92,6 +93,9 @@ if (config.auth) {
     'Warning: Soul is running in open mode without authentication or authorization for API endpoints. Please be aware that your API endpoints will not be secure.',
   );
 }
+
+// remove revoked refresh tokens every X days
+removeRevokedRefreshTokens();
 
 // If the user has passed custom CLI commands run the command and exit to avoid running the server
 runCLICommands();

@@ -262,6 +262,17 @@ const removeTokens = async (req, res) => {
   }
 };
 
+const removeRevokedRefreshTokens = () => {
+  authService.deleteRevokedRefreshTokens({
+    lookupField: `WHERE expires_at < CURRENT_TIMESTAMP`,
+  });
+
+  setTimeout(
+    removeRevokedRefreshTokens,
+    authConstants.REVOKED_REFRESH_TOKENS_REMOVAL_TIME_RANGE,
+  );
+};
+
 const getUsersRoleAndPermission = ({ userId, res }) => {
   const userRoles = authService.getUserRoleByUserId({ userId });
 
@@ -287,4 +298,5 @@ module.exports = {
   obtainAccessToken,
   refreshAccessToken,
   removeTokens,
+  removeRevokedRefreshTokens,
 };

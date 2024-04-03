@@ -12,7 +12,7 @@ const {
   tableFields,
 } = dbConstants;
 
-module.exports = () => {
+module.exports = (db) => {
   return {
     getUsersByUsername({ username }) {
       const users = rowService.get({
@@ -98,6 +98,13 @@ module.exports = () => {
       });
 
       return token;
+    },
+
+    deleteRevokedRefreshTokens({ lookupField }) {
+      const query = `DELETE FROM ${REVOKED_REFRESH_TOKENS_TABLE} ${lookupField}`;
+      const statement = db.prepare(query);
+      const result = statement.run();
+      return result;
     },
   };
 };
