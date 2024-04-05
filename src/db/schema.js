@@ -115,4 +115,22 @@ module.exports = {
       foreignKey: { table: ROLES_TABLE, column: tableFields.ID },
     },
   ],
+
+  revokedRefreshTokensSchema: [
+    {
+      name: tableFields.REFRESH_TOKEN,
+      type: 'TEXT',
+      primaryKey: false,
+      notNull: true,
+      unique: false,
+    },
+
+    {
+      name: tableFields.EXPIRES_AT,
+      type: 'NUMERIC',
+      primaryKey: false,
+      notNull: true,
+      unique: false,
+    },
+  ],
 };

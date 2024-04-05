@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.7.0",
+    "version": "0.7.2",
     "title": "Soul API",
     "description": "API Documentation for <b>Soul</b>, a SQLite REST and realtime server. "
   },
@@ -535,6 +535,17 @@
           }
         }
       }
+    },
+    "/api/auth/logout": {
+      "get": {
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -983,6 +994,15 @@
         "message": {
           "type": "string",
           "example": "Invalid password"
+        }
+      }
+    },
+    "RemoveTokensResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Logout successful"
         }
       }
     }
