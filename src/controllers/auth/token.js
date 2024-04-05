@@ -123,18 +123,21 @@ const refreshAccessToken = async (req, res) => {
     #swagger.summary = 'Refresh Access Token' 
     #swagger.description = 'Endpoint to refresh access and refresh tokens'
   */
-  const refToken = req.cookies.refreshToken;
+  const refreshTokenFromCookies = req.cookies.refreshToken;
 
   try {
     // check if the refresh token is revoked
-    if (isRefreshTokenRevoked({ refreshToken: refToken })) {
+    if (isRefreshTokenRevoked({ refreshToken: refreshTokenFromCookies })) {
       return res
         .status(403)
         .send({ message: errorMessage.INVALID_REFRESH_TOKEN_ERROR });
     }
 
     // extract the payload from the token and verify it
-    const payload = await decodeToken(refToken, config.tokenSecret);
+    const payload = await decodeToken(
+      refreshTokenFromCookies,
+      config.tokenSecret,
+    );
 
     // find the user
     const users = authService.getUsersById({ userId: payload.userId });
@@ -266,11 +269,6 @@ const removeRevokedRefreshTokens = () => {
   authService.deleteRevokedRefreshTokens({
     lookupField: `WHERE expires_at < CURRENT_TIMESTAMP`,
   });
-
-  setTimeout(
-    removeRevokedRefreshTokens,
-    authConstants.REVOKED_REFRESH_TOKENS_REMOVAL_TIME_RANGE,
-  );
 };
 
 const getUsersRoleAndPermission = ({ userId, res }) => {
