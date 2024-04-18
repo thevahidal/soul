@@ -14,7 +14,7 @@ const obtainAccessToken = Joi.object({
   cookies: Joi.object({
     refreshToken: Joi.string().optional(),
     accessToken: Joi.string().optional(),
-  }),
+  }).unknown(true),
 });
 
 const refreshAccessToken = Joi.object({
@@ -24,7 +24,9 @@ const refreshAccessToken = Joi.object({
   cookies: Joi.object({
     refreshToken: Joi.string().required(),
     accessToken: Joi.string().optional(),
-  }).required(),
+  })
+    .unknown(true)
+    .required(),
 });
 
 const changePassword = Joi.object({
@@ -40,7 +42,9 @@ const changePassword = Joi.object({
   cookies: Joi.object({
     accessToken: Joi.string().required(),
     refreshToken: Joi.string().optional(),
-  }).required(),
+  })
+    .unknown(true)
+    .required(),
 });
 
 const registerUser = Joi.object({
@@ -56,7 +60,9 @@ const registerUser = Joi.object({
   cookies: Joi.object({
     accessToken: Joi.string().required(),
     refreshToken: Joi.string().optional(),
-  }).required(),
+  })
+    .unknown(true)
+    .required(),
 });
 
 const updateRolePermissions = Joi.object({
@@ -76,7 +82,9 @@ const updateRolePermissions = Joi.object({
   cookies: Joi.object({
     accessToken: Joi.string().required(),
     refreshToken: Joi.string().optional(),
-  }).required(),
+  })
+    .unknown(true)
+    .required(),
 });
 
 const removeAccessTokens = Joi.object({
@@ -86,7 +94,9 @@ const removeAccessTokens = Joi.object({
   cookies: Joi.object({
     refreshToken: Joi.string().required(),
     accessToken: Joi.string().required(),
-  }).required(),
+  })
+    .unknown(true)
+    .required(),
 });
 
 module.exports = {
