@@ -92,7 +92,7 @@ const registerUser = async (req, res) => {
     }
   */
 
-  const { username, password } = req.body.fields;
+  const { username, password, ...optionalFields } = req.body.fields;
 
   try {
     if (!username) {
@@ -156,6 +156,7 @@ const registerUser = async (req, res) => {
         salt,
         hashed_password: hashedPassword,
         is_superuser: 'false',
+        ...optionalFields,
       },
     });
 

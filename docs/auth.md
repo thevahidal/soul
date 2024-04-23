@@ -2,7 +2,7 @@
 
 Soul incorporates a robust user authentication system that handles user accounts, groups, permissions, and cookie-based user sessions. This section provides an overview of how the default implementation works.
 
-Authentication is switched off by default in Soul, but is enabled when either of the `-a` or  `--auth` flags are provided at the command line.
+Authentication is switched off by default in Soul, but is enabled when either of the `-a` or `--auth` flags are provided at the command line.
 
 ### Overview
 
@@ -131,5 +131,7 @@ To register new users, you need to create a new user using the `/api/tables/_use
 Note that you need to be logged in using a user with a role that has creating users permission.
 
 Additionally, it's important to note that the `/api/tables/_users/rows/` endpoint functions slightly differently compared to other `/api/tables/<table_name>/rows/` endpoints. When creating or updating user data through this endpoint, we need to provide the raw passwords, which are then automatically hashed before being stored in the `_hashed_password` field. This extra step enhances the security of the stored passwords.
+
+When creating a user, the required fields are `username` and `password`. However, you also have the flexibility to include additional optional fields. To do this, you will need to modify the schema of the `_users` table in your database using a suitable database editor GUI tool. Simply add the desired field(s) to the database schema for the `_users` table. Once the schema is updated, you can pass the optional field(s) from your client application during user creation.
 
 Furthermore, when retrieving user data, the endpoint automatically filters out sensitive information such as the `_hashed_password` and `_salt` fields. This precautionary measure is in place to address security concerns and ensure that only necessary and non-sensitive information is included in the returned results.
