@@ -285,7 +285,7 @@ const removeRevokedRefreshTokens = () => {
 const getUsersRoleAndPermission = ({ userId }) => {
   const userRoles = authService.getUserRoleByUserId({ userId });
 
-  if (userRoles <= 0) {
+  if (userRoles.length <= 0) {
     throw new Error(errorMessage.ROLE_NOT_FOUND_ERROR);
   }
 
