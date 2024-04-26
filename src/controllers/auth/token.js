@@ -59,12 +59,18 @@ const obtainAccessToken = async (req, res) => {
 
     // if the user is not a superuser get the role and its permission from the DB
     if (!toBoolean(user.is_superuser)) {
-      const roleData = getUsersRoleAndPermission({
-        userId: user.id,
-        res,
-      });
+      try {
+        const roleData = getUsersRoleAndPermission({
+          userId: user.id,
+          res,
+        });
 
-      roleIds = roleData.roleIds;
+        roleIds = roleData.roleIds;
+      } catch (err) {
+        return res
+          .status(401)
+          .send({ message: errorMessage.ROLE_NOT_FOUND_ERROR });
+      }
     }
 
     const payload = {
@@ -162,12 +168,17 @@ const refreshAccessToken = async (req, res) => {
 
     // if the user is not a superuser get the role and its permission from the DB
     if (!toBoolean(user.is_superuser)) {
-      const roleData = getUsersRoleAndPermission({
-        userId: user.id,
-        res,
-      });
+      try {
+        const roleData = getUsersRoleAndPermission({
+          userId: user.id,
+        });
 
-      roleIds = roleData.roleIds;
+        roleIds = roleData.roleIds;
+      } catch (err) {
+        return res
+          .status(401)
+          .send({ message: errorMessage.ROLE_NOT_FOUND_ERROR });
+      }
     }
 
     const newPayload = {
@@ -271,11 +282,10 @@ const removeRevokedRefreshTokens = () => {
   });
 };
 
-const getUsersRoleAndPermission = ({ userId, res }) => {
+const getUsersRoleAndPermission = ({ userId }) => {
   const userRoles = authService.getUserRoleByUserId({ userId });
 
   if (userRoles <= 0) {
-    res.status(401).send({ message: errorMessage.ROLE_NOT_FOUND_ERROR });
     throw new Error(errorMessage.ROLE_NOT_FOUND_ERROR);
   }
 
