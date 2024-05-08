@@ -28,7 +28,6 @@ const {
 
 const { runCLICommands } = require('./commands');
 const { authConstants } = require('./constants');
-
 const app = express();
 app.get('/health', (req, res) => {
   res.send('OK');

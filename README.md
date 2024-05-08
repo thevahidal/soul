@@ -36,12 +36,12 @@ Options:
   -c,       --cors                                  CORS whitelist origins                              [string]
   -a,       --auth                                  Enable authentication and authorization             [boolean]
 
-  -iuu,     --initialuserusername                   Initial user username                               [string]
-  -iup,     --initialuserpassword                   Initial user password                               [string]
+  --iuu,     --initialuserusername                   Initial user username                               [string]
+  --iup,     --initialuserpassword                   Initial user password                               [string]
 
-  -ts,      --tokensecret                           Token Secret                                        [string]
-  -atet,    --accesstokenexpirationtime             Access Token Expiration Time    (Default: 5H)       [string]
-  -rtet,    --refreshtokenexpirationtime            Refresh Token Expiration Time   (Default: 1D)       [string]
+  --ts,      --tokensecret                           Token Secret                                        [string]
+  --atet,    --accesstokenexpirationtime             Access Token Expiration Time    (Default: 5H)       [string]
+  --rtet,    --refreshtokenexpirationtime            Refresh Token Expiration Time   (Default: 1D)       [string]
   -S,       --studio                                Start Soul Studio in parallel
   --help                                            Show help
 
@@ -63,7 +63,7 @@ Run the Soul command with the necessary parameters:
 
 ```
 
-  soul --d foobar.db -a -ts <your_jwt_secret_value> -atet=4H -rtet=3D -iuu=john -iup=<your_password>
+  soul --d foobar.db -a --ts <your_jwt_secret_value> --atet=4H --rtet=3D --iuu=john --iup=<your_password>
 
 ```
 
@@ -72,30 +72,30 @@ Note: When configuring your JWT Secret, it is recommended to use a long string v
 In this example:
 
 The `-a` flag instructs Soul to run in auth mode.
-The `-ts` flag allows you to pass a JWT secret value for the `access and refresh tokens` generation and verification. Replace <your_jwt_secret_value> with your desired secret value.
-The `-atet` flag sets the JWT expiration time for the access token. In this case, it is set to four hours (4H), meaning the token will expire after 4 hours.
-The `-rtet` flag sets the JWT expiration time for the refresh token. In this case, it is set to three days (3D), meaning the token will expire after 3 days.
-The `-iuu` flag is used to pass a username for the initial user
-The `-iup` flag is used to pass a password for the initial user
+The `--ts` flag allows you to pass a JWT secret value for the `access and refresh tokens` generation and verification. Replace <your_jwt_secret_value> with your desired secret value.
+The `--atet` flag sets the JWT expiration time for the access token. In this case, it is set to four hours (4H), meaning the token will expire after 4 hours.
+The `--rtet` flag sets the JWT expiration time for the refresh token. In this case, it is set to three days (3D), meaning the token will expire after 3 days.
+The `--iuu` flag is used to pass a username for the initial user
+The `--iup` flag is used to pass a password for the initial user
 
-Here are some example values for the `-atet` and `rtet` flags
+Here are some example values for the `atet` and `rtet` flags
 
 - 60M: Represents a duration of 60 minutes.
 - 5H: Represents a duration of 5 hours.
 - 1D: Represents a duration of 1 day.
 
-NOTE: It is crucial to securely store a copy of the `-ts`(`Token Secret`) value used in Soul. Once you pass this values, make sure to keep a backup because you will need it every time you restart Soul. Losing this secret values can result in a situation where all of your users are blocked from accessing Soul.
+NOTE: It is crucial to securely store a copy of the `--ts`(`Token Secret`) value used in Soul. Once you pass this values, make sure to keep a backup because you will need it every time you restart Soul. Losing this secret values can result in a situation where all of your users are blocked from accessing Soul.
 
 ### 3. Updating Super Users
 
 To modify a superuser information in a database, you can utilize the `updatesuperuser` command. This command allows you to change a superuser's `password` or upgrade/downgrade a normal user to a `superuser`. Below is an example of how to use it:
 
 ```
-soul --d foobar.db updatesuperuser --id=1 password=<new_password_for_the_user> // Update the password for the superuser with ID 1
+soul -d foobar.db updatesuperuser --id=1 password=<new_password_for_the_user> // Update the password for the superuser with ID 1
 
-soul --d foobar.db updatesuperuser --id=1 --is_superuser=true // Upgrade the user with ID 1 to a superuser
+soul -d foobar.db updatesuperuser --id=1 --is_superuser=true // Upgrade the user with ID 1 to a superuser
 
-soul --d foobar.db updatesuperuser --id=1 --is_superuser=false // Revoke the superuser role from the superuser with ID 1
+soul -d foobar.db updatesuperuser --id=1 --is_superuser=false // Revoke the superuser role from the superuser with ID 1
 ```
 
 ## Documentation
