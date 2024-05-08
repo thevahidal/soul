@@ -6,7 +6,7 @@ const { yargs } = require('../cli');
 
 const { argv } = yargs;
 
-dotenv.config({ path: path.join(__dirname, '../../.env') });
+dotenv.config({ path: argv.envpath || path.join(__dirname, '../../.env') });
 
 const envVarsSchema = Joi.object()
   .keys({
