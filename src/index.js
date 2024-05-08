@@ -23,11 +23,11 @@ const {
   createDefaultTables,
   createInitialUser,
   removeRevokedRefreshTokens,
+  checkAuthConfigs,
 } = require('./controllers/auth');
 
 const { runCLICommands } = require('./commands');
 const { authConstants } = require('./constants');
-
 const app = express();
 app.get('/health', (req, res) => {
   res.send('OK');
@@ -84,6 +84,9 @@ if (config.rateLimit.enabled) {
   // Apply the rate limiting middleware to all requests
   app.use(limiter);
 }
+
+// If Auth mode is activated but if the tokenSecret value is undefined then throw an error
+checkAuthConfigs({ auth: config.auth, tokenSecret: config.tokenSecret });
 
 // If Auth mode is activated then create auth tables in the DB & create a super user if there are no users in the DB
 if (config.auth) {

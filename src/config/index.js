@@ -20,7 +20,7 @@ const envVarsSchema = Joi.object()
     VERBOSE: Joi.string().valid('console', null).default(null),
 
     CORS_ORIGIN_WHITELIST: Joi.string().default('*'),
-    AUTH: Joi.boolean().default(false),
+    AUTH: Joi.boolean(),
 
     RATE_LIMIT_ENABLED: Joi.boolean().default(false),
     RATE_LIMIT_WINDOW_MS: Joi.number().positive().default(1000),
@@ -33,9 +33,9 @@ const envVarsSchema = Joi.object()
     INITIAL_USER_USERNAME: Joi.string(),
     INITIAL_USER_PASSWORD: Joi.string(),
 
-    TOKEN_SECRET: Joi.string().default(null),
-    ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().default('5H'),
-    REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().default('3D'),
+    TOKEN_SECRET: Joi.string(),
+    ACCESS_TOKEN_EXPIRATION_TIME: Joi.string(),
+    REFRESH_TOKEN_EXPIRATION_TIME: Joi.string(),
   })
   .unknown();
 
@@ -113,12 +113,16 @@ module.exports = {
       envVars.CORS_ORIGIN_WHITELIST?.split(',') || ['*'],
   },
 
-  auth: argv.auth || envVars.AUTH,
-  tokenSecret: argv.tokensecret || envVars.TOKEN_SECRET,
+  auth: argv.auth || envVars.AUTH || false,
+  tokenSecret: argv.tokensecret || envVars.TOKEN_SECRET || null,
   accessTokenExpirationTime:
-    argv.accesstokenexpirationtime || envVars.ACCESS_TOKEN_EXPIRATION_TIME,
+    argv.accesstokenexpirationtime ||
+    envVars.ACCESS_TOKEN_EXPIRATION_TIME ||
+    '5H',
   refreshTokenExpirationTime:
-    argv.refreshtokenexpirationtime || envVars.REFRESH_TOKEN_EXPIRATION_TIME,
+    argv.refreshtokenexpirationtime ||
+    envVars.REFRESH_TOKEN_EXPIRATION_TIME ||
+    '3D',
 
   initialUserUsername:
     argv.initialuserusername || envVars.INITIAL_USER_USERNAME,

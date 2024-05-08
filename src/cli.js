@@ -50,28 +50,24 @@ if (process.env.NO_CLI !== 'true') {
       alias: 'auth',
       describe: 'Enable authentication and authorization',
       type: 'boolean',
-      default: false,
       demandOption: false,
     })
     .options('ts', {
       alias: 'tokensecret',
       describe: 'JWT secret for the access and refresh tokens',
       type: 'string',
-      default: null,
       demandOption: false,
     })
     .options('atet', {
       alias: 'accesstokenexpirationtime',
       describe: 'JWT expiration time for access token',
       type: 'string',
-      default: '5H',
       demandOption: false,
     })
     .options('rtet', {
       alias: 'refreshtokenexpirationtime',
       describe: 'JWT expiration time for refresh token',
       type: 'string',
-      default: '3D',
       demandOption: false,
     })
     .options('iuu', {
