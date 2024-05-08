@@ -63,7 +63,7 @@ Run the Soul command with the necessary parameters:
 
 ```
 
-  soul --d foobar.db -a --ts <your_jwt_secret_value> --atet=4H --rtet=3D --iuu=john --iup=<your_password>
+  soul -d foobar.db -a --ts=<your_jwt_secret_value> --atet=4H --rtet=3D --iuu=john --iup=<your_password>
 
 ```
 
