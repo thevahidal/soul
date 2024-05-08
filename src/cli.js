@@ -46,6 +46,12 @@ if (process.env.NO_CLI !== 'true') {
       type: 'string',
       demandOption: false,
     })
+    .options('env', {
+      alias: 'envpath',
+      describe: 'Environment variable file path to load',
+      type: 'string',
+      demandOption: false,
+    })
     .options('a', {
       alias: 'auth',
       describe: 'Enable authentication and authorization',

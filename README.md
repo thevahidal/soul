@@ -34,6 +34,7 @@ Options:
   -p,       --port                                  Port to listen on                                   [number]
   -r,       --rate-limit-enabled                    Enable rate limiting                                [boolean]
   -c,       --cors                                  CORS whitelist origins                              [string]
+  --env,    --envpath                               Path to load .env file                              [string]
   -a,       --auth                                  Enable authentication and authorization             [boolean]
 
   --iuu,     --initialuserusername                   Initial user username                               [string]
@@ -42,8 +43,8 @@ Options:
   --ts,      --tokensecret                           Token Secret                                        [string]
   --atet,    --accesstokenexpirationtime             Access Token Expiration Time    (Default: 5H)       [string]
   --rtet,    --refreshtokenexpirationtime            Refresh Token Expiration Time   (Default: 1D)       [string]
-  -S,       --studio                                Start Soul Studio in parallel
-  --help                                            Show help
+  -S,       --studio                                 Start Soul Studio in parallel
+  --help                                             Show help
 
 ```
 
@@ -97,6 +98,20 @@ soul -d foobar.db updatesuperuser --id=1 --is_superuser=true // Upgrade the user
 
 soul -d foobar.db updatesuperuser --id=1 --is_superuser=false // Revoke the superuser role from the superuser with ID 1
 ```
+
+### Passing Custom Path for .env File
+
+There might be cases where you want to pass a custom path for your `.env` file. For this, you can use the `--env` flag when running the `soul` command, providing the absolute file path of your `.env` file.
+
+```shell
+soul -d foobar.db --env=/Users/Documents/Projects/React-Project/.env
+```
+
+NOTE:
+
+- You should pass an absolute file path of the .env file.
+- Relative paths are not allowed.
+- Don't forget to include the .env file in the specified path.
 
 ## Documentation
 
