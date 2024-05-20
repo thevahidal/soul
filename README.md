@@ -104,7 +104,7 @@ soul -d foobar.db updatesuperuser --id=1 --is_superuser=false // Revoke the supe
 There might be cases where you want to pass a custom path for your `.env` file. For this, you can use the `--env` flag when running the `soul` command, providing the absolute file path of your `.env` file.
 
 ```shell
-soul -d foobar.db --env=/Users/Documents/Projects/React-Project/.env
+soul -d foobar.db --env=/absolute/path/of/your/.env/file
 ```
 
 NOTE:
