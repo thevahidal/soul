@@ -135,3 +135,9 @@ Additionally, it's important to note that the `/api/tables/_users/rows/` endpoin
 When creating a user, the required fields are `username` and `password`. However, you also have the flexibility to include additional optional fields. To do this, you will need to modify the schema of the `_users` table in your database using a suitable database editor GUI tool. Simply add the desired field(s) to the database schema for the `_users` table. Once the schema is updated, you can pass the optional field(s) from your client application during user creation.
 
 Furthermore, when retrieving user data, the endpoint automatically filters out sensitive information such as the `_hashed_password` and `_salt` fields. This precautionary measure is in place to address security concerns and ensure that only necessary and non-sensitive information is included in the returned results.
+
+#### Revoked Refresh Tokens
+
+When you send a request to log in to Soul using the `/token/obtain` endpoint, you will receive `Access` and `Refresh` tokens. These tokens can be stored in a secure client environment. You can then send a request to the `/token/refresh` endpoint to refresh your access token when it expires.
+
+When you log out of Soul, the `Access` and `Refresh` tokens are removed. However, there might be instances where you log out before the refresh token expires, allowing these tokens to be reused by other users. To handle this issue, Soul saves removed refresh tokens temporarily in a table named `revoked_access_tokens`. Each time you attempt to refresh your access token, Soul checks if the `Refresh` token you are using is valid. If you try to reuse a revoked refresh token, Soul will throw an error.
