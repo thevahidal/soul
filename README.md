@@ -141,6 +141,8 @@ A collection of projects that revolve around the Soul ecosystem.
 
 - [RCO-Soul](https://github.com/DeepBlueCLtd/RCO-Soul) The purpose of this project is to demonstrate how to run a React admin client using Soul as a REST API service.
 
+- [dber](https://github.com/findyourmagic/dber) Database design tool based on entity relation diagram
+
 ## Development
 
 ```bash
