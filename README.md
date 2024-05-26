@@ -17,6 +17,70 @@ Install Soul CLI with npm
   npm install -g soul-cli
 ```
 
+## Installation using Docker
+
+Soul is a powerful database management tool that can be easily installed and run using Docker. Follow the instructions below to set up Soul using Docker and Docker Compose.
+
+### Prerequisites
+
+- Docker and Docker Compose installed on your system
+- Git (to clone the Soul repository)
+
+### Step 1: Clone the Soul Repository
+
+First, clone the Soul repository from GitHub:
+
+```bash
+git clone https://github.com/thevahidal/soul.git
+```
+
+### Step 2: Build the Docker Image
+
+Navigate to the cloned repository and build the Docker image using the provided `Dockerfile`:
+
+```bash
+cd soul
+docker build -t soul .
+```
+
+### Step 3: Set up Docker Compose
+
+Create a new file named `docker-compose.yml` in the same directory and add the following content:
+
+```yaml
+services:
+  soul:
+    container_name: soul
+    image: soul
+    ports:
+      - "${SOUL_PORT:-8000}:8000"
+    environment:
+      - DB_FILE=/data/foobar.db
+    volumes:
+      - ${DATABASE_VOLUME:-./data}:/data
+```
+
+This `docker-compose.yml` file sets up a service named `soul` that runs the Soul container. It maps the container's port 8000 to the host's port specified by the `SOUL_PORT` environment variable (defaulting to 8000 if not set). It also mounts a volume for the sqlite database file, using the `DATABASE_VOLUME` environment variable (defaulting to `./data` if not set).
+
+### Step 4: Start the Soul Container
+
+To start the Soul container using Docker Compose, run the following command:
+
+```bash
+docker-compose up -d
+```
+
+This command will start the Soul container in detached mode, allowing it to run in the background.
+
+### Step 5: Access the Soul Interface
+
+Once the container is running, you can access the Soul interface by opening your web browser and navigating to `http://localhost:8000` (or the appropriate IP address and port if you're running it on a remote server).
+
+### Note
+
+The `package.json` and `package-lock.json` files required for Soul are automatically copied from the cloned Git repository during the Docker image build process. If you need to update these files, simply pull the latest changes from the repository before rebuilding the Docker image.
+
+
 ## Usage
 
 ### 1. Running Soul
