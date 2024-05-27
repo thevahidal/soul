@@ -17,6 +17,59 @@ Install Soul CLI with npm
   npm install -g soul-cli
 ```
 
+## Running as Docker Container
+
+Follow the instructions below to set up Soul using Docker and Docker Compose.
+
+### Prerequisites
+
+- Docker or OrbStack and `docker-compose` installed on your system
+- Git (to clone the Soul repository)
+
+### Clone the Soul Repository
+
+```bash
+git clone https://github.com/thevahidal/soul.git
+```
+
+### Set up Environment Variables
+
+Navigate to the cloned repository and copy the `.env.sample` file to a new file named `.env`:
+
+```bash
+cd soul
+cp .env.sample .env
+```
+
+Open the `.env` file in a text editor and modify the following environment variables
+
+```
+DB_FILE=/data/foobar.db
+DATABASE_VOLUME=$HOME/database
+SOUL_PORT=8000
+```
+
+- `DB_FILE`: Specifies the path to the database file within the container.
+- `DATABASE_VOLUME`: Specifies the path to the directory on the host machine where the sqlite database file is stored.
+- `SOUL_PORT`: Specifies the port on which the Soul interface will be accessible.
+
+### Build the Docker Image
+
+Build the Docker image using the provided `Dockerfile`:
+
+```bash
+docker build -t soul .
+```
+
+### Start the Soul Container
+
+To start the Soul container using Docker Compose in detached mode, run the following command:
+
+```bash
+docker-compose up -d
+```
+The `docker-compose.yml` file is already present in the cloned Git repository.
+
 ## Usage
 
 ### 1. Running Soul

@@ -1,0 +1,10 @@
+services:
+  soul:
+    container_name: soul
+    image: soul
+    ports:
+      - "${SOUL_PORT}:${SOUL_PORT}"
+    environment:
+      - DB_FILE=${DB_FILE}
+    volumes:
+      - ${DATABASE_VOLUME}:/data
