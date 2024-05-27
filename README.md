@@ -61,14 +61,13 @@ Build the Docker image using the provided `Dockerfile`:
 docker build -t soul .
 ```
 
-### Step 4: Start the Soul Container
+### Start the Soul Container
 
 To start the Soul container using Docker Compose in detached mode, run the following command:
 
 ```bash
 docker-compose up -d
 ```
-
 The `docker-compose.yml` file is already present in the cloned Git repository.
 
 ## Usage
