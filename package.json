@@ -1,6 +1,6 @@
 {
   "name": "soul-cli",
-  "version": "0.7.9",
+  "version": "0.8.0",
   "description": "A SQLite REST and Realtime server",
   "main": "src/server.js",
   "bin": {

@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.7.2",
+    "version": "0.8.0",
     "title": "Soul API",
     "description": "API Documentation for <b>Soul</b>, a SQLite REST and realtime server. "
   },
@@ -50,31 +50,6 @@
         "responses": {
           "200": {
             "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/transaction": {
-      "post": {
-        "tags": ["Root"],
-        "summary": "Transaction",
-        "description": "Endpoint to run any transaction, e.g. [{ \"query\": \"\" }, { \"statement\": \"\", \"values\": {} }, { \"query\": \"\" }]",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/TransactionRequestBody"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
           }
         }
       }

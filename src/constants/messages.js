@@ -10,7 +10,8 @@ module.exports = {
 
   errorMessage: {
     USERNAME_TAKEN_ERROR: 'This username is taken',
-    WEAK_PASSWORD_ERROR: 'This password is weak, please use another password',
+    WEAK_PASSWORD_ERROR:
+      'This password is weak, it should be at least 8 characters long and contain a combination of lowercase letters, uppercase letters, numbers, and special characters',
     DEFAULT_ROLE_NOT_CREATED_ERROR:
       'Please restart soul so a default role can be created',
     INVALID_USERNAME_PASSWORD_ERROR: 'Invalid username or password',
