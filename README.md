@@ -68,16 +68,16 @@ Run the Soul command with the necessary parameters:
 
 ```
 
-Note: When configuring your JWT Secret, it is recommended to use a long string value for enhanced security. It is advisable to use a secret that is at least 10 characters in length.
+> Note: When configuring your JWT Secret, it is recommended to use a long string value for enhanced security. It is advisable to use a secret that is at least 10 characters in length.
 
 In this example:
 
-The `-a` flag instructs Soul to run in auth mode.
-The `--ts` flag allows you to pass a JWT secret value for the `access and refresh tokens` generation and verification. Replace <your_jwt_secret_value> with your desired secret value.
-The `--atet` flag sets the JWT expiration time for the access token. In this case, it is set to four hours (4H), meaning the token will expire after 4 hours.
-The `--rtet` flag sets the JWT expiration time for the refresh token. In this case, it is set to three days (3D), meaning the token will expire after 3 days.
-The `--iuu` flag is used to pass a username for the initial user
-The `--iup` flag is used to pass a password for the initial user
+- The `-a` flag instructs Soul to run in auth mode.
+- The `--ts` flag allows you to pass a JWT secret value for the `access and refresh tokens` generation and verification. Replace <your_jwt_secret_value> with your desired secret value.
+- The `--atet` flag sets the JWT expiration time for the access token. In this case, it is set to four hours (4H), meaning the token will expire after 4 hours.
+- The `--rtet` flag sets the JWT expiration time for the refresh token. In this case, it is set to three days (3D), meaning the token will expire after 3 days.
+- The `--iuu` flag is used to pass a username for the initial user
+- The `--iup` flag is used to pass a password for the initial user
 
 Here are some example values for the `atet` and `rtet` flags
 
