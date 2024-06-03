@@ -152,7 +152,8 @@ const doc = {
     },
 
     WeakPasswordErrorResponse: {
-      message: 'This password is weak, please use another password',
+      message:
+        'This password is weak, it should be at least 8 characters long and contain a combination of lowercase letters, uppercase letters, numbers, and special characters',
     },
 
     UsernameTakenErrorResponse: {

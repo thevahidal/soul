@@ -157,11 +157,17 @@ npm run dev # Start the dev server
 
 ## Testing
 
-Set the `AUTH` variable to `true` in your `.env` file and use the command below to run the tests
+1. Set the `AUTH` variable to true in your `.env` file.
+2. Provide a username for the `INITIAL_USER_USERNAME` environment variable. The username should be a valid, meaningful username.
+3. Provide a strong password for the `INITIAL_USER_PASSWORD` environment variable. The password should be at least 8 characters long and contain a combination of lowercase letters, uppercase letters, numbers, and special characters, for example: "Str0ng$Pw!".
+4. Provider a secret for the `TOKEN_SECRET` environment variable.
+5. Use the following command to run the tests:
 
 ```
  npm run test
 ```
+
+Make sure to replace the placeholders with the appropriate values for your environment.
 
 ## Community
 
