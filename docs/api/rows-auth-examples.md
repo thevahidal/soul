@@ -105,8 +105,6 @@ Response
 }
 ```
 
-Oh, now that we have created the Role Permission think that it's better for `editor` role to have both `read` and `create` permissions.
-
 #### 2.3. Assign Role to a User
 
 To assign roles to a user call `/tables/_users_roles/rows/` endpoint with `POST` method.
