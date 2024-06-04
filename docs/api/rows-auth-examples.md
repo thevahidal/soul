@@ -38,7 +38,7 @@ Response
 
 ### 2. Granting access to users
 
-Only super users (e.g. `is_superuser=true`) or those who got roles that have access to '\_roles' table, can grant access to other users.
+Only super users (e.g. `is_superuser=true`) or those with roles that have access to '\_roles' table can grant access to other users.
 
 > Head over to [README](/README.md) and _Updating Super Users_ section to learn how to promote someone to a super user.
 
@@ -105,7 +105,7 @@ Response
 }
 ```
 
-Oh, now that we created the Role Permission think that it's better for `editor` role to have both `read` and `create` permissions.
+Oh, now that we have created the Role Permission think that it's better for `editor` role to have both `read` and `create` permissions.
 
 #### 2.3. Assign Role to a User
 
