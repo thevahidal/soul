@@ -145,7 +145,7 @@ Response
 In order to logout from your account e.g. remove access and refresh cookies and also revoke your refresh token (access token lifetime is very short and doesn't need to be revoked) call `/auth/logout/` endpoint with `GET` method.
 
 ```bash
-curl http://localhost:8000/api/auth/change-password \
+curl http://localhost:8000/api/auth/logout \
   --cookie 'accessToken=<jwt-access-token>' \
   --cookie 'refreshToken=<jwt-refresh-token>'
 ```

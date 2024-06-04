@@ -80,7 +80,7 @@ To create permissions for a Role call `/tables/_roles_permissions/rows/` endpoin
 curl --request POST \
   --url http://localhost:8000/api/tables/_roles_permissions/rows/ \
   --header 'Content-Type: application/json' \
-  --header 'Cookie: <jwt-access-token>' \
+  --header 'Cookie: accessToken=<jwt-access-token>' \
   --data '{
   "fields": {
     "role_id": 2,
@@ -115,7 +115,7 @@ To assign roles to a user call `/tables/_users_roles/rows/` endpoint with `POST`
 curl --request POST \
   --url http://localhost:8000/api/tables/_users_roles/rows/ \
   --header 'Content-Type: application/json' \
-  --header 'Cookie: <jwt-access-token>' \
+  --header 'Cookie: accessToken=<jwt-access-token>' \
   --data '{
   "fields": {
     "user_id": 1,
