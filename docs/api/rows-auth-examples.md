@@ -40,7 +40,7 @@ Response
 
 Only super users (e.g. `is_superuser=true`) or those with roles that have access to '\_roles' table can grant access to other users.
 
-> Head over to [README](/README.md) and _Updating Super Users_ section to learn how to promote someone to a super user.
+> Head over to [README, _Updating Super Users_ section](/README.md#3-updating-super-users) to learn how to promote someone to a super user.
 
 #### 2.1. Create a new Role
 
