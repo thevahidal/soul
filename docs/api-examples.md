@@ -1,6 +1,6 @@
 # API Examples
 
-Soul is consist of 3 main namespaces: `/tables`, `/rows` and `/`. In this document we'll try to go over all of them so you can get familiar with how Soul works.
+Soul is consist of 4 main namespaces: Tables (`/tables/`), Rows `/tables/{table-name}/rows/`, Auth (`/auth/`), and Root (`/`). In this document we'll try to go over all of them so you can get familiar with how Soul works.
 
 ## Setup Environment
 
