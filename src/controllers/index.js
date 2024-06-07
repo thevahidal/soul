@@ -17,6 +17,17 @@ const root = async (req, res) => {
   });
 };
 
+const health = async (req, res) => {
+  /*
+    #swagger.tags = ['Root']
+    #swagger.summary = 'Health Check'
+    #swagger.description = 'Endpoint to return server health status'
+  */
+
+  res.send('OK');
+};
+
 module.exports = {
   root,
+  health,
 };

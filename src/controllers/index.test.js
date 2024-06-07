@@ -14,3 +14,11 @@ describe('Root Endpoints', () => {
     expect(res.body.data).toHaveProperty('timestamp');
   });
 });
+
+describe('Health Endpoints', () => {
+  it('GET /health should return server version and timestamp', async () => {
+    const res = await requestWithSupertest.get('/api/health');
+    expect(res.status).toEqual(200);
+    expect(res.type).toEqual(expect.stringContaining('text'));
+  });
+});
