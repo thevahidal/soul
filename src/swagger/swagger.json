@@ -30,9 +30,11 @@
   "consumes": ["application/json"],
   "produces": ["application/json"],
   "paths": {
-    "/health": {
+    "/api/": {
       "get": {
-        "description": "",
+        "tags": ["Root"],
+        "summary": "Timestamp",
+        "description": "Endpoint to return server timestamp",
         "parameters": [],
         "responses": {
           "200": {
@@ -41,11 +43,11 @@
         }
       }
     },
-    "/api/": {
+    "/api/health": {
       "get": {
         "tags": ["Root"],
-        "summary": "Timestamp",
-        "description": "Endpoint to return server timestamp",
+        "summary": "Health Check",
+        "description": "Endpoint to return server health status",
         "parameters": [],
         "responses": {
           "200": {
@@ -865,7 +867,7 @@
       "properties": {
         "message": {
           "type": "string",
-          "example": "This password is weak, please use another password"
+          "example": "This password is weak, it should be at least 8 characters long and contain a combination of lowercase letters, uppercase letters, numbers, and special characters"
         }
       }
     },
