@@ -1,6 +1,6 @@
 # Hosting Static Content Using Soul
 
-You can host static content using Soul by utilizing its extensions feature. This allows you to expose your static application through Soul, enabling users to access your content without hosting multiple applications.
+You can host static content using Soul by utilizing its extensions feature. This allows you to expose your static application through Soul, simplifying the deployment.  Note: your application can gain further server-side capabilities via other Soul extensions.
 
 Here are diagrams showing how to access Soul APIs when running standalone and how to expose a static client via extensions.
 
