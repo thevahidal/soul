@@ -168,6 +168,10 @@ npm run dev # Start the dev server
 
 Make sure to replace the placeholders with the appropriate values for your environment.
 
+## Hosting Static Content Using Soul
+
+You can host static content using Soul by utilizing its extensions feature. This allows you to expose your static application through Soul, enabling users to access your content without hosting multiple applications. please check [this](./docs/self-hosting.md) document
+
 ## Community
 
 [Join](https://bit.ly/soul-discord) the discussion in our Discord server and help making Soul together.
