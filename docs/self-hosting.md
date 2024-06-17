@@ -1,6 +1,6 @@
 # Hosting Static Content Using Soul
 
-You can host static content using Soul by utilizing its extensions feature. This allows you to expose your static application through Soul, simplifying the deployment.  Note: your application can gain further server-side capabilities via other Soul extensions.
+You can host static content using Soul by utilizing its extensions feature. This allows you to expose your static application through Soul, enabling users to access your content without hosting multiple applications.
 
 Here are diagrams showing how to access Soul APIs when running standalone and how to expose a static client via extensions.
 
@@ -8,14 +8,13 @@ Here are diagrams showing how to access Soul APIs when running standalone and ho
 ![soul standalone](../assets/images/soul-standalone.png)
 
 **Accessing a React Admin Application via Soul**
-
-![soul RA app](../assets//images//soul-RA-app.png)
+![soul RA app](../assets/images/soul-RA-app.png)
 
 ## Steps
 
 In this guide, we will demonstrate how to host a static `React Admin` application.
 
-1. Create an `_extensions` folder within the `Soul` directory and add a file named `api.js`:
+1. Create an `_extensions` folder and add an `api.js` file to it.:
    ```sh
      mkdir _extensions && touch _extensions/api.js
    ```
@@ -47,7 +46,7 @@ In this guide, we will demonstrate how to host a static `React Admin` applicatio
 
 5. Run your Soul application:
    ```sh
-    npm run dev
+    soul -d foobar.db --extensions /path/to/_extensions/
    ```
 6. To verify that the app is working, open the following URL in your browser:
    ```
