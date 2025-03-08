@@ -175,7 +175,7 @@ A collection of projects that revolve around the Soul ecosystem.
 git clone https://github.com/thevahidal/soul # Clone project
 
 cp .env.sample .env # Duplicate sample environment variables
-nano .env # Update the environment variables
+vim .env # Update the environment variables
 
 npm install # Install dependencies
 npm run dev # Start the dev server
