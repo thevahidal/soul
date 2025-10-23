@@ -5,19 +5,21 @@ meta {
 }
 
 get {
-  url: {{base_url}}/api/tables/:tableName/rows/?_ordering=ArtistId.Name
+  url: {{base_url}}/api/tables/:tableName/rows/?_ordering=-CustomerId.LastName&_extend=CustomerId
   body: none
   auth: inherit
 }
 
 params:query {
-  _ordering: ArtistId.Name
+  _ordering: -CustomerId.LastName
+  _extend: CustomerId
 }
 
 params:path {
-  tableName: 
+  tableName: Invoice
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

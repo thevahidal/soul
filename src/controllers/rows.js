@@ -165,7 +165,7 @@ const listTableRows = async (req, res, next) => {
   // e.g. ?_ordering=-name will order by name descending
   // e.g. ?_ordering=publisher.name will order by publisher name, considering that publisher is a foreign key to publishers table
   let orderString = '';
-  let joinString = '';
+  let extendString = '';
   let joins = {};
 
   if (_ordering) {
@@ -179,7 +179,7 @@ const listTableRows = async (req, res, next) => {
       const { foreignKey, joinedTableName, joinedTableFields } =
         rowService.getForeignKeyInfo(tableName, relation);
 
-      joinString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${relation}`;
+      extendString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${relation}`;
       joins[relation] = { foreignKey, joinedTableName, joinedTableFields };
       orderString += ` ORDER BY ${joinedTableName}.${field} ${
         isDesc ? 'DESC' : 'ASC'
@@ -255,7 +255,7 @@ const listTableRows = async (req, res, next) => {
           foreignKey = foreignKeyInfo.foreignKey;
           joinedTableName = foreignKeyInfo.joinedTableName;
           joinedTableFields = foreignKeyInfo.joinedTableFields;
-          joinString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${extendedField}`;
+          extendString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${extendedField}`;
         }
 
         // joined fields will be returned in a new object called {field}_data e.g. author_id_data
@@ -296,7 +296,7 @@ const listTableRows = async (req, res, next) => {
     let data = rowService.get({
       schemaString,
       tableName,
-      extendString: joinString,
+      extendString,
       whereString,
       orderString,
       limit,

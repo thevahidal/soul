@@ -77,7 +77,7 @@ describe('Rows Endpoints', () => {
     );
   });
 
-  it('GET /tables/:name/rows?_ordering:firstName: should query the rows by the provided query params', async () => {
+  it('GET /tables/:name/rows?_ordering:userId.firstName&_extend=userId: should return the rows ordered by the related table field', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
       config.tokenSecret,
@@ -85,11 +85,12 @@ describe('Rows Endpoints', () => {
     );
 
     const params = {
-      _ordering: '-firstName',
+      _ordering: 'userId.firstName',
+      _extend: 'userId',
     };
     const query = queryString(params);
     const res = await requestWithSupertest
-      .get(`/api/tables/users/rows?${query}`)
+      .get(`/api/tables/posts/rows?${query}`)
       .set('Cookie', [`accessToken=${accessToken}`]);
 
     expect(res.status).toEqual(200);
@@ -97,19 +98,12 @@ describe('Rows Endpoints', () => {
     expect(res.body).toHaveProperty('data');
     expect(res.body.data).toEqual(expect.any(Array));
 
-    // expect(res.body.next).toEqual(
-    //   `/tables/users/rows?${queryString({
-    //     ...params,
-    //     _page: params._page + 1,
-    //   }).toString()}`,
-    // );
-    //
-    // expect(res.body.previous).toEqual(
-    //   `/tables/users/rows?${queryString({
-    //     ...params,
-    //     _page: params._page - 1,
-    //   }).toString()}`,
-    // );
+    const firstUserFirstName = res.body.data[1].userId_data.firstName;
+    const secondUserFirstName = res.body.data[2].userId_data.firstName;
+    const thirdUserFirstName = res.body.data[3].userId_data.firstName;
+
+    expect(firstUserFirstName <= secondUserFirstName).toBe(true);
+    expect(secondUserFirstName <= thirdUserFirstName).toBe(true);
   });
 
   it('GET /tables/:name/rows: should return a null field', async () => {
@@ -303,8 +297,9 @@ describe('Rows Endpoints', () => {
     );
 
     const res = await requestWithSupertest
-      .delete('/api/tables/users/rows/1')
+      .delete('/api/tables/posts/rows/1')
       .set('Cookie', [`accessToken=${accessToken}`]);
+
     expect(res.status).toEqual(200);
     expect(res.type).toEqual(expect.stringContaining('json'));
   });
