@@ -1,0 +1,23 @@
+meta {
+  name: list-rows-with-ordering
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/tables/:tableName/rows/?_ordering=ArtistId.Name
+  body: none
+  auth: inherit
+}
+
+params:query {
+  _ordering: ArtistId.Name
+}
+
+params:path {
+  tableName: 
+}
+
+settings {
+  encodeUrl: true
+}

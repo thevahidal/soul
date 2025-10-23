@@ -1,0 +1,25 @@
+meta {
+  name: obtain-access-token
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/api/auth/token/obtain
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "fields": {
+      "username": "John1",
+      "password": "Doe123@123sdkfj___"
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

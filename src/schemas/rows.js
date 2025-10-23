@@ -5,7 +5,7 @@ const listTableRows = Joi.object({
     _page: Joi.number().integer().min(1).default(1),
     _limit: Joi.number().integer().min(1).default(10),
     _search: Joi.string(),
-    _ordering: Joi.string().regex(/^[\w-]+$/),
+    _ordering: Joi.string().regex(/^[\w.-]+$/),
     _schema: Joi.string(),
     _extend: Joi.string(),
     _filters: Joi.string(),

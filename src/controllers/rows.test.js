@@ -77,6 +77,41 @@ describe('Rows Endpoints', () => {
     );
   });
 
+  it('GET /tables/:name/rows?_ordering:firstName: should query the rows by the provided query params', async () => {
+    const accessToken = await generateToken(
+      { username: 'John', isSuperuser: true },
+      config.tokenSecret,
+      '1H',
+    );
+
+    const params = {
+      _ordering: '-firstName',
+    };
+    const query = queryString(params);
+    const res = await requestWithSupertest
+      .get(`/api/tables/users/rows?${query}`)
+      .set('Cookie', [`accessToken=${accessToken}`]);
+
+    expect(res.status).toEqual(200);
+    expect(res.type).toEqual(expect.stringContaining('json'));
+    expect(res.body).toHaveProperty('data');
+    expect(res.body.data).toEqual(expect.any(Array));
+
+    // expect(res.body.next).toEqual(
+    //   `/tables/users/rows?${queryString({
+    //     ...params,
+    //     _page: params._page + 1,
+    //   }).toString()}`,
+    // );
+    //
+    // expect(res.body.previous).toEqual(
+    //   `/tables/users/rows?${queryString({
+    //     ...params,
+    //     _page: params._page - 1,
+    //   }).toString()}`,
+    // );
+  });
+
   it('GET /tables/:name/rows: should return a null field', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },

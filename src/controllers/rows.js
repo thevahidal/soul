@@ -163,18 +163,38 @@ const listTableRows = async (req, res, next) => {
   // if _ordering is provided, order rows by it
   // e.g. ?_ordering=name will order by name
   // e.g. ?_ordering=-name will order by name descending
+  // e.g. ?_ordering=publisher.name will order by publisher name, considering that publisher is a foreign key to publishers table
   let orderString = '';
+  let joinString = '';
+  let joins = {};
+
   if (_ordering) {
-    orderString += ` ORDER BY ${_ordering.replace('-', '')} ${
-      _ordering.startsWith('-') ? 'DESC' : 'ASC'
-    }`;
+    const isDesc = _ordering.startsWith('-');
+    const cleanOrder = _ordering.replace('-', '');
+
+    if (cleanOrder.includes('.')) {
+      // Handle foreign key sort, e.g. publisher.name
+      const [relation, field] = cleanOrder.split('.');
+
+      const { foreignKey, joinedTableName, joinedTableFields } =
+        rowService.getForeignKeyInfo(tableName, relation);
+
+      joinString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${relation}`;
+      joins[relation] = { foreignKey, joinedTableName, joinedTableFields };
+      orderString += ` ORDER BY ${joinedTableName}.${field} ${
+        isDesc ? 'DESC' : 'ASC'
+      }`;
+    } else {
+      // regular field sort
+      orderString += ` ORDER BY ${cleanOrder} ${isDesc ? 'DESC' : 'ASC'}`;
+    }
+
     params += `_ordering=${_ordering}&`;
   }
 
   // if _schema is provided, return only those fields
   // e.g. ?_schema=name,age will return only name and age fields
   // if _schema is not provided, return all fields
-
   let schemaString = '';
   if (_schema) {
     const schemaFields = _schema.split(',');
@@ -217,30 +237,26 @@ const listTableRows = async (req, res, next) => {
   // }
 
   let foreignKeyError = { error: '', message: '' };
-  let extendString = '';
 
   if (_extend) {
     const extendFields = _extend.split(',');
     extendFields.forEach((extendedField) => {
       try {
-        const foreignKey = db
-          .prepare(`PRAGMA foreign_key_list(${tableName})`)
-          .all()
-          .find((fk) => fk.from === extendedField);
-
-        if (!foreignKey) {
-          throw new Error(
-            `Foreign key not found for extended field '${extendedField}'`,
+        let foreignKey, joinedTableName, joinedTableFields;
+        if (joins[extendedField]) {
+          foreignKey = joins[extendedField].foreignKey;
+          joinedTableName = joins[extendedField].joinedTableName;
+          joinedTableFields = joins[extendedField].joinedTableFields;
+        } else {
+          const foreignKeyInfo = rowService.getForeignKeyInfo(
+            tableName,
+            extendedField,
           );
+          foreignKey = foreignKeyInfo.foreignKey;
+          joinedTableName = foreignKeyInfo.joinedTableName;
+          joinedTableFields = foreignKeyInfo.joinedTableFields;
+          joinString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${extendedField}`;
         }
-
-        const { table: joinedTableName } = foreignKey;
-
-        const joinedTableFields = db
-          .prepare(`PRAGMA table_info(${joinedTableName})`)
-          .all();
-
-        extendString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${extendedField}`;
 
         // joined fields will be returned in a new object called {field}_data e.g. author_id_data
         const extendFieldsString =
@@ -280,7 +296,7 @@ const listTableRows = async (req, res, next) => {
     let data = rowService.get({
       schemaString,
       tableName,
-      extendString,
+      extendString: joinString,
       whereString,
       orderString,
       limit,
