@@ -96,6 +96,12 @@ module.exports = (db) => {
     },
 
     getForeignKeyInfo(tableName, field) {
+      // Validate that tableName exists in the database and is not malicious
+      const validTables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all()
+        .map(row => row.name);
+      if (!validTables.includes(tableName)) {
+        throw new Error(`Invalid or unknown table name '${tableName}'`);
+      }
       const foreignKey = db
         .prepare(`PRAGMA foreign_key_list(${tableName})`)
         .all()
