@@ -30,6 +30,12 @@ const createTestTable = (table = 'users') => {
   ).run();
 };
 
+const createTestRelatedTable = (table = 'posts') => {
+  db.prepare(
+    `CREATE TABLE ${table} (id INTEGER PRIMARY KEY, userId INTEGER, title TEXT, content TEXT, createdAt TEXT, FOREIGN KEY(userId) REFERENCES users(id))`,
+  ).run();
+};
+
 const insertIntoTestTable = (table = 'users') => {
   const statement = db.prepare(
     `INSERT INTO ${table} (firstName, lastName, createdAt) VALUES (?, ?, ?)`,
@@ -40,9 +46,26 @@ const insertIntoTestTable = (table = 'users') => {
   }
 };
 
+const insertIntoTestRelatedTable = (table = 'posts') => {
+  const statement = db.prepare(
+    `INSERT INTO ${table} (userId, title, content, createdAt) VALUES (?, ?, ?, ?)`,
+  );
+
+  for (let i = 1; i <= testNames.length; i++) {
+    statement.run(
+      '' + i,
+      `Post Title ${i}`,
+      `This is the content of post ${i}.`,
+      new Date().toISOString(),
+    );
+  }
+};
+
 module.exports = {
   dropTestTable,
   dropTestDatabase,
   createTestTable,
+  createTestRelatedTable,
   insertIntoTestTable,
+  insertIntoTestRelatedTable,
 };

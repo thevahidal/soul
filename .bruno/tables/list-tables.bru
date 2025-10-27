@@ -1,0 +1,16 @@
+meta {
+  name: list-tables
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/tables
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

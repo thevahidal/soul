@@ -94,5 +94,23 @@ module.exports = (db) => {
       const result = statement.run(...pks);
       return result;
     },
+
+    getForeignKeyInfo(tableName, field) {
+      const foreignKey = db
+        .prepare(`PRAGMA foreign_key_list(${tableName})`)
+        .all()
+        .find((fk) => fk.from === field);
+
+      if (!foreignKey) {
+        throw new Error(`Foreign key not found for field '${field}'`);
+      }
+
+      const joinedTableName = foreignKey.table;
+      const joinedTableFields = db
+        .prepare(`PRAGMA table_info(${joinedTableName})`)
+        .all();
+
+      return { foreignKey, joinedTableName, joinedTableFields };
+    },
   };
 };
