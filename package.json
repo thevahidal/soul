@@ -11,7 +11,7 @@
     "dev": "npm run swagger-autogen && cross-env NO_CLI=true nodemon src/server.js",
     "cli": "nodemon src/server.js --database foobar.db",
     "swagger-autogen": "cross-env NO_CLI=true node src/swagger/index.js",
-    "test": "cross-env CI=true NODE_ENV=test NO_CLI=true DB=test.db CORE_PORT=8001 jest --testTimeout=10000",
+    "test": "cross-env CI=true NODE_ENV=test NO_CLI=true DB=test.db CORE_PORT=8001 AUTH=true TOKEN_SECRET=test-secret INITIAL_USER_USERNAME=admin INITIAL_USER_PASSWORD=Admin123#Test jest --testTimeout=10000 --forceExit",
     "prepare": "husky install",
     "lint": "eslint . --fix --max-warnings=0",
     "format": "prettier . --write"
