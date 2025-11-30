@@ -100,7 +100,7 @@ if (config.auth) {
 setInterval(
   removeRevokedRefreshTokens,
   authConstants.REVOKED_REFRESH_TOKENS_REMOVAL_TIME_RANGE,
-);
+).unref();
 
 // If the user has passed custom CLI commands run the command and exit to avoid running the server
 runCLICommands();
