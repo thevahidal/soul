@@ -49,13 +49,20 @@ const createDefaultTables = async () => {
   // create _roles table
   if (!roleTable) {
     tableService.createTable(ROLES_TABLE, schema.roleSchema);
+  }
 
-    // create a default role in the _roles table
+  // create a default role in the _roles table if it doesn't exist
+  try {
     const role = rowService.save({
       tableName: ROLES_TABLE,
       fields: { name: constantRoles.DEFAULT_ROLE },
     });
     roleId = role.lastInsertRowid;
+  } catch (e) {
+    if (e.code !== 'SQLITE_CONSTRAINT_UNIQUE') {
+      throw e;
+    }
+    // role already exists, ignore
   }
 
   // create _roles_permissions table
