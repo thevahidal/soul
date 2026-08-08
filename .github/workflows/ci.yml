@@ -5,13 +5,16 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node-version: [20.x, 22.x, 24.x, 26.x]
+        node-version: [22.x, 24.x, 26.x]
 
     runs-on: ${{ matrix.os }}
 

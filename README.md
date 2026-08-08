@@ -12,7 +12,7 @@
 
 ### Docker
 
-> This is a convenient way to run Soul without worrying about your local Node.js version. Soul requires Node.js `20.x`, `22.x`, `23.x`, `24.x`, `25.x`, or `26.x` (see `engines` in `package.json`) since its [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) dependency ships prebuilt native binaries only for those versions.
+> This is a convenient way to run Soul without worrying about your local Node.js version. Soul requires Node.js `22.x`, `23.x`, `24.x`, `25.x`, or `26.x` (see `engines` in `package.json`) since its [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) dependency requires Node 22 or newer.
 
 Using the following Dockerfile:
 
