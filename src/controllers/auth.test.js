@@ -702,4 +702,60 @@ describe('Auth Endpoints', () => {
       ).toHaveLength(1);
     });
   });
+
+  describe('Cookie SameSite/Secure configuration', () => {
+    const freshAppWith = (configOverrides) => {
+      jest.resetModules();
+      jest.doMock('../config', () => ({
+        ...jest.requireActual('../config'),
+        ...configOverrides,
+      }));
+      return require('../index');
+    };
+
+    afterEach(() => {
+      jest.dontMock('../config');
+      jest.resetModules();
+    });
+
+    it('defaults to SameSite=Lax with no Secure flag (unchanged from unset-attribute behavior)', async () => {
+      const res = await supertest(app)
+        .post('/api/auth/token/obtain')
+        .send({
+          fields: {
+            username: testData.users.user1.username,
+            password: testData.strongPassword2,
+          },
+        });
+
+      expect(res.status).toEqual(201);
+      const cookies = res.headers['set-cookie'];
+      expect(cookies.every((cookie) => /SameSite=Lax/i.test(cookie))).toBe(
+        true,
+      );
+      expect(cookies.some((cookie) => /Secure/i.test(cookie))).toBe(false);
+    });
+
+    it('honors a configured SameSite=None and Secure=true (cross-origin dev mode)', async () => {
+      const crossOriginApp = freshAppWith({
+        cookie: { sameSite: 'none', secure: true },
+      });
+
+      const res = await supertest(crossOriginApp)
+        .post('/api/auth/token/obtain')
+        .send({
+          fields: {
+            username: testData.users.user1.username,
+            password: testData.strongPassword2,
+          },
+        });
+
+      expect(res.status).toEqual(201);
+      const cookies = res.headers['set-cookie'];
+      expect(cookies.every((cookie) => /SameSite=None/i.test(cookie))).toBe(
+        true,
+      );
+      expect(cookies.every((cookie) => /Secure/i.test(cookie))).toBe(true);
+    });
+  });
 });

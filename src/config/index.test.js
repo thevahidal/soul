@@ -30,6 +30,28 @@ describe('Config', () => {
     expect(config.rateLimit.max).toBe(10);
   });
 
+  it('reads cookie SameSite/Secure from COOKIE_SAMESITE and COOKIE_SECURE', () => {
+    process.env.COOKIE_SAMESITE = 'none';
+    process.env.COOKIE_SECURE = 'true';
+
+    jest.resetModules();
+    const config = require('./index');
+
+    expect(config.cookie.sameSite).toBe('none');
+    expect(config.cookie.secure).toBe(true);
+  });
+
+  it('falls back to lax/false when cookie env vars are not set', () => {
+    delete process.env.COOKIE_SAMESITE;
+    delete process.env.COOKIE_SECURE;
+
+    jest.resetModules();
+    const config = require('./index');
+
+    expect(config.cookie.sameSite).toBe('lax');
+    expect(config.cookie.secure).toBe(false);
+  });
+
   it('throws when the environment fails schema validation', () => {
     process.env.NODE_ENV = 'not-a-real-environment';
 
