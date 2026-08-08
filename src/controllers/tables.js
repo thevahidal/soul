@@ -1,6 +1,10 @@
 const db = require('../db/index');
 const { dbConstants } = require('../constants');
-const { assertValidTableName, quoteLiteral } = require('../utils/sql');
+const {
+  assertValidTableName,
+  quoteIdentifier,
+  quoteLiteral,
+} = require('../utils/sql');
 
 const { reservedTableNames } = dbConstants;
 
@@ -227,7 +231,9 @@ const getTableSchema = async (req, res) => {
   try {
     assertValidTableName(db, tableName);
 
-    const schema = db.prepare(`PRAGMA table_info(${tableName})`).all();
+    const schema = db
+      .prepare(`PRAGMA table_info(${quoteIdentifier(tableName)})`)
+      .all();
 
     res.json({
       data: schema,
@@ -265,7 +271,7 @@ const deleteTable = async (req, res) => {
 
     assertValidTableName(db, tableName);
 
-    const data = db.prepare(`DROP TABLE ${tableName}`).run();
+    const data = db.prepare(`DROP TABLE ${quoteIdentifier(tableName)}`).run();
 
     res.json({
       message: 'Table deleted',
