@@ -41,3 +41,7 @@ soul -d ./Chinook_Sqlite.sqlite -p 8000
 ## Namespaces
 
 1. [/ws/tables](ws/rows-examples.md) Examples for Rows websockets
+
+## Authentication
+
+When Soul is running with `-a` (auth mode), WebSocket connections require the same `accessToken` cookie used by the REST API, and are subject to the same per-table read permission checks. Connect with the cookie set (e.g. `wscat --header "Cookie: accessToken=<token>"` or a browser session that already has it) -- connections without a valid, authorized token are closed with an error message.

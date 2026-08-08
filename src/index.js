@@ -2,15 +2,16 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const winston = require('winston');
 const expressWinston = require('express-winston');
 const cors = require('cors');
+const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const swaggerUi = require('swagger-ui-express');
 const cookieParser = require('cookie-parser');
 
 const config = require('./config/index');
 const db = require('./db/index');
+const logger = require('./utils/logger');
 
 const rootRoutes = require('./routes/index');
 const tablesRoutes = require('./routes/tables');
@@ -22,31 +23,34 @@ const { setupExtensions } = require('./extensions');
 const {
   createDefaultTables,
   createInitialUser,
-  removeRevokedRefreshTokens,
   checkAuthConfigs,
 } = require('./controllers/auth');
 
 const { runCLICommands } = require('./commands');
-const { authConstants } = require('./constants');
 
 const app = express();
 
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(helmet());
 
 // Activate wal mode
 db.exec('PRAGMA journal_mode = WAL');
 
 // Enable CORS
 let corsOrigin = config.cors.origin;
+const isWildcardOrigin = corsOrigin.includes('*');
 
-if (corsOrigin.includes('*')) {
+if (isWildcardOrigin) {
   corsOrigin = '*';
+  logger.warn(
+    "CORS_ORIGIN_WHITELIST includes '*' -- credentialed requests (cookies) will be rejected by browsers for a wildcard origin, so credentials are disabled. Set an explicit origin list to allow cookie-based auth cross-origin.",
+  );
 }
 
 const corsOptions = {
   origin: corsOrigin,
-  credentials: true,
+  credentials: !isWildcardOrigin,
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
@@ -56,16 +60,10 @@ app.use(cors(corsOptions));
 if (config.verbose !== null) {
   app.use(
     expressWinston.logger({
-      transports: [new winston.transports.Console()],
-      format: winston.format.combine(
-        winston.format.colorize(),
-
-        winston.format.json(),
-      ),
+      winstonInstance: logger,
       meta: false,
       msg: 'HTTP {{req.method}} {{req.url}}',
       expressFormat: true,
-
       colorize: false,
     }),
   );
@@ -91,16 +89,10 @@ if (config.auth) {
   createDefaultTables();
   createInitialUser();
 } else {
-  console.warn(
-    'Warning: Soul is running in open mode without authentication or authorization for API endpoints. Please be aware that your API endpoints will not be secure.',
+  logger.warn(
+    'Soul is running in open mode without authentication or authorization for API endpoints. Please be aware that your API endpoints will not be secure.',
   );
 }
-
-// remove revoked refresh tokens every X days
-setInterval(
-  removeRevokedRefreshTokens,
-  authConstants.REVOKED_REFRESH_TOKENS_REMOVAL_TIME_RANGE,
-);
 
 // If the user has passed custom CLI commands run the command and exit to avoid running the server
 runCLICommands();
@@ -113,5 +105,22 @@ app.use('/api/tables', rowsRoutes);
 app.use('/api/auth', authRoutes);
 
 setupExtensions(app, db);
+
+// Final error-handling middleware: catches errors passed via next(err) or
+// thrown/rejected in async route handlers (Express 5 forwards these
+// automatically). Logs full detail server-side and returns a sanitized
+// message -- never the raw error/stack -- to the client.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  logger.error(err.message, { stack: err.stack });
+
+  if (res.headersSent) {
+    return;
+  }
+
+  res.status(err.status || 500).json({
+    message: err.status ? err.message : 'Internal server error',
+  });
+});
 
 module.exports = app;

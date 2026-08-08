@@ -1,16 +1,10 @@
 const db = require('../db/index');
 const { rowService } = require('../services');
-
-const operators = {
-  eq: '=',
-  lt: '<',
-  gt: '>',
-  lte: '<=',
-  gte: '>=',
-  neq: '!=',
-  null: 'IS NULL',
-  notnull: 'IS NOT NULL',
-};
+const {
+  assertValidTableName,
+  assertValidColumnName,
+  assertValidOperator,
+} = require('../utils/sql');
 
 // Return paginated rows of a table
 const listTableRows = async (req, res, next) => {
@@ -66,45 +60,58 @@ const listTableRows = async (req, res, next) => {
   const page = parseInt(_page);
   const limit = parseInt(_limit);
 
+  try {
+    assertValidTableName(db, tableName);
+  } catch (error) {
+    return res.status(error.status || 400).json({
+      message: error.message,
+      error: error,
+    });
+  }
+
   // if _filters are provided, filter rows by them
   // _filters consists of fields to filter by
   // filtering is case insensitive
   // e.g. ?_filters=name:John,age:20
   // will filter by name like '%John%' and age like '%20%'
-  let filters = [];
+  let filters;
 
   // split the filters by comma(,) except when in an array
   const re = /,(?![^[]*?\])/;
   try {
-    filters = _filters.split(re).map((filter) => {
-      //NOTE: When using the _filter parameter, the values are split using the ":" sign, like this (_filters=Total__eq:1). However, if the user sends a date value, such as (_filters=InvoiceDate__eq:2010-01-08 00:00:00), there will be additional colon (":") signs present.
-      let [key, ...value] = filter.split(':');
-      if (value.length === 1) {
-        value = value[0];
-      } else {
-        value = value.map((element) => element).join(':');
-      }
+    filters =
+      _filters === ''
+        ? []
+        : _filters.split(re).map((filter) => {
+            //NOTE: When using the _filter parameter, the values are split using the ":" sign, like this (_filters=Total__eq:1). However, if the user sends a date value, such as (_filters=InvoiceDate__eq:2010-01-08 00:00:00), there will be additional colon (":") signs present.
+            let [key, ...value] = filter.split(':');
+            if (value.length === 1) {
+              value = value[0];
+            } else {
+              value = value.map((element) => element).join(':');
+            }
 
-      let field = key.split('__')[0];
-      let fieldOperator = key.split('__')[1];
+            let field = key.split('__')[0];
+            let fieldOperator = key.split('__')[1] || 'eq';
 
-      if (!fieldOperator) {
-        fieldOperator = 'eq';
-      } else if (!operators[fieldOperator]) {
-        throw new Error(
-          `Invalid field operator '${fieldOperator}' for field '${field}'. You can only use the following operators after the '${field}' field: __lt, __gt, __lte, __gte, __eq, __neq.`,
-        );
-      }
+            assertValidColumnName(db, tableName, field);
+            let operator;
+            try {
+              operator = assertValidOperator(fieldOperator);
+            } catch {
+              throw new Error(
+                `Invalid field operator '${fieldOperator}' for field '${field}'. You can only use the following operators after the '${field}' field: __lt, __gt, __lte, __gte, __eq, __neq.`,
+              );
+            }
 
-      let operator = operators[fieldOperator];
-      if (['null', 'notnull'].includes(fieldOperator)) {
-        value = null;
-      }
+            if (['null', 'notnull'].includes(fieldOperator)) {
+              value = null;
+            }
 
-      return { field, operator, value };
-    });
+            return { field, operator, value };
+          });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(error.status || 400).json({
       message: error.message,
       error: error,
     });
@@ -120,11 +127,13 @@ const listTableRows = async (req, res, next) => {
         if (filter.value) {
           if (filter.value.startsWith('[') && filter.value.endsWith(']')) {
             const arrayValues = filter.value.slice(1, -1).split(',');
+            whereStringValues.push(...arrayValues);
             return `${tableName}.${filter.field} IN (${arrayValues
-              .map((val) => `'${val}'`)
+              .map(() => '?')
               .join(', ')})`;
           } else {
-            return `${tableName}.${filter.field} ${filter.operator} '${filter.value}'`;
+            whereStringValues.push(filter.value);
+            return `${tableName}.${filter.field} ${filter.operator} ?`;
           }
         } else {
           return `${tableName}.${filter.field} ${filter.operator}`;
@@ -145,10 +154,15 @@ const listTableRows = async (req, res, next) => {
     }
     try {
       // get all fields of the table
-      const fields = db.prepare(`PRAGMA table_info(${tableName})`).all();
+      const fields = db
+        .prepare('SELECT * FROM pragma_table_info(?)')
+        .all(tableName);
       whereString += '(';
       whereString += fields
-        .map((field) => `${tableName}.${field.name} LIKE '%${_search}%'`)
+        .map((field) => {
+          whereStringValues.push(`%${_search}%`);
+          return `${tableName}.${field.name} LIKE ?`;
+        })
         .join(' OR ');
       whereString += ')';
       params += `_search=${_search}&`;
@@ -172,21 +186,31 @@ const listTableRows = async (req, res, next) => {
     const isDesc = _ordering.startsWith('-');
     const cleanOrder = _ordering.replace('-', '');
 
-    if (cleanOrder.includes('.')) {
-      // Handle foreign key sort, e.g. publisher.name
-      const [relation, field] = cleanOrder.split('.');
+    try {
+      if (cleanOrder.includes('.')) {
+        // Handle foreign key sort, e.g. publisher.name
+        const [relation, field] = cleanOrder.split('.');
 
-      const { foreignKey, joinedTableName, joinedTableFields } =
-        rowService.getForeignKeyInfo(tableName, relation);
+        const { foreignKey, joinedTableName, joinedTableFields } =
+          rowService.getForeignKeyInfo(tableName, relation);
 
-      extendString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${relation}`;
-      joins[relation] = { foreignKey, joinedTableName, joinedTableFields };
-      orderString += ` ORDER BY ${joinedTableName}.${field} ${
-        isDesc ? 'DESC' : 'ASC'
-      }`;
-    } else {
-      // regular field sort
-      orderString += ` ORDER BY ${cleanOrder} ${isDesc ? 'DESC' : 'ASC'}`;
+        assertValidColumnName(db, joinedTableName, field);
+
+        extendString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${relation}`;
+        joins[relation] = { foreignKey, joinedTableName, joinedTableFields };
+        orderString += ` ORDER BY ${joinedTableName}.${field} ${
+          isDesc ? 'DESC' : 'ASC'
+        }`;
+      } else {
+        // regular field sort
+        assertValidColumnName(db, tableName, cleanOrder);
+        orderString += ` ORDER BY ${cleanOrder} ${isDesc ? 'DESC' : 'ASC'}`;
+      }
+    } catch (error) {
+      return res.status(error.status || 400).json({
+        message: error.message,
+        error: error,
+      });
     }
 
     params += `_ordering=${_ordering}&`;
@@ -198,9 +222,17 @@ const listTableRows = async (req, res, next) => {
   let schemaString = '';
   if (_schema) {
     const schemaFields = _schema.split(',');
-    schemaFields.forEach((field) => {
-      schemaString += `${tableName}.${field},`;
-    });
+    try {
+      schemaFields.forEach((field) => {
+        assertValidColumnName(db, tableName, field);
+        schemaString += `${tableName}.${field},`;
+      });
+    } catch (error) {
+      return res.status(error.status || 400).json({
+        message: error.message,
+        error: error,
+      });
+    }
     params += `_schema=${_schema}&`;
   } else {
     schemaString = `${tableName}.*`;
@@ -380,6 +412,8 @@ const insertRowInTable = async (req, res, next) => {
   );
 
   try {
+    assertValidTableName(db, tableName);
+
     const data = rowService.save({ tableName, fields });
 
     /*
@@ -412,7 +446,7 @@ const insertRowInTable = async (req, res, next) => {
         }
       }
     */
-    res.status(400).json({
+    res.status(error.status || 400).json({
       message: error.message,
       error: error,
     });
@@ -465,19 +499,23 @@ const getRowInTableByPK = async (req, res, next) => {
 
   let lookupField = _lookup_field;
 
-  if (!_lookup_field) {
-    // find the primary key of the table
-    try {
+  try {
+    assertValidTableName(db, tableName);
+
+    if (!_lookup_field) {
+      // find the primary key of the table
       lookupField = db
-        .prepare(`PRAGMA table_info(${tableName})`)
-        .all()
+        .prepare('SELECT * FROM pragma_table_info(?)')
+        .all(tableName)
         .find((field) => field.pk === 1).name;
-    } catch (error) {
-      return res.status(400).json({
-        message: error.message,
-        error: error,
-      });
+    } else {
+      assertValidColumnName(db, tableName, _lookup_field);
     }
+  } catch (error) {
+    return res.status(error.status || 400).json({
+      message: error.message,
+      error: error,
+    });
   }
 
   // if _schema is provided, return only those fields
@@ -487,9 +525,17 @@ const getRowInTableByPK = async (req, res, next) => {
   let schemaString = '';
   if (_schema) {
     const schemaFields = _schema.split(',');
-    schemaFields.forEach((field) => {
-      schemaString += `${tableName}.${field},`;
-    });
+    try {
+      schemaFields.forEach((field) => {
+        assertValidColumnName(db, tableName, field);
+        schemaString += `${tableName}.${field},`;
+      });
+    } catch (error) {
+      return res.status(error.status || 400).json({
+        message: error.message,
+        error: error,
+      });
+    }
   } else {
     schemaString = `${tableName}.*`;
   }
@@ -530,8 +576,8 @@ const getRowInTableByPK = async (req, res, next) => {
     extendFields.forEach((extendedField) => {
       try {
         const foreignKey = db
-          .prepare(`PRAGMA foreign_key_list(${tableName})`)
-          .all()
+          .prepare('SELECT * FROM pragma_foreign_key_list(?)')
+          .all(tableName)
           .find((fk) => fk.from === extendedField);
 
         if (!foreignKey) {
@@ -541,8 +587,8 @@ const getRowInTableByPK = async (req, res, next) => {
         const { table: joinedTableName } = foreignKey;
 
         const joinedTableFields = db
-          .prepare(`PRAGMA table_info(${joinedTableName})`)
-          .all();
+          .prepare('SELECT * FROM pragma_table_info(?)')
+          .all(joinedTableName);
 
         extendString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${extendedField}`;
 
@@ -651,33 +697,30 @@ const updateRowInTableByPK = async (req, res, next) => {
 
   let lookupField = _lookup_field;
 
-  if (!_lookup_field) {
-    // find the primary key of the table
-    try {
+  try {
+    assertValidTableName(db, tableName);
+
+    if (!_lookup_field) {
+      // find the primary key of the table
       lookupField = db
-        .prepare(`PRAGMA table_info(${tableName})`)
-        .all()
+        .prepare('SELECT * FROM pragma_table_info(?)')
+        .all(tableName)
         .find((field) => field.pk === 1).name;
-    } catch (error) {
-      return res.status(400).json({
-        message: error.message,
-        error: error,
-      });
+    } else {
+      assertValidColumnName(db, tableName, _lookup_field);
     }
+
+    Object.keys(fields).forEach((field) =>
+      assertValidColumnName(db, tableName, field),
+    );
+  } catch (error) {
+    return res.status(error.status || 400).json({
+      message: error.message,
+      error: error,
+    });
   }
 
-  // wrap text values in quotes
-  const fieldsString = Object.keys(fields)
-    .map((key) => {
-      let value = fields[key];
-      if (typeof value === 'string') {
-        value = `'${value}'`;
-      }
-      return `'${key}' = ${value}`;
-    })
-    .join(', ');
-
-  if (fieldsString === '') {
+  if (Object.keys(fields).length === 0) {
     return res.status(400).json({
       message: 'No fields provided',
       error: 'no_fields_provided',
@@ -687,7 +730,7 @@ const updateRowInTableByPK = async (req, res, next) => {
   try {
     const data = rowService.update({
       tableName,
-      fieldsString,
+      fields,
       lookupField,
       pks,
     });
@@ -743,19 +786,23 @@ const deleteRowInTableByPK = async (req, res, next) => {
 
   let lookupField = _lookup_field;
 
-  if (!_lookup_field) {
-    // find the primary key of the table
-    try {
+  try {
+    assertValidTableName(db, tableName);
+
+    if (!_lookup_field) {
+      // find the primary key of the table
       lookupField = db
-        .prepare(`PRAGMA table_info(${tableName})`)
-        .all()
+        .prepare('SELECT * FROM pragma_table_info(?)')
+        .all(tableName)
         .find((field) => field.pk === 1).name;
-    } catch (error) {
-      return res.status(400).json({
-        message: error.message,
-        error: error,
-      });
+    } else {
+      assertValidColumnName(db, tableName, _lookup_field);
     }
+  } catch (error) {
+    return res.status(error.status || 400).json({
+      message: error.message,
+      error: error,
+    });
   }
 
   try {
@@ -780,7 +827,7 @@ const deleteRowInTableByPK = async (req, res, next) => {
       next();
     }
   } catch (error) {
-    res.status(400).json({
+    res.status(error.status || 400).json({
       message: error.message,
       error: error,
     });

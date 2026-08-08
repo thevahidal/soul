@@ -1,7 +1,7 @@
-const db = require('../db');
-const rowService = require('./rowService')(db);
+const buildRowService = require('./rowService');
 
-const { constantRoles, dbConstants } = require('../constants');
+const { constantRoles, dbConstants, apiConstants } = require('../constants');
+const { toBoolean } = require('../utils');
 
 const {
   USERS_TABLE,
@@ -13,6 +13,8 @@ const {
 } = dbConstants;
 
 module.exports = (db) => {
+  const rowService = buildRowService(db);
+
   return {
     getUsersByUsername({ username }) {
       const users = rowService.get({
@@ -105,6 +107,34 @@ module.exports = (db) => {
       const statement = db.prepare(query);
       const result = statement.run();
       return result;
+    },
+
+    // Shared by the REST `hasAccess` middleware and the WebSocket connection
+    // handler so the two auth surfaces can't drift apart.
+    hasTablePermission({ payload, tableName, verb }) {
+      if (toBoolean(payload.isSuperuser)) {
+        return true;
+      }
+
+      if (!tableName) {
+        return false;
+      }
+
+      const rolePermissions = this.getPermissionByRoleIds({
+        roleIds: payload.roleIds,
+      });
+      const resourcePermission = rolePermissions.filter(
+        (row) => row.table_name === tableName,
+      );
+
+      if (resourcePermission.length <= 0) {
+        return false;
+      }
+
+      const httpMethod = apiConstants.httpMethodDefinitions[verb].toLowerCase();
+      return resourcePermission.some((resource) =>
+        toBoolean(resource[httpMethod]),
+      );
     },
   };
 };

@@ -56,7 +56,7 @@ const processRowRequest = async (req, res, next) => {
     if (validation.errorStatus) {
       return res.status(400).json({
         message: validation.message,
-        error: validation.details,
+        error: validation.error,
       });
     }
   }
