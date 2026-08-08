@@ -15,18 +15,20 @@ const setupExtensions = async (app, db) => {
 
         Object.keys(apiExtensions).forEach((key) => {
           const api = apiExtensions[key];
+          const withDb = (req, res) => api.handler(req, res, db);
+
           switch (api.method) {
             case 'GET':
-              app.get(api.path, (req, res) => api.handler(req, res, db));
+              app.get(api.path, withDb);
               break;
             case 'POST':
-              app.post(api.path, api.handler);
+              app.post(api.path, withDb);
               break;
             case 'PUT':
-              app.put(api.path, api.handler);
+              app.put(api.path, withDb);
               break;
             case 'DELETE':
-              app.delete(api.path, api.handler);
+              app.delete(api.path, withDb);
               break;
 
             default:
