@@ -55,6 +55,20 @@ const assertValidTableName = (db, tableName) => {
   return tableName;
 };
 
+const getValidatedTableName = (db, tableName) => {
+  const row = db
+    .prepare(
+      `SELECT name FROM sqlite_master WHERE type IN ('table', 'view') AND name = ?`,
+    )
+    .get(tableName);
+
+  if (!row) {
+    throw invalidRequestError(`Table '${tableName}' does not exist`, 404);
+  }
+
+  return row.name;
+};
+
 // Uses the pragma_table_info(?) table-valued-function form (SQLite >=3.16)
 // instead of `PRAGMA table_info(...)`, which doesn't support bound params --
 // this form is a plain SELECT with a function-call argument, so it does.
@@ -91,6 +105,7 @@ module.exports = {
   quoteIdentifier,
   quoteLiteral,
   assertValidTableName,
+  getValidatedTableName,
   getTableColumns,
   assertValidColumnName,
   assertValidOperator,

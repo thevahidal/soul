@@ -2,6 +2,7 @@ const db = require('../db/index');
 const { dbConstants } = require('../constants');
 const {
   assertValidTableName,
+  getValidatedTableName,
   quoteIdentifier,
   quoteLiteral,
 } = require('../utils/sql');
@@ -271,14 +272,14 @@ const deleteTable = async (req, res) => {
       });
     }
 
-    assertValidTableName(db, tableName);
+    const validatedTableName = getValidatedTableName(db, tableName);
 
     // DROP TABLE cannot take a bound parameter for its identifier in any
-    // SQL dialect. tableName is confirmed to exist via assertValidTableName()
-    // (a parameterized sqlite_master lookup) immediately above, and
-    // quoteIdentifier() escapes it as a proper SQLite identifier before use.
-    // codeql[js/sql-injection]
-    const data = db.prepare(`DROP TABLE ${quoteIdentifier(tableName)}`).run();
+    // SQL dialect. Use the canonical name returned from sqlite_master
+    // (parameterized lookup) and quote it as an identifier before use.
+    const data = db
+      .prepare(`DROP TABLE ${quoteIdentifier(validatedTableName)}`)
+      .run();
 
     res.json({
       message: 'Table deleted',
