@@ -25,6 +25,27 @@ describe('Tables Endpoints', () => {
     expect(res.body.data[0]).toHaveProperty('name');
   });
 
+  it('GET /tables succeeds even with an unrelated cookie present alongside accessToken', async () => {
+    // regression: Joi rejects unknown object keys by default. The browser
+    // sends every cookie for the domain, including ones unrelated to Soul
+    // (e.g. `localhost` cookies from other local apps aren't scoped by
+    // port) -- without `.unknown(true)` on the cookies schema, a request
+    // riding alongside a stray cookie like this would 400 with
+    // `"cookies.csrftoken" is not allowed`, even though the actual auth
+    // cookie is perfectly valid.
+    const accessToken = await generateToken(
+      { username: 'John', isSuperuser: true },
+      config.tokenSecret,
+      '1H',
+    );
+
+    const res = await requestWithSupertest
+      .get('/api/tables')
+      .set('Cookie', [`accessToken=${accessToken}`, 'csrftoken=some-value']);
+
+    expect(res.status).toEqual(200);
+  });
+
   it('POST /tables should reject creating a table with a reserved name', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },

@@ -17,10 +17,12 @@ const transaction = Joi.object({
       .required(),
   }).required(),
 
+  // .unknown(true): see the comment in schemas/tables.js -- rejects
+  // unrelated cookies the browser sends otherwise.
   cookies: Joi.object({
     refreshToken: Joi.string().optional(),
     accessToken: Joi.string().optional(),
-  }),
+  }).unknown(true),
 });
 
 module.exports = {
