@@ -67,6 +67,29 @@ describe('CLI (spawned as a real subprocess)', () => {
     expect(result.stdout).toContain('User not found');
   });
 
+  it('updatesuperuser --is_superuser=true actually promotes the user instead of crashing on the DB write', () => {
+    // regression test: --is_superuser is parsed by yargs as a native JS
+    // boolean, which better-sqlite3 can't bind directly -- this used to
+    // throw "SQLite3 can only bind numbers, strings, bigints, buffers, and
+    // null" from inside a catch block with no process.exit(), so the
+    // process never terminated and this spawnSync call would hang until
+    // its timeout instead of failing fast.
+    const result = runCli([
+      '-d',
+      ':memory:',
+      '-a',
+      '--ts=test-secret-0123456789',
+      '--iuu=admin',
+      '--iup=Str0ngTestPw!1',
+      'updatesuperuser',
+      '--id=1',
+      '--is_superuser=true',
+    ]);
+
+    expect(result.stdout).not.toContain('SQLite3 can only bind');
+    expect(result.stdout).toContain('updated successfully');
+  });
+
   it('starts the server and shuts down cleanly on SIGTERM', (done) => {
     const child = spawn(
       'node',
