@@ -1,4 +1,3 @@
-const { not } = require('joi');
 const supertest = require('supertest');
 
 const app = require('../index');
@@ -358,5 +357,93 @@ describe('Rows Endpoints', () => {
     expect(res.body).toHaveProperty('data');
     expect(res.body.data).toEqual(expect.any(Array));
     expect(res.body.data.length).toEqual(1);
+  });
+
+  describe('SQL injection regression', () => {
+    it('treats a quote-breaking _filters value as a literal, not SQL', async () => {
+      const accessToken = await generateToken(
+        { username: 'John', isSuperuser: true },
+        config.tokenSecret,
+        '1H',
+      );
+
+      const res = await requestWithSupertest
+        .get(
+          `/api/tables/users/rows?_filters=${encodeURIComponent(
+            "firstName__eq:x' OR '1'='1",
+          )}`,
+        )
+        .set('Cookie', [`accessToken=${accessToken}`]);
+
+      expect(res.status).toEqual(200);
+      expect(res.body.data).toEqual([]);
+    });
+
+    it('returns a 400 for a _filters field that does not exist on the table', async () => {
+      const accessToken = await generateToken(
+        { username: 'John', isSuperuser: true },
+        config.tokenSecret,
+        '1H',
+      );
+
+      const res = await requestWithSupertest
+        .get('/api/tables/users/rows?_filters=bogus__eq:1')
+        .set('Cookie', [`accessToken=${accessToken}`]);
+
+      expect(res.status).toEqual(400);
+      expect(res.body.message).toEqual(
+        expect.stringContaining("Column 'bogus' does not exist"),
+      );
+    });
+
+    it('returns a 404 (not a 500) for a crafted table name in the URL path, and leaves the table intact', async () => {
+      const accessToken = await generateToken(
+        { username: 'John', isSuperuser: true },
+        config.tokenSecret,
+        '1H',
+      );
+
+      const res = await requestWithSupertest
+        .get(
+          `/api/tables/${encodeURIComponent(
+            'users; DROP TABLE users;--',
+          )}/rows`,
+        )
+        .set('Cookie', [`accessToken=${accessToken}`]);
+
+      expect(res.status).toEqual(404);
+
+      const stillThere = await requestWithSupertest
+        .get('/api/tables/users/rows')
+        .set('Cookie', [`accessToken=${accessToken}`]);
+      expect(stillThere.status).toEqual(200);
+    });
+
+    it('does not let a PUT field value inject SQL to modify other columns', async () => {
+      const accessToken = await generateToken(
+        { username: 'John', isSuperuser: true },
+        config.tokenSecret,
+        '1H',
+      );
+
+      const before = await requestWithSupertest
+        .get('/api/tables/users/rows/2')
+        .set('Cookie', [`accessToken=${accessToken}`]);
+      const originalLastName = before.body.data[0].lastName;
+
+      const res = await requestWithSupertest
+        .put('/api/tables/users/rows/2')
+        .set('Cookie', [`accessToken=${accessToken}`])
+        .send({ fields: { firstName: "x', lastName='HACKED" } });
+
+      expect(res.status).toEqual(200);
+
+      const after = await requestWithSupertest
+        .get('/api/tables/users/rows/2')
+        .set('Cookie', [`accessToken=${accessToken}`]);
+
+      expect(after.body.data[0].firstName).toEqual("x', lastName='HACKED");
+      expect(after.body.data[0].lastName).toEqual(originalLastName);
+    });
   });
 });

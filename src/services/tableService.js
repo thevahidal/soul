@@ -123,8 +123,8 @@ module.exports = (db) => {
     },
 
     checkTableExists(tableName) {
-      const query = `SELECT name FROM sqlite_master WHERE type='table' AND name='${tableName}'`;
-      const result = db.prepare(query).get();
+      const query = `SELECT name FROM sqlite_master WHERE type='table' AND name = ?`;
+      const result = db.prepare(query).get(tableName);
       return result;
     },
   };

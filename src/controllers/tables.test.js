@@ -89,4 +89,112 @@ describe('Tables Endpoints', () => {
     expect(res.body).toHaveProperty('data');
     expect(res.body.data).toEqual(expect.any(Array));
   });
+
+  describe('SQL injection regression', () => {
+    it('safely escapes a malicious column default value instead of executing it', async () => {
+      const accessToken = await generateToken(
+        { username: 'John', isSuperuser: true },
+        config.tokenSecret,
+        '1H',
+      );
+
+      const res = await requestWithSupertest
+        .post('/api/tables')
+        .set('Cookie', [`accessToken=${accessToken}`])
+        .send({
+          name: 'evil_defaults',
+          schema: [
+            {
+              name: 'myfield',
+              type: 'TEXT',
+              default: "x'); DROP TABLE users; --",
+            },
+          ],
+        });
+
+      expect(res.status).toEqual(201);
+
+      const usersStillExist = await requestWithSupertest
+        .get('/api/tables/users')
+        .set('Cookie', [`accessToken=${accessToken}`]);
+      expect(usersStillExist.status).toEqual(200);
+    });
+
+    it('rejects a table name containing SQL metacharacters with a 400 before it reaches the query', async () => {
+      const accessToken = await generateToken(
+        { username: 'John', isSuperuser: true },
+        config.tokenSecret,
+        '1H',
+      );
+
+      const res = await requestWithSupertest
+        .get(`/api/tables/${encodeURIComponent('nope; DROP TABLE users;--')}`)
+        .set('Cookie', [`accessToken=${accessToken}`]);
+
+      expect(res.status).toEqual(400);
+    });
+
+    it('returns a 404 (not a 500) for a syntactically valid but nonexistent table name on GET /tables/:name', async () => {
+      const accessToken = await generateToken(
+        { username: 'John', isSuperuser: true },
+        config.tokenSecret,
+        '1H',
+      );
+
+      const res = await requestWithSupertest
+        .get('/api/tables/totally-nonexistent-table')
+        .set('Cookie', [`accessToken=${accessToken}`]);
+
+      expect(res.status).toEqual(404);
+    });
+
+    it('rejects deleting a reserved system table', async () => {
+      const accessToken = await generateToken(
+        { username: 'John', isSuperuser: true },
+        config.tokenSecret,
+        '1H',
+      );
+
+      const res = await requestWithSupertest
+        .delete('/api/tables/_users')
+        .set('Cookie', [`accessToken=${accessToken}`]);
+
+      expect(res.status).toEqual(409);
+
+      const usersStillExist = await requestWithSupertest
+        .get('/api/tables/_users')
+        .set('Cookie', [`accessToken=${accessToken}`]);
+      expect(usersStillExist.status).toEqual(200);
+    });
+
+    it('rejects a crafted table name on DELETE with a 400 before it reaches the query', async () => {
+      const accessToken = await generateToken(
+        { username: 'John', isSuperuser: true },
+        config.tokenSecret,
+        '1H',
+      );
+
+      const res = await requestWithSupertest
+        .delete(
+          `/api/tables/${encodeURIComponent('nope; DROP TABLE users;--')}`,
+        )
+        .set('Cookie', [`accessToken=${accessToken}`]);
+
+      expect(res.status).toEqual(400);
+    });
+
+    it('returns a 404 (not a 500) when deleting a syntactically valid but nonexistent table name', async () => {
+      const accessToken = await generateToken(
+        { username: 'John', isSuperuser: true },
+        config.tokenSecret,
+        '1H',
+      );
+
+      const res = await requestWithSupertest
+        .delete('/api/tables/totally-nonexistent-table')
+        .set('Cookie', [`accessToken=${accessToken}`]);
+
+      expect(res.status).toEqual(404);
+    });
+  });
 });

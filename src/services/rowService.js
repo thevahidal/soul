@@ -1,4 +1,5 @@
 const { apiConstants } = require('../constants');
+const { quoteIdentifier } = require('../utils/sql');
 
 module.exports = (db) => {
   return {
@@ -36,19 +37,15 @@ module.exports = (db) => {
     },
 
     save(data) {
-      // wrap text values in quotes
-      const fieldsString = Object.keys(data.fields)
-        .map((field) => `'${field}'`)
+      const fieldNames = Object.keys(data.fields);
+      const fieldsString = fieldNames
+        .map((field) => quoteIdentifier(field))
         .join(', ');
-
-      // wrap text values in quotes
-      const valuesString = Object.values(data.fields).map((value) => value);
-      const placeholders = Object.values(data.fields)
-        .map(() => '?')
-        .join(',');
+      const valuesString = Object.values(data.fields);
+      const placeholders = fieldNames.map(() => '?').join(',');
 
       let values = `(${fieldsString}) VALUES (${placeholders})`;
-      if (valuesString === '') {
+      if (fieldNames.length === 0) {
         values = 'DEFAULT VALUES';
       }
 
@@ -69,7 +66,7 @@ module.exports = (db) => {
         .join(',');
 
       const query = `INSERT INTO ${tableName} (${fieldNames
-        .map((field) => `'${field}'`)
+        .map((field) => quoteIdentifier(field))
         .join(', ')}) VALUES ${valuesString}`;
 
       const statement = db.prepare(query);
@@ -80,16 +77,26 @@ module.exports = (db) => {
     update(data) {
       const pks = data.pks.split(',');
       const placeholders = pks.map(() => '?').join(',');
-      const query = `UPDATE ${data.tableName} SET ${data.fieldsString} WHERE ${data.lookupField} in (${placeholders})`;
+      const fieldNames = Object.keys(data.fields);
+      const setString = fieldNames
+        .map((field) => `${quoteIdentifier(field)} = ?`)
+        .join(', ');
+      const query = `UPDATE ${
+        data.tableName
+      } SET ${setString} WHERE ${quoteIdentifier(
+        data.lookupField,
+      )} in (${placeholders})`;
       const statement = db.prepare(query);
-      const result = statement.run(...pks);
+      const result = statement.run(...Object.values(data.fields), ...pks);
       return result;
     },
 
     delete(data) {
       const pks = data.pks.split(',');
       const placeholders = pks.map(() => '?').join(',');
-      const query = `DELETE FROM ${data.tableName} WHERE ${data.lookupField} in (${placeholders})`;
+      const query = `DELETE FROM ${data.tableName} WHERE ${quoteIdentifier(
+        data.lookupField,
+      )} in (${placeholders})`;
       const statement = db.prepare(query);
       const result = statement.run(...pks);
       return result;

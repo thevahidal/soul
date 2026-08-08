@@ -1,4 +1,8 @@
 const db = require('../db/index');
+const { dbConstants } = require('../constants');
+const { assertValidTableName, quoteLiteral } = require('../utils/sql');
+
+const { reservedTableNames } = dbConstants;
 
 const createTable = async (req, res) => {
   /*
@@ -37,7 +41,7 @@ const createTable = async (req, res) => {
       }) => {
         let column = `${name} ${type}`;
         if (defaultValue) {
-          column += ` DEFAULT ${defaultValue}`;
+          column += ` DEFAULT ${quoteLiteral(defaultValue)}`;
         }
         if (notNull) {
           column += ' NOT NULL';
@@ -62,7 +66,7 @@ const createTable = async (req, res) => {
         }
 
         return column;
-      }
+      },
     )
     .join(', ');
 
@@ -163,26 +167,36 @@ const listTables = async (req, res) => {
   const { _search, _ordering } = req.query;
 
   let query = `SELECT name FROM sqlite_master WHERE type IN ('table', 'view')`;
+  const queryValues = [];
 
   // if search is provided, search the tables
   // e.g. ?_search=users
   if (_search) {
-    query += ` AND name LIKE $searchQuery`;
+    query += ` AND name LIKE ?`;
+    queryValues.push(`%${_search}%`);
   }
 
   // if ordering is provided, order the tables
   // e.g. ?_ordering=name (ascending) or ?_ordering=-name (descending)
+  // `name` is the only column this query returns, so it's the only valid
+  // ordering target -- there's no live schema to validate an arbitrary
+  // column against here the way row/column ordering does.
   if (_ordering) {
-    query += ` ORDER BY $ordering`;
+    const isDesc = _ordering.startsWith('-');
+    const cleanOrder = _ordering.replace('-', '');
+
+    if (cleanOrder !== 'name') {
+      return res.status(400).json({
+        message: `Invalid ordering field '${cleanOrder}'. Only 'name' can be used to order tables.`,
+        error: 'invalid_ordering_field',
+      });
+    }
+
+    query += ` ORDER BY name ${isDesc ? 'DESC' : 'ASC'}`;
   }
 
   try {
-    const tables = db.prepare(query).all({
-      searchQuery: `%${_search}%`,
-      ordering: `${_ordering?.replace('-', '')} ${
-        _ordering?.startsWith('-') ? 'DESC' : 'ASC'
-      }`,
-    });
+    const tables = db.prepare(query).all(...queryValues);
 
     res.json({
       data: tables,
@@ -210,15 +224,16 @@ const getTableSchema = async (req, res) => {
 
   */
   const { name: tableName } = req.params;
-  const query = `PRAGMA table_info(${tableName})`;
   try {
-    const schema = db.prepare(query).all();
+    assertValidTableName(db, tableName);
+
+    const schema = db.prepare(`PRAGMA table_info(${tableName})`).all();
 
     res.json({
       data: schema,
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(error.status || 400).json({
       message: error.message,
       error: error,
     });
@@ -240,16 +255,24 @@ const deleteTable = async (req, res) => {
 
   */
   const { name: tableName } = req.params;
-  const query = `DROP TABLE ${tableName}`;
   try {
-    const data = db.prepare(query).run();
+    if (reservedTableNames.includes(tableName)) {
+      return res.status(409).json({
+        message: `Table '${tableName}' is reserved and cannot be deleted`,
+        error: 'reserved_table_name',
+      });
+    }
+
+    assertValidTableName(db, tableName);
+
+    const data = db.prepare(`DROP TABLE ${tableName}`).run();
 
     res.json({
       message: 'Table deleted',
       data,
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(error.status || 400).json({
       message: error.message,
       error: error,
     });
