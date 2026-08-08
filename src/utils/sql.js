@@ -1,9 +1,9 @@
-// SQLite cannot bind identifiers (table/column names) as `?` parameters --
-// those must be validated against the live schema (allowlisted) before being
-// spliced into a query string. Values must always go through `?` bindings,
-// never interpolation. `quoteIdentifier` is not itself an injection defense,
-// just correct SQLite identifier quoting -- only call it on names that have
-// already been validated below.
+// SQLite cannot bind identifiers (table/column names) as `?` parameters in
+// most DML/DDL positions -- those must be validated against the live schema
+// (allowlisted) before being spliced into a query string. Values must always
+// go through `?` bindings, never interpolation. `quoteIdentifier` is not
+// itself an injection defense, just correct SQLite identifier quoting --
+// only call it on names that have already been validated below.
 
 const operators = {
   eq: '=',
@@ -55,11 +55,11 @@ const assertValidTableName = (db, tableName) => {
   return tableName;
 };
 
-// `tableName` must already be validated via `assertValidTableName` -- PRAGMA
-// doesn't support bound params, so this is the one place a validated
-// identifier still has to be interpolated (after being quoted).
+// Uses the pragma_table_info(?) table-valued-function form (SQLite >=3.16)
+// instead of `PRAGMA table_info(...)`, which doesn't support bound params --
+// this form is a plain SELECT with a function-call argument, so it does.
 const getTableColumns = (db, tableName) => {
-  return db.prepare(`PRAGMA table_info(${quoteIdentifier(tableName)})`).all();
+  return db.prepare('SELECT * FROM pragma_table_info(?)').all(tableName);
 };
 
 const assertValidColumnName = (db, tableName, columnName) => {

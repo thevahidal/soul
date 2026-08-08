@@ -78,8 +78,6 @@ module.exports = (db) => {
         if (indicesString) {
           db.prepare(indicesString).run();
         }
-
-        db.prepare(`PRAGMA table_info(${tableName})`).all();
       } catch (error) {
         console.log(error);
       }

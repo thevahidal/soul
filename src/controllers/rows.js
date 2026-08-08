@@ -154,7 +154,9 @@ const listTableRows = async (req, res, next) => {
     }
     try {
       // get all fields of the table
-      const fields = db.prepare(`PRAGMA table_info(${tableName})`).all();
+      const fields = db
+        .prepare('SELECT * FROM pragma_table_info(?)')
+        .all(tableName);
       whereString += '(';
       whereString += fields
         .map((field) => {
@@ -503,8 +505,8 @@ const getRowInTableByPK = async (req, res, next) => {
     if (!_lookup_field) {
       // find the primary key of the table
       lookupField = db
-        .prepare(`PRAGMA table_info(${tableName})`)
-        .all()
+        .prepare('SELECT * FROM pragma_table_info(?)')
+        .all(tableName)
         .find((field) => field.pk === 1).name;
     } else {
       assertValidColumnName(db, tableName, _lookup_field);
@@ -574,8 +576,8 @@ const getRowInTableByPK = async (req, res, next) => {
     extendFields.forEach((extendedField) => {
       try {
         const foreignKey = db
-          .prepare(`PRAGMA foreign_key_list(${tableName})`)
-          .all()
+          .prepare('SELECT * FROM pragma_foreign_key_list(?)')
+          .all(tableName)
           .find((fk) => fk.from === extendedField);
 
         if (!foreignKey) {
@@ -585,8 +587,8 @@ const getRowInTableByPK = async (req, res, next) => {
         const { table: joinedTableName } = foreignKey;
 
         const joinedTableFields = db
-          .prepare(`PRAGMA table_info(${joinedTableName})`)
-          .all();
+          .prepare('SELECT * FROM pragma_table_info(?)')
+          .all(joinedTableName);
 
         extendString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${extendedField}`;
 
@@ -701,8 +703,8 @@ const updateRowInTableByPK = async (req, res, next) => {
     if (!_lookup_field) {
       // find the primary key of the table
       lookupField = db
-        .prepare(`PRAGMA table_info(${tableName})`)
-        .all()
+        .prepare('SELECT * FROM pragma_table_info(?)')
+        .all(tableName)
         .find((field) => field.pk === 1).name;
     } else {
       assertValidColumnName(db, tableName, _lookup_field);
@@ -790,8 +792,8 @@ const deleteRowInTableByPK = async (req, res, next) => {
     if (!_lookup_field) {
       // find the primary key of the table
       lookupField = db
-        .prepare(`PRAGMA table_info(${tableName})`)
-        .all()
+        .prepare('SELECT * FROM pragma_table_info(?)')
+        .all(tableName)
         .find((field) => field.pk === 1).name;
     } else {
       assertValidColumnName(db, tableName, _lookup_field);

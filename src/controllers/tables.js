@@ -115,7 +115,9 @@ const createTable = async (req, res) => {
       db.prepare(indicesString).run();
     }
 
-    const generatedSchema = db.prepare(`PRAGMA table_info(${tableName})`).all();
+    const generatedSchema = db
+      .prepare('SELECT * FROM pragma_table_info(?)')
+      .all(tableName);
 
     /*
       #swagger.responses[201] = {
@@ -232,8 +234,8 @@ const getTableSchema = async (req, res) => {
     assertValidTableName(db, tableName);
 
     const schema = db
-      .prepare(`PRAGMA table_info(${quoteIdentifier(tableName)})`)
-      .all();
+      .prepare('SELECT * FROM pragma_table_info(?)')
+      .all(tableName);
 
     res.json({
       data: schema,
@@ -271,6 +273,11 @@ const deleteTable = async (req, res) => {
 
     assertValidTableName(db, tableName);
 
+    // DROP TABLE cannot take a bound parameter for its identifier in any
+    // SQL dialect. tableName is confirmed to exist via assertValidTableName()
+    // (a parameterized sqlite_master lookup) immediately above, and
+    // quoteIdentifier() escapes it as a proper SQLite identifier before use.
+    // codeql[js/sql-injection]
     const data = db.prepare(`DROP TABLE ${quoteIdentifier(tableName)}`).run();
 
     res.json({

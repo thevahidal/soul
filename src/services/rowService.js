@@ -104,8 +104,8 @@ module.exports = (db) => {
 
     getForeignKeyInfo(tableName, field) {
       const foreignKey = db
-        .prepare(`PRAGMA foreign_key_list(${tableName})`)
-        .all()
+        .prepare('SELECT * FROM pragma_foreign_key_list(?)')
+        .all(tableName)
         .find((fk) => fk.from === field);
 
       if (!foreignKey) {
@@ -114,8 +114,8 @@ module.exports = (db) => {
 
       const joinedTableName = foreignKey.table;
       const joinedTableFields = db
-        .prepare(`PRAGMA table_info(${joinedTableName})`)
-        .all();
+        .prepare('SELECT * FROM pragma_table_info(?)')
+        .all(joinedTableName);
 
       return { foreignKey, joinedTableName, joinedTableFields };
     },
