@@ -105,6 +105,47 @@ describe('Tables Endpoints', () => {
     expect(res.body.data).toEqual(expect.any(Array));
   });
 
+  it('GET /tables/:name includes foreignKeys for a table with a foreign key column', async () => {
+    const accessToken = await generateToken(
+      { username: 'John', isSuperuser: true },
+      config.tokenSecret,
+      '1H',
+    );
+
+    // "pets" is created earlier in this file with an `owner` column
+    // referencing users(id).
+    const res = await requestWithSupertest
+      .get('/api/tables/pets')
+      .set('Cookie', [`accessToken=${accessToken}`]);
+
+    expect(res.status).toEqual(200);
+    expect(res.body).toHaveProperty('foreignKeys');
+    expect(res.body.foreignKeys).toEqual(expect.any(Array));
+
+    const ownerForeignKey = res.body.foreignKeys.find(
+      (fk) => fk.from === 'owner',
+    );
+    expect(ownerForeignKey).toMatchObject({
+      table: 'users',
+      to: 'id',
+    });
+  });
+
+  it('GET /tables/:name returns an empty foreignKeys array for a table with no foreign keys', async () => {
+    const accessToken = await generateToken(
+      { username: 'John', isSuperuser: true },
+      config.tokenSecret,
+      '1H',
+    );
+
+    const res = await requestWithSupertest
+      .get('/api/tables/users')
+      .set('Cookie', [`accessToken=${accessToken}`]);
+
+    expect(res.status).toEqual(200);
+    expect(res.body.foreignKeys).toEqual([]);
+  });
+
   describe('SQL injection regression', () => {
     it('safely escapes a malicious column default value instead of executing it', async () => {
       const accessToken = await generateToken(
