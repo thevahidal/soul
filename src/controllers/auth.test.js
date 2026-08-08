@@ -591,6 +591,94 @@ describe('Auth Endpoints', () => {
       expect(res.body.message).toBe('Server error');
     });
 
+    it('POST /tables/_roles_permissions/rows validates fields via customValidator', async () => {
+      const res = await requestWithSupertest
+        .post('/api/tables/_roles_permissions/rows')
+        .set('Cookie', [`accessToken=${superuserToken}`])
+        .send({
+          fields: {
+            role_id: 1,
+            table_name: 'users',
+            // missing create/read/update/delete
+          },
+        });
+
+      expect(res.status).toEqual(400);
+      expect(res.body.error).toBeDefined();
+    });
+
+    it('PUT /tables/_roles_permissions/rows/:pks validates fields via customValidator', async () => {
+      const res = await requestWithSupertest
+        .put('/api/tables/_roles_permissions/rows/1')
+        .set('Cookie', [`accessToken=${superuserToken}`])
+        .send({
+          fields: {
+            role_id: 1,
+            table_name: 'users',
+            // missing create/read/update/delete
+          },
+        });
+
+      expect(res.status).toEqual(400);
+      expect(res.body.error).toBeDefined();
+    });
+
+    it('POST /tables/_roles_permissions/rows accepts a fully-specified permission row', async () => {
+      // a table created after the default role already has its baseline
+      // permissions assigned, so it won't collide with the (role_id,
+      // table_name) unique constraint the way an existing table would.
+      await requestWithSupertest
+        .post('/api/tables')
+        .set('Cookie', [`accessToken=${superuserToken}`])
+        .send({
+          name: 'perm_test_table',
+          schema: [{ name: 'x', type: 'TEXT' }],
+        });
+
+      const res = await requestWithSupertest
+        .post('/api/tables/_roles_permissions/rows')
+        .set('Cookie', [`accessToken=${superuserToken}`])
+        .send({
+          fields: {
+            role_id: 1,
+            table_name: 'perm_test_table',
+            create: 0,
+            read: 1,
+            update: 0,
+            delete: 0,
+          },
+        });
+
+      expect(res.status).toEqual(201);
+    });
+
+    it('PUT /tables/_users/rows/:id strips is_superuser/hashed_password/salt from the request body', async () => {
+      const before = await requestWithSupertest
+        .get(`/api/tables/_users/rows/${noRoleUserId}`)
+        .set('Cookie', [`accessToken=${superuserToken}`]);
+      const originalIsSuperuser = before.body.data[0].is_superuser;
+
+      const res = await requestWithSupertest
+        .put(`/api/tables/_users/rows/${noRoleUserId}`)
+        .set('Cookie', [`accessToken=${superuserToken}`])
+        .send({
+          fields: {
+            username: 'NoRoleUserRenamed',
+            is_superuser: 'true',
+            hashed_password: 'attacker-controlled',
+            salt: 'attacker-controlled',
+          },
+        });
+
+      expect(res.status).toEqual(200);
+
+      const after = await requestWithSupertest
+        .get(`/api/tables/_users/rows/${noRoleUserId}`)
+        .set('Cookie', [`accessToken=${superuserToken}`]);
+
+      expect(after.body.data[0].is_superuser).toEqual(originalIsSuperuser);
+    });
+
     it('removeRevokedRefreshTokens deletes only expired revoked tokens', () => {
       const expiredToken = 'expired-revoked-token';
       const freshToken = 'fresh-revoked-token';

@@ -25,6 +25,21 @@ describe('Tables Endpoints', () => {
     expect(res.body.data[0]).toHaveProperty('name');
   });
 
+  it('POST /tables should reject creating a table with a reserved name', async () => {
+    const accessToken = await generateToken(
+      { username: 'John', isSuperuser: true },
+      config.tokenSecret,
+      '1H',
+    );
+
+    const res = await requestWithSupertest
+      .post('/api/tables')
+      .set('Cookie', [`accessToken=${accessToken}`])
+      .send({ name: '_users', schema: [{ name: 'x', type: 'TEXT' }] });
+
+    expect(res.status).toEqual(409);
+  });
+
   it('POST /tables should create a new table and return generated schema', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },
