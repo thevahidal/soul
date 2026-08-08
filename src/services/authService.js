@@ -1,5 +1,4 @@
-const db = require('../db');
-const rowService = require('./rowService')(db);
+const buildRowService = require('./rowService');
 
 const { constantRoles, dbConstants, apiConstants } = require('../constants');
 const { toBoolean } = require('../utils');
@@ -14,6 +13,8 @@ const {
 } = dbConstants;
 
 module.exports = (db) => {
+  const rowService = buildRowService(db);
+
   return {
     getUsersByUsername({ username }) {
       const users = rowService.get({

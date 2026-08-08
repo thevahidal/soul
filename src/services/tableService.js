@@ -87,34 +87,34 @@ module.exports = (db) => {
       const { search, ordering, exclude } = options;
 
       let query = `SELECT name FROM sqlite_master WHERE type IN ('table', 'view')`;
+      const queryValues = [];
 
       // if search is provided, search the tables
       // e.g. search=users
       if (search) {
-        query += ` AND name LIKE $searchQuery`;
+        query += ` AND name LIKE ?`;
+        queryValues.push(`%${search}%`);
       }
 
       // if exclude is passed don't return the some tables
       // e.g. exclude=['_users', '_roles']
-      if (exclude) {
-        const excludeTables = exclude.map((field) => `'${field}'`).join(' ,');
-        query += `AND name NOT IN (${excludeTables});`;
+      if (exclude && exclude.length > 0) {
+        query += ` AND name NOT IN (${exclude.map(() => '?').join(', ')})`;
+        queryValues.push(...exclude);
       }
 
       // if ordering is provided, order the tables
-      // e.g. ordering=name (ascending) or ?_ordering=-name (descending)
+      // e.g. ordering=name (ascending) or ordering=-name (descending)
+      // `name` is the only column this query returns, so it's the only
+      // valid ordering target -- ORDER BY can't take a bound parameter for
+      // a dynamic column/direction the way a value position can.
       if (ordering) {
-        query += ` ORDER BY $ordering`;
+        const isDesc = ordering.startsWith('-');
+        query += ` ORDER BY name ${isDesc ? 'DESC' : 'ASC'}`;
       }
 
       try {
-        const tables = db.prepare(query).all({
-          searchQuery: `%${search}%`,
-          ordering: `${ordering?.replace('-', '')} ${
-            ordering?.startsWith('-') ? 'DESC' : 'ASC'
-          }`,
-        });
-        return tables;
+        return db.prepare(query).all(...queryValues);
       } catch (error) {
         console.log(error);
       }
