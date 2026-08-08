@@ -15,6 +15,7 @@
     "cli": "nodemon src/server.js --database foobar.db",
     "swagger-autogen": "cross-env NO_CLI=true node src/swagger/index.js",
     "test": "cross-env CI=true NODE_ENV=test NO_CLI=true DB=test.db CORE_PORT=8001 AUTH=true TOKEN_SECRET=test-only-ci-secret-0123456789 INITIAL_USER_USERNAME=admin INITIAL_USER_PASSWORD=Str0ngTestPw!1 jest --testTimeout=10000 --runInBand --forceExit",
+    "test:coverage": "npm test -- --coverage --coverageProvider=v8",
     "prepare": "husky",
     "lint": "eslint . --fix --max-warnings=0",
     "format": "prettier . --write"
@@ -66,8 +67,17 @@
   "jest": {
     "testEnvironment": "node",
     "coveragePathIgnorePatterns": [
-      "/node_modules/"
+      "/node_modules/",
+      "/src/tests/"
     ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 75,
+        "branches": 60,
+        "functions": 85,
+        "lines": 75
+      }
+    },
     "globalSetup": "./src/tests/globalSetup.js",
     "globalTeardown": "./src/tests/globalTeardown.js"
   },
