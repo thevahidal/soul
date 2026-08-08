@@ -283,8 +283,15 @@ const removeTokens = async (req, res) => {
 };
 
 const removeRevokedRefreshTokens = () => {
+  // expires_at stores a JWT `exp` claim (Unix seconds, INTEGER affinity).
+  // CURRENT_TIMESTAMP is a TEXT datetime string -- comparing INTEGER < TEXT
+  // in SQLite falls back to storage-class ordering (INTEGER always sorts
+  // below TEXT) rather than a real numeric comparison, so that previously
+  // matched (and deleted) every row regardless of actual expiry.
+  // strftime('%s','now') returns the current time in the same Unix-seconds
+  // form as expires_at, so this compares correctly.
   authService.deleteRevokedRefreshTokens({
-    lookupField: `WHERE expires_at < CURRENT_TIMESTAMP`,
+    lookupField: `WHERE expires_at < strftime('%s','now')`,
   });
 };
 
