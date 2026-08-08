@@ -1,6 +1,7 @@
 const { authService } = require('../../services');
 const { responseMessages, authConstants } = require('../../constants');
 const config = require('../../config');
+const logger = require('../../utils/logger');
 const {
   comparePasswords,
   generateToken,
@@ -66,7 +67,8 @@ const obtainAccessToken = async (req, res) => {
         });
 
         roleIds = roleData.roleIds;
-      } catch (err) {
+      } catch (error) {
+        logger.error(error.message, { stack: error.stack });
         return res
           .status(401)
           .send({ message: errorMessage.ROLE_NOT_FOUND_ERROR });
@@ -116,7 +118,7 @@ const obtainAccessToken = async (req, res) => {
       }
     */
   } catch (error) {
-    console.log(error);
+    logger.error(error.message, { stack: error.stack });
     return res.status(500).json({
       message: errorMessage.SERVER_ERROR,
     });
@@ -174,7 +176,8 @@ const refreshAccessToken = async (req, res) => {
         });
 
         roleIds = roleData.roleIds;
-      } catch (err) {
+      } catch (error) {
+        logger.error(error.message, { stack: error.stack });
         return res
           .status(401)
           .send({ message: errorMessage.ROLE_NOT_FOUND_ERROR });
@@ -223,7 +226,9 @@ const refreshAccessToken = async (req, res) => {
         }
       }
     */
-  } catch (error) {
+  } catch {
+    // an invalid/expired refresh token is a routine client-side condition,
+    // not an unexpected server error -- not logged as one.
     res.status(403).send({ message: errorMessage.INVALID_REFRESH_TOKEN_ERROR });
     /*
       #swagger.responses[401] = {
@@ -272,6 +277,7 @@ const removeTokens = async (req, res) => {
       }
     */
   } catch (error) {
+    logger.error(error.message, { stack: error.stack });
     res.status(500).send({ message: errorMessage.SERVER_ERROR });
   }
 };

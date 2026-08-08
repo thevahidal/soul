@@ -12,7 +12,7 @@
 
 ### Docker
 
-> This is the preferred method as the dependency [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) is making of lot of assumptions about the system it will be installed and running on which in most cases will lead to errors when installing soul.
+> This is a convenient way to run Soul without worrying about your local Node.js version. Soul requires Node.js `20.x`, `22.x`, `23.x`, `24.x`, `25.x`, or `26.x` (see `engines` in `package.json`) since its [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) dependency ships prebuilt native binaries only for those versions.
 
 Using the following Dockerfile:
 
@@ -20,8 +20,8 @@ Using the following Dockerfile:
   <summary>Dockerfile</summary>
   
   ```nginx
-# node:19-alpine amd64
-FROM node@sha256:d0ba7111bc031323ce2706f8e424afc868db289ba40ff55b05561cf59c123be1 AS node
+# node:22-alpine amd64
+FROM node@sha256:76789712cd1ae89a1225eac9077010d68987a423588042dac30446f502f1858c AS node
 
 WORKDIR /app
 
@@ -29,12 +29,17 @@ ENV NODE_ENV="production"
 
 COPY package-lock.json package.json ./
 
-RUN apk update && apk add python3=3.11.10-r1 build-base=0.5-r3 && npm ci
+# python3/build-base are a fallback in case no prebuilt native binary matches
+
+# this platform (e.g. non-amd64/arm64 or a libc variant without a prebuild)
+
+RUN apk update && apk add python3 build-base && npm ci
 
 COPY . .
 
 CMD [ "npm", "start" ]
-  ```
+
+````
 </details>
 
 You can proceed [to building the application](https://docs.docker.com/get-started/workshop/02_our_app/#build-the-apps-image).
@@ -42,8 +47,8 @@ You can proceed [to building the application](https://docs.docker.com/get-starte
 ### npm
 
 ```bash
-  npm install -g soul-cli
-```
+npm install -g soul-cli
+````
 
 ### 1. Running Soul
 
@@ -73,6 +78,8 @@ Options:
   --help                                             Show help
 
 ```
+
+NOTE: If `--cors` is left at its default (or explicitly set to `*`), cookie-based credentials (used for auth) are disabled on cross-origin requests, since browsers reject the combination of a wildcard origin with credentials. Pass an explicit comma-separated origin list via `--cors` to allow authenticated cross-origin requests.
 
 Then to test Soul is working run the following command
 

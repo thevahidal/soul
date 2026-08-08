@@ -131,8 +131,8 @@ module.exports = {
 
   rateLimit: {
     enabled: argv['rate-limit-enabled'] || envVars.RATE_LIMIT_ENABLED,
-    windowMs: envVars.RATE_LIMIT_WINDOW,
-    max: envVars.RATE_LIMIT_MAX,
+    windowMs: envVars.RATE_LIMIT_WINDOW_MS,
+    max: envVars.RATE_LIMIT_MAX_REQUESTS,
   },
 
   extensions: {

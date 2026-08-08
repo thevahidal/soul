@@ -6,8 +6,10 @@ const {
   authConstants,
 } = require('../../constants');
 const config = require('../../config');
+const logger = require('../../utils/logger');
 const {
   hashPassword,
+  hashPasswordSync,
   checkPasswordStrength,
   comparePasswords,
 } = require('../../utils');
@@ -20,8 +22,7 @@ const { successMessage, errorMessage, infoMessage } = responseMessages;
 
 const updateSuperuser = async (fields) => {
   const { id, password, is_superuser } = fields;
-  let newHashedPassword, newSalt;
-  let fieldsString = '';
+  const updateFields = {};
 
   try {
     // find the user by using the id field
@@ -35,7 +36,7 @@ const updateSuperuser = async (fields) => {
 
     // check if the is_superuser field is passed
     if (is_superuser !== undefined) {
-      fieldsString = `${tableFields.IS_SUPERUSER} = '${is_superuser}'`;
+      updateFields[tableFields.IS_SUPERUSER] = is_superuser;
     }
 
     // if the password is sent from the CLI, update it
@@ -51,23 +52,17 @@ const updateSuperuser = async (fields) => {
       }
 
       //hash the password
-      const { hashedPassword, salt } = await hashPassword(
-        password,
-        SALT_ROUNDS,
-      );
-      newHashedPassword = hashedPassword;
-      newSalt = salt;
+      const { hashedPassword, salt } = hashPasswordSync(password, SALT_ROUNDS);
 
-      fieldsString = `${fieldsString ? fieldsString + ', ' : ''} ${
-        tableFields.HASHED_PASSWORD
-      } = '${newHashedPassword}', ${tableFields.SALT} = '${newSalt}'`;
+      updateFields[tableFields.HASHED_PASSWORD] = hashedPassword;
+      updateFields[tableFields.SALT] = salt;
     }
 
     // update the user
     rowService.update({
       tableName: USERS_TABLE,
       lookupField: tableFields.ID,
-      fieldsString,
+      fields: updateFields,
       pks: `${id}`,
     });
 
@@ -194,7 +189,7 @@ const registerUser = async (req, res) => {
       }
     */
   } catch (error) {
-    console.log(error);
+    logger.error(error.message, { stack: error.stack });
     res.status(500).send({ message: errorMessage.SERVER_ERROR });
   }
 };
@@ -283,7 +278,10 @@ const changePassword = async (req, res) => {
     rowService.update({
       tableName: USERS_TABLE,
       lookupField: tableFields.ID,
-      fieldsString: `${tableFields.HASHED_PASSWORD} = '${hashedPassword}', ${tableFields.SALT} = '${salt}'`,
+      fields: {
+        [tableFields.HASHED_PASSWORD]: hashedPassword,
+        [tableFields.SALT]: salt,
+      },
       pks: `${user.id}`,
     });
 
@@ -301,6 +299,7 @@ const changePassword = async (req, res) => {
       }
     */
   } catch (error) {
+    logger.error(error.message, { stack: error.stack });
     res.status(500).send({ message: errorMessage.SERVER_ERROR });
   }
 };
@@ -346,10 +345,7 @@ const createInitialUser = async () => {
       }
 
       // hash the password
-      const { hashedPassword, salt } = await hashPassword(
-        password,
-        SALT_ROUNDS,
-      );
+      const { hashedPassword, salt } = hashPasswordSync(password, SALT_ROUNDS);
 
       // create the initial user
       const { lastInsertRowid: userId } = rowService.save({

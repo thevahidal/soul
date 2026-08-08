@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.8.1",
+    "version": "0.8.2",
     "title": "Soul API",
     "description": "API Documentation for <b>Soul</b>, a SQLite REST and realtime server. "
   },
@@ -35,7 +35,6 @@
         "tags": ["Root"],
         "summary": "Timestamp",
         "description": "Endpoint to return server timestamp",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "OK"
@@ -48,7 +47,6 @@
         "tags": ["Root"],
         "summary": "Health Check",
         "description": "Endpoint to return server health status",
-        "parameters": [],
         "responses": {
           "200": {
             "description": "OK"
@@ -185,6 +183,9 @@
           },
           "403": {
             "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
@@ -477,7 +478,6 @@
     "/api/auth/token/obtain": {
       "post": {
         "description": "",
-        "parameters": [],
         "responses": {
           "400": {
             "description": "Bad Request"
@@ -488,7 +488,6 @@
     "/api/auth/token/refresh": {
       "get": {
         "description": "",
-        "parameters": [],
         "responses": {
           "400": {
             "description": "Bad Request"
@@ -499,7 +498,6 @@
     "/api/auth/change-password": {
       "put": {
         "description": "",
-        "parameters": [],
         "responses": {
           "400": {
             "description": "Bad Request"
@@ -516,7 +514,6 @@
     "/api/auth/logout": {
       "get": {
         "description": "",
-        "parameters": [],
         "responses": {
           "400": {
             "description": "Bad Request"

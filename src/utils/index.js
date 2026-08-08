@@ -9,6 +9,17 @@ const hashPassword = async (password, saltRounds) => {
   return { hashedPassword, salt };
 };
 
+// Synchronous variant for one-shot startup/CLI code paths (initial user
+// creation, `updatesuperuser`) that are invoked without being awaited by
+// their callers — using the async API there would race the process
+// continuing (and, in tests, the app being considered ready) against the
+// hash actually completing on bcrypt's thread pool.
+const hashPasswordSync = (password, saltRounds) => {
+  const salt = bcrypt.genSaltSync(saltRounds);
+  const hashedPassword = bcrypt.hashSync(password, saltRounds);
+  return { hashedPassword, salt };
+};
+
 const comparePasswords = async (plainPassword, hashedPassword) => {
   const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
   return isMatch;
@@ -28,7 +39,7 @@ const decodeToken = async (token, secret) => {
     const decoded = jwt.verify(token, secret);
     return decoded;
   } catch (error) {
-    throw new Error('Invalid token');
+    throw new Error('Invalid token', { cause: error });
   }
 };
 
@@ -69,6 +80,7 @@ const removeFields = async (rows, fields) => {
 
 module.exports = {
   hashPassword,
+  hashPasswordSync,
   comparePasswords,
   checkPasswordStrength,
   generateToken,
