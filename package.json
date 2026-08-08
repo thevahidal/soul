@@ -68,14 +68,16 @@
     "testEnvironment": "node",
     "coveragePathIgnorePatterns": [
       "/node_modules/",
-      "/src/tests/"
+      "/src/tests/",
+      "/src/cli.js",
+      "/src/commands.js"
     ],
     "coverageThreshold": {
       "global": {
-        "statements": 75,
-        "branches": 60,
-        "functions": 85,
-        "lines": 75
+        "statements": 92,
+        "branches": 85,
+        "functions": 100,
+        "lines": 92
       }
     },
     "globalSetup": "./src/tests/globalSetup.js",

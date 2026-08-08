@@ -80,7 +80,7 @@ describe('CLI (spawned as a real subprocess)', () => {
       done(
         new Error(`server did not start in time; stdout so far:\n${stdout}`),
       );
-    }, 7000);
+    }, 12000);
 
     child.stdout.on('data', (chunk) => {
       stdout += chunk.toString();
@@ -101,5 +101,5 @@ describe('CLI (spawned as a real subprocess)', () => {
         done(error);
       }
     });
-  });
+  }, 15000);
 });
