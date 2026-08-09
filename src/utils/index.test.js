@@ -63,6 +63,28 @@ describe('utils', () => {
       );
     });
 
+    it('generates distinct tokens for identical payloads (no jti collision)', async () => {
+      // jwt.sign is otherwise deterministic for identical
+      // header+payload+secret -- two logins for the same user within the
+      // same second (identical iat/exp too) would produce byte-identical
+      // tokens without a unique jti, letting revocation of one silently
+      // revoke an unrelated concurrent session for that user.
+      const payload = { userId: 1, username: 'admin', isSuperuser: 'false' };
+      const [tokenA, tokenB] = await Promise.all([
+        generateToken(payload, 'test-secret', '1H'),
+        generateToken(payload, 'test-secret', '1H'),
+      ]);
+
+      expect(tokenA).not.toBe(tokenB);
+
+      const [decodedA, decodedB] = await Promise.all([
+        decodeToken(tokenA, 'test-secret'),
+        decodeToken(tokenB, 'test-secret'),
+      ]);
+      expect(decodedA.jti).toBeDefined();
+      expect(decodedA.jti).not.toBe(decodedB.jti);
+    });
+
     it('attaches the original jwt error as the cause', async () => {
       try {
         await decodeToken('not-a-token', 'test-secret');
