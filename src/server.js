@@ -15,7 +15,19 @@ if (config.startWithStudio) {
     const { handler: soulStudioHandler } = await import(
       'soul-studio/build/handler.js'
     );
-    app.use('/studio', soulStudioHandler);
+    // Deliberately not `app.use('/studio', soulStudioHandler)`: Express
+    // strips the mount prefix from `req.url` before invoking a path-mounted
+    // middleware, but soul-studio's adapter-node build has `paths.base:
+    // '/studio'` baked in at build time and resolves its own routes
+    // against the *unstripped* URL -- so a stripped `/login` never matches
+    // its `/studio/login` route and every request 404s. Mounting at the
+    // root and filtering by path ourselves leaves `req.url` untouched.
+    app.use((req, res, next) => {
+      if (req.url === '/studio' || req.url.startsWith('/studio/')) {
+        return soulStudioHandler(req, res, next);
+      }
+      next();
+    });
   })();
 }
 
