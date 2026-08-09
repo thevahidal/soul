@@ -758,4 +758,60 @@ describe('Auth Endpoints', () => {
       expect(cookies.every((cookie) => /Secure/i.test(cookie))).toBe(true);
     });
   });
+
+  describe('Multiple roles per user', () => {
+    // Regression test for a bug where _users_roles' unique constraint was
+    // declared as UNIQUE(user_id, user_id) instead of
+    // UNIQUE(user_id, role_id), which made the DB reject a second role
+    // assignment for any user -- contradicting docs/auth.md's "a user can
+    // belong to any number of roles."
+    it('allows assigning a second role to a user that already has one', async () => {
+      const superuserToken = await generateToken(
+        { username: 'John', isSuperuser: true },
+        config.tokenSecret,
+        '1H',
+      );
+
+      const userRes = await requestWithSupertest
+        .post('/api/tables/_users/rows')
+        .set('Cookie', [`accessToken=${superuserToken}`])
+        .send({
+          fields: {
+            username: 'MultiRoleUser',
+            password: testData.strongPassword,
+          },
+        });
+      expect(userRes.status).toEqual(201);
+
+      const userLookup = await requestWithSupertest
+        .get('/api/tables/_users/rows?_filters=username__eq:MultiRoleUser')
+        .set('Cookie', [`accessToken=${superuserToken}`]);
+      const userId = userLookup.body.data[0].id;
+
+      const roleRes = await requestWithSupertest
+        .post('/api/tables/_roles/rows')
+        .set('Cookie', [`accessToken=${superuserToken}`])
+        .send({ fields: { name: 'second-role' } });
+      expect(roleRes.status).toEqual(201);
+
+      const roleLookup = await requestWithSupertest
+        .get('/api/tables/_roles/rows?_filters=name__eq:second-role')
+        .set('Cookie', [`accessToken=${superuserToken}`]);
+      const secondRoleId = roleLookup.body.data[0].id;
+
+      // The user already has the default role assigned automatically on
+      // creation -- this second assignment previously violated the buggy
+      // UNIQUE(user_id, user_id) constraint.
+      const assignRes = await requestWithSupertest
+        .post('/api/tables/_users_roles/rows')
+        .set('Cookie', [`accessToken=${superuserToken}`])
+        .send({ fields: { user_id: userId, role_id: secondRoleId } });
+      expect(assignRes.status).toEqual(201);
+
+      const userRoles = await requestWithSupertest
+        .get(`/api/tables/_users_roles/rows?_filters=user_id__eq:${userId}`)
+        .set('Cookie', [`accessToken=${superuserToken}`]);
+      expect(userRoles.body.data).toHaveLength(2);
+    });
+  });
 });
