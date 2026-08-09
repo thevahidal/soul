@@ -56,6 +56,23 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+// CSRF protection: validate Origin header for browser-initiated state-changing requests
+app.use((req, res, next) => {
+  const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+  if (safeMethods.includes(req.method)) {
+    return next();
+  }
+  const origin = req.headers.origin;
+  if (!origin) {
+    return next(); // Non-browser client (curl, server-to-server) — no CSRF risk
+  }
+  const allowed = [].concat(config.cors.origin);
+  if (allowed.includes('*') || allowed.some((o) => origin === o || origin.startsWith(o))) {
+    return next();
+  }
+  return res.status(403).json({ message: 'Forbidden: CSRF origin mismatch' });
+});
+
 // Log requests
 if (config.verbose !== null) {
   app.use(
