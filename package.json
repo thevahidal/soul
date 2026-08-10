@@ -46,7 +46,7 @@
     "joi": "^18.2.3",
     "jsonwebtoken": "^9.0.3",
     "soul-studio": "^0.0.1",
-    "swagger-ui-express": "^4.6.1",
+    "swagger-ui-express": "^5.0.1",
     "winston": "^3.19.0",
     "ws": "^8.21.3",
     "yargs": "^17.7.1"
