@@ -1,6 +1,6 @@
 {
   "name": "soul-cli",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "A SQLite REST and Realtime server",
   "main": "src/server.js",
   "bin": {
@@ -45,7 +45,7 @@
     "helmet": "^8.3.0",
     "joi": "^18.2.3",
     "jsonwebtoken": "^9.0.3",
-    "soul-studio": "^0.0.1",
+    "soul-studio": "^0.0.3",
     "swagger-ui-express": "^4.6.1",
     "winston": "^3.19.0",
     "ws": "^8.21.3",
