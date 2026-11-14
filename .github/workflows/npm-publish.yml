@@ -28,6 +28,8 @@ jobs:
 
       # Trusted Publishing needs npm CLI >=11.5.1; the version bundled with
       # setup-node's Node 22 isn't guaranteed to be that recent.
+      - name: Check tag matches package.json version
+        run: test "v$(node -p 'require("./package.json").version')" = "${{ github.event.release.tag_name }}"
       - run: npm install -g npm@latest
       - run: npm ci
       - run: npm test
