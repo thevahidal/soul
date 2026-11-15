@@ -10,7 +10,7 @@ const dropTestTable = (table = 'users') => {
 const dropTestDatabase = async (path = 'test.db') => {
   // delete test database file e.g. test.db
   try {
-    await unlink(path), console.log(`successfully deleted ${path}`);
+    (await unlink(path), console.log(`successfully deleted ${path}`));
   } catch (error) {
     console.error('there was an error:', error);
   }
