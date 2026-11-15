@@ -23,11 +23,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org/
 
       # Trusted Publishing needs npm CLI >=11.5.1; the version bundled with
-      # setup-node's Node 22 isn't guaranteed to be that recent.
+      # setup-node's Node 24 isn't guaranteed to be that recent.
       - name: Check tag matches package.json version
         run: test "v$(node -p 'require("./package.json").version')" = "${{ github.event.release.tag_name }}"
       - run: npm install -g npm@latest
