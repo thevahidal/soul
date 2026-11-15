@@ -12,9 +12,8 @@ const { authConstants } = require('./constants');
 
 if (config.startWithStudio) {
   (async () => {
-    const { handler: soulStudioHandler } = await import(
-      'soul-studio/build/handler.js'
-    );
+    const { handler: soulStudioHandler } =
+      await import('soul-studio/build/handler.js');
     // Deliberately not `app.use('/studio', soulStudioHandler)`: Express
     // strips the mount prefix from `req.url` before invoking a path-mounted
     // middleware, but soul-studio's adapter-node build has `paths.base:

@@ -18,8 +18,8 @@ Using the following Dockerfile:
 
 <details>
   <summary>Dockerfile</summary>
-  
-  ```nginx
+
+```nginx
 # node:22-alpine amd64
 FROM node@sha256:76789712cd1ae89a1225eac9077010d68987a423588042dac30446f502f1858c AS node
 
@@ -39,7 +39,8 @@ COPY . .
 
 CMD [ "npm", "start" ]
 
-````
+```
+
 </details>
 
 You can proceed [to building the application](https://docs.docker.com/get-started/workshop/02_our_app/#build-the-apps-image).
@@ -48,7 +49,7 @@ You can proceed [to building the application](https://docs.docker.com/get-starte
 
 ```bash
 npm install -g soul-cli
-````
+```
 
 ### 1. Running Soul
 
