@@ -12,7 +12,7 @@ jest.mock('../services', () => ({
 const config = require('../config');
 const { decodeToken } = require('../utils/index');
 const { authService } = require('../services');
-const { hasAccess } = require('./auth');
+const { authenticate, hasAccess } = require('./auth');
 
 describe('hasAccess', () => {
   let req, res, next;
@@ -172,5 +172,68 @@ describe('hasAccess', () => {
 
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.send).toHaveBeenCalledWith({ message: 'boom' });
+  });
+});
+
+describe('authenticate', () => {
+  let req, res, next;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    req = { cookies: { accessToken: 'token' } };
+    res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+    next = jest.fn();
+  });
+
+  it('skips authentication when auth is disabled', async () => {
+    config.auth = false;
+
+    await authenticate(req, res, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(decodeToken).not.toHaveBeenCalled();
+  });
+
+  it('sets req.user from a valid token', async () => {
+    config.auth = true;
+    decodeToken.mockResolvedValue({ username: 'john' });
+
+    await authenticate(req, res, next);
+
+    expect(req.user).toEqual({ username: 'john' });
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns 401 without a token when no anon role is configured', async () => {
+    config.auth = true;
+    config.anonRole = undefined;
+    req.cookies = {};
+
+    await authenticate(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('lets a request without a token through when an anon role is configured', async () => {
+    config.auth = true;
+    config.anonRole = 'anon';
+    req.cookies = {};
+
+    await authenticate(req, res, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(req.user).toBeUndefined();
+    config.anonRole = undefined;
+  });
+
+  it('returns 401 for an invalid token', async () => {
+    config.auth = true;
+    decodeToken.mockRejectedValue(new Error('bad'));
+
+    await authenticate(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(next).not.toHaveBeenCalled();
   });
 });

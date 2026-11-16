@@ -54,6 +54,34 @@
         }
       }
     },
+    "/api/batch": {
+      "post": {
+        "tags": ["Rows"],
+        "summary": "Batch",
+        "description": "Run row inserts, updates and deletes atomically: if one fails, none are applied.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BatchRequestBody"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
     "/api/tables/": {
       "get": {
         "tags": ["Tables"],
@@ -433,9 +461,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
           "400": {
             "description": "Bad Request"
           },
@@ -475,9 +500,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
           "400": {
             "description": "Bad Request"
           },
@@ -486,9 +508,6 @@
           },
           "403": {
             "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not Found"
           }
         }
       }
@@ -553,52 +572,6 @@
     "Row": {
       "type": "object",
       "properties": {}
-    },
-    "Query": {
-      "type": "object",
-      "properties": {
-        "query": {
-          "type": "string",
-          "example": "SELECT * FROM users"
-        }
-      }
-    },
-    "Statement": {
-      "type": "object",
-      "properties": {
-        "statement": {
-          "type": "string",
-          "example": "INSERT INTO users (id, firstName, lastName) VALUES (:id, :firstName, :lastName)"
-        },
-        "values": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "number",
-              "example": 1
-            },
-            "firstName": {
-              "type": "string",
-              "example": "John"
-            },
-            "lastName": {
-              "type": "string",
-              "example": "Doe"
-            }
-          }
-        }
-      }
-    },
-    "Transaction": {
-      "type": "object",
-      "properties": {
-        "transaction": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Statement"
-          }
-        }
-      }
     },
     "ForeignKey": {
       "type": "object",
@@ -811,8 +784,26 @@
         }
       }
     },
-    "TransactionRequestBody": {
-      "$ref": "#/definitions/Transaction"
+    "BatchRequestBody": {
+      "type": "object",
+      "properties": {
+        "operations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "example": "DELETE"
+              },
+              "path": {
+                "type": "string",
+                "example": "/api/tables/users/rows/2"
+              }
+            }
+          }
+        }
+      }
     },
     "ObtainAccessTokenRequestBody": {
       "type": "object",

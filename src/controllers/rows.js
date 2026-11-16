@@ -12,6 +12,92 @@ const {
   buildGroupedSelect,
 } = require('../utils/query');
 
+const failure = (status, body) =>
+  Object.assign(new Error(body.message || body.error), { status, body });
+
+const sendError = (res, error) =>
+  res
+    .status(error.status || 400)
+    .json(error.body || { message: error.message, error });
+
+const resolveLookupField = (tableName, lookupField) => {
+  if (lookupField) {
+    assertValidColumnName(db, tableName, lookupField);
+    return lookupField;
+  }
+  return db
+    .prepare('SELECT * FROM pragma_table_info(?)')
+    .all(tableName)
+    .find((field) => field.pk === 1).name;
+};
+
+// Core row writes: sync, throw on failure, shared with the batch endpoint.
+const insertRow = ({ tableName, fields: queryFields }) => {
+  assertValidTableName(db, tableName);
+
+  // Remove null values from fields for accurate query construction.
+  const fields = Object.fromEntries(
+    Object.entries(queryFields).filter(([, value]) => value !== null),
+  );
+  const data = rowService.save({ tableName, fields });
+
+  return {
+    status: 201,
+    body: { message: 'Row inserted', data },
+    broadcast: {
+      type: 'INSERT',
+      data: { pk: data.lastInsertRowid, ...fields },
+    },
+  };
+};
+
+const updateRows = ({ tableName, pks, fields, lookupField: lookup }) => {
+  assertValidTableName(db, tableName);
+  const lookupField = resolveLookupField(tableName, lookup);
+  Object.keys(fields).forEach((field) =>
+    assertValidColumnName(db, tableName, field),
+  );
+
+  if (Object.keys(fields).length === 0) {
+    throw failure(400, {
+      message: 'No fields provided',
+      error: 'no_fields_provided',
+    });
+  }
+
+  const data = rowService.update({ tableName, fields, lookupField, pks });
+
+  return {
+    status: 200,
+    body: { message: 'Row updated', data },
+    broadcast: {
+      type: 'UPDATE',
+      _lookup_field: lookupField,
+      data: { pks: pks.split(','), ...fields },
+    },
+  };
+};
+
+const deleteRows = ({ tableName, pks, lookupField: lookup }) => {
+  assertValidTableName(db, tableName);
+  const lookupField = resolveLookupField(tableName, lookup);
+  const data = rowService.delete({ tableName, lookupField, pks });
+
+  if (data.changes === 0) {
+    throw failure(404, { error: 'not_found' });
+  }
+
+  return {
+    status: 200,
+    body: { message: 'Row deleted', data },
+    broadcast: {
+      type: 'DELETE',
+      _lookup_field: lookupField,
+      data: { pks: pks.split(',') },
+    },
+  };
+};
+
 // Return paginated rows of a table
 const listTableRows = async (req, res, next) => {
   /*
@@ -427,17 +513,10 @@ const insertRowInTable = async (req, res, next) => {
   */
 
   const { name: tableName } = req.params;
-  const { fields: queryFields } = req.body;
-
-  // Remove null values from fields for accurate query construction.
-  const fields = Object.fromEntries(
-    Object.entries(queryFields).filter(([, value]) => value !== null),
-  );
+  const { fields } = req.body;
 
   try {
-    assertValidTableName(db, tableName);
-
-    const data = rowService.save({ tableName, fields });
+    const { status, body, broadcast } = insertRow({ tableName, fields });
 
     /*
       #swagger.responses[201] = {
@@ -447,18 +526,8 @@ const insertRowInTable = async (req, res, next) => {
         }
       }
     */
-    res.status(201).json({
-      message: 'Row inserted',
-      data,
-    });
-
-    req.broadcast = {
-      type: 'INSERT',
-      data: {
-        pk: data.lastInsertRowid,
-        ...fields,
-      },
-    };
+    res.status(status).json(body);
+    req.broadcast = broadcast;
     next();
   } catch (error) {
     /*
@@ -469,10 +538,7 @@ const insertRowInTable = async (req, res, next) => {
         }
       }
     */
-    res.status(error.status || 400).json({
-      message: error.message,
-      error: error,
-    });
+    sendError(res, error);
   }
 };
 
@@ -718,64 +784,18 @@ const updateRowInTableByPK = async (req, res, next) => {
   const { fields } = req.body;
   const { _lookup_field } = req.query;
 
-  let lookupField = _lookup_field;
-
   try {
-    assertValidTableName(db, tableName);
-
-    if (!_lookup_field) {
-      // find the primary key of the table
-      lookupField = db
-        .prepare('SELECT * FROM pragma_table_info(?)')
-        .all(tableName)
-        .find((field) => field.pk === 1).name;
-    } else {
-      assertValidColumnName(db, tableName, _lookup_field);
-    }
-
-    Object.keys(fields).forEach((field) =>
-      assertValidColumnName(db, tableName, field),
-    );
-  } catch (error) {
-    return res.status(error.status || 400).json({
-      message: error.message,
-      error: error,
-    });
-  }
-
-  if (Object.keys(fields).length === 0) {
-    return res.status(400).json({
-      message: 'No fields provided',
-      error: 'no_fields_provided',
-    });
-  }
-
-  try {
-    const data = rowService.update({
+    const { status, body, broadcast } = updateRows({
       tableName,
-      fields,
-      lookupField,
       pks,
+      fields,
+      lookupField: _lookup_field,
     });
-
-    res.json({
-      message: 'Row updated',
-      data,
-    });
-    req.broadcast = {
-      type: 'UPDATE',
-      _lookup_field: lookupField,
-      data: {
-        pks: pks.split(','),
-        ...fields,
-      },
-    };
+    res.status(status).json(body);
+    req.broadcast = broadcast;
     next();
   } catch (error) {
-    res.status(400).json({
-      message: error.message,
-      error: error,
-    });
+    sendError(res, error);
   }
 };
 
@@ -807,57 +827,24 @@ const deleteRowInTableByPK = async (req, res, next) => {
   const { name: tableName, pks } = req.params;
   const { _lookup_field } = req.query;
 
-  let lookupField = _lookup_field;
-
   try {
-    assertValidTableName(db, tableName);
-
-    if (!_lookup_field) {
-      // find the primary key of the table
-      lookupField = db
-        .prepare('SELECT * FROM pragma_table_info(?)')
-        .all(tableName)
-        .find((field) => field.pk === 1).name;
-    } else {
-      assertValidColumnName(db, tableName, _lookup_field);
-    }
-  } catch (error) {
-    return res.status(error.status || 400).json({
-      message: error.message,
-      error: error,
+    const { status, body, broadcast } = deleteRows({
+      tableName,
+      pks,
+      lookupField: _lookup_field,
     });
-  }
-
-  try {
-    const data = rowService.delete({ tableName, lookupField, pks });
-
-    if (data.changes === 0) {
-      res.status(404).json({
-        error: 'not_found',
-      });
-    } else {
-      res.json({
-        message: 'Row deleted',
-        data,
-      });
-      req.broadcast = {
-        type: 'DELETE',
-        _lookup_field: lookupField,
-        data: {
-          pks: pks.split(','),
-        },
-      };
-      next();
-    }
+    res.status(status).json(body);
+    req.broadcast = broadcast;
+    next();
   } catch (error) {
-    res.status(error.status || 400).json({
-      message: error.message,
-      error: error,
-    });
+    sendError(res, error);
   }
 };
 
 module.exports = {
+  insertRow,
+  updateRows,
+  deleteRows,
   listTableRows,
   insertRowInTable,
   getRowInTableByPK,
