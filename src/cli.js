@@ -64,6 +64,12 @@ if (process.env.NO_CLI !== 'true') {
       type: 'string',
       demandOption: false,
     })
+    .options('ar', {
+      alias: 'anonrole',
+      describe: 'Role name applied to requests without an access token',
+      type: 'string',
+      demandOption: false,
+    })
     .options('atet', {
       alias: 'accesstokenexpirationtime',
       describe: 'JWT expiration time for access token',

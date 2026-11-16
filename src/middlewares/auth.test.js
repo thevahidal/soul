@@ -1,4 +1,8 @@
-jest.mock('../config', () => ({ auth: false, tokenSecret: 'test-secret' }));
+jest.mock('../config', () => ({
+  auth: false,
+  tokenSecret: 'test-secret',
+  anonRole: null,
+}));
 jest.mock('../utils/index', () => ({ decodeToken: jest.fn() }));
 jest.mock('../utils/logger', () => ({ error: jest.fn() }));
 jest.mock('../services', () => ({
@@ -16,11 +20,12 @@ describe('hasAccess', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     config.auth = false;
+    config.anonRole = null;
     req = {
       params: {},
       method: 'GET',
       originalUrl: '/api/tables/items/rows',
-      cookies: {},
+      cookies: { accessToken: 'token' },
     };
     res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
     next = jest.fn();
@@ -88,6 +93,72 @@ describe('hasAccess', () => {
 
     expect(res.status).toHaveBeenCalledWith(403);
     expect(next).not.toHaveBeenCalled();
+  });
+
+  it('returns 401 when there is no token and no anon role is configured', async () => {
+    config.auth = true;
+    req.cookies = {};
+
+    await hasAccess(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(decodeToken).not.toHaveBeenCalled();
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('checks permissions with a null payload when there is no token but an anon role is configured', async () => {
+    config.auth = true;
+    req.cookies = {};
+    config.anonRole = 'public';
+    authService.hasTablePermission.mockReturnValue(true);
+    req.params.name = 'items';
+
+    await hasAccess(req, res, next);
+
+    expect(decodeToken).not.toHaveBeenCalled();
+    expect(authService.hasTablePermission).toHaveBeenCalledWith({
+      payload: null,
+      tableName: 'items',
+      verb: 'GET',
+    });
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns 403 when the anon role does not allow the request', async () => {
+    config.auth = true;
+    req.cookies = {};
+    config.anonRole = 'public';
+    authService.hasTablePermission.mockReturnValue(false);
+    req.params.name = 'items';
+
+    await hasAccess(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('does not let anonymous requests use universal endpoints', async () => {
+    config.auth = true;
+    req.cookies = {};
+    config.anonRole = 'public';
+    authService.hasTablePermission.mockReturnValue(false);
+    req.originalUrl = '/api/auth/change-password';
+
+    await hasAccess(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('still returns 401 for an invalid token when an anon role is configured', async () => {
+    config.auth = true;
+    config.anonRole = 'public';
+    decodeToken.mockRejectedValue(new Error('invalid token'));
+
+    await hasAccess(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(authService.hasTablePermission).not.toHaveBeenCalled();
   });
 
   it('returns 401 and logs when an unexpected error is thrown', async () => {

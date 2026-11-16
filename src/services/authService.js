@@ -2,6 +2,7 @@ const buildRowService = require('./rowService');
 
 const { constantRoles, dbConstants, apiConstants } = require('../constants');
 const { toBoolean } = require('../utils');
+const config = require('../config');
 
 const {
   USERS_TABLE,
@@ -109,10 +110,26 @@ module.exports = (db) => {
       return result;
     },
 
+    getAnonRoleId() {
+      if (!config.anonRole) {
+        return null;
+      }
+
+      const [role] = rowService.get({
+        tableName: ROLES_TABLE,
+        whereString: `WHERE ${tableFields.ROLE_NAME}=?`,
+        whereStringValues: [config.anonRole],
+      });
+
+      return role ? role.id : null;
+    },
+
     // Shared by the REST `hasAccess` middleware and the WebSocket connection
     // handler so the two auth surfaces can't drift apart.
+    // A null payload is an anonymous request. The anon role also applies to
+    // authenticated users, but never to system (`_`-prefixed) tables.
     hasTablePermission({ payload, tableName, verb }) {
-      if (toBoolean(payload.isSuperuser)) {
+      if (payload && toBoolean(payload.isSuperuser)) {
         return true;
       }
 
@@ -120,9 +137,19 @@ module.exports = (db) => {
         return false;
       }
 
-      const rolePermissions = this.getPermissionByRoleIds({
-        roleIds: payload.roleIds,
-      });
+      const roleIds = [...(payload?.roleIds || [])];
+      if (!tableName.startsWith('_')) {
+        const anonRoleId = this.getAnonRoleId();
+        if (anonRoleId !== null) {
+          roleIds.push(anonRoleId);
+        }
+      }
+
+      if (roleIds.length === 0) {
+        return false;
+      }
+
+      const rolePermissions = this.getPermissionByRoleIds({ roleIds });
       const resourcePermission = rolePermissions.filter(
         (row) => row.table_name === tableName,
       );

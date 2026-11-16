@@ -73,6 +73,7 @@ Options:
   --iup,     --initialuserpassword                   Initial user password                               [string]
 
   --ts,      --tokensecret                           Token Secret                                        [string]
+  --ar,      --anonrole                              Role name for requests without a token              [string]
   --atet,    --accesstokenexpirationtime             Access Token Expiration Time    (Default: 5H)       [string]
   --rtet,    --refreshtokenexpirationtime            Refresh Token Expiration Time   (Default: 1D)       [string]
   -S,       --studio                                 Start Soul Studio in parallel

@@ -14,27 +14,44 @@ const hasAccess = async (req, res, next) => {
 
   try {
     if (config.auth) {
-      // extract the payload from the token and verify it
-      try {
-        payload = await decodeToken(
-          req.cookies.accessToken,
-          config.tokenSecret,
-        );
-        req.user = payload;
-      } catch {
-        // an invalid/expired access token is a routine client-side
-        // condition, not an unexpected server error -- not logged as one.
+      const accessToken = req.cookies.accessToken;
+
+      // no token: anonymous request, only allowed when an anon role is configured
+      if (!accessToken && !config.anonRole) {
         return res
           .status(401)
           .send({ message: errorMessage.INVALID_ACCESS_TOKEN_ERROR });
       }
 
+      // extract the payload from the token and verify it
+      if (accessToken) {
+        try {
+          payload = await decodeToken(accessToken, config.tokenSecret);
+          req.user = payload;
+        } catch {
+          // an invalid/expired access token is a routine client-side
+          // condition, not an unexpected server error -- not logged as one.
+          return res
+            .status(401)
+            .send({ message: errorMessage.INVALID_ACCESS_TOKEN_ERROR });
+        }
+      }
+
       // if the endpoint is set to be accessed by any user regardless of there roles, then allow access
-      if (apiConstants.universalAccessEndpoints.includes(originalURL)) {
+      if (
+        payload &&
+        apiConstants.universalAccessEndpoints.includes(originalURL)
+      ) {
         return next();
       }
 
-      if (authService.hasTablePermission({ payload, tableName, verb })) {
+      if (
+        authService.hasTablePermission({
+          payload: payload || null,
+          tableName,
+          verb,
+        })
+      ) {
         return next();
       }
 

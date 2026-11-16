@@ -30,6 +30,16 @@ describe('Config', () => {
     expect(config.rateLimit.max).toBe(10);
   });
 
+  it('reads the anonymous role from ANON_ROLE and defaults to null', () => {
+    process.env.ANON_ROLE = 'public';
+    jest.resetModules();
+    expect(require('./index').anonRole).toBe('public');
+
+    delete process.env.ANON_ROLE;
+    jest.resetModules();
+    expect(require('./index').anonRole).toBeNull();
+  });
+
   it('reads cookie SameSite/Secure from COOKIE_SAMESITE and COOKIE_SECURE', () => {
     process.env.COOKIE_SAMESITE = 'none';
     process.env.COOKIE_SECURE = 'true';

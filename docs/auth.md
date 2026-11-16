@@ -101,6 +101,16 @@ Soul uses the `default` role to assign permissions to new users.
 
 The same happens when Soul boots up, but for all existing tables, making sure that all tables have the `default` role assigned to them.
 
+###### Anonymous Role
+
+Set `ANON_ROLE` (or `--anonrole`) to the name of a role to let requests without an access token through, limited to that role's permissions. For example, to make the `posts` table publicly readable:
+
+1. Create a role named `public` in `_roles`.
+2. Add a `_roles_permissions` row for it with `table_name` `posts` and `read` `true`.
+3. Start Soul with `ANON_ROLE=public`.
+
+The anon role also applies to logged-in users, on top of their own roles. It never applies to system tables (names starting with `_`), and an invalid or expired token is still rejected with a 401.
+
 ##### Users Roles
 
 To assign roles to users we have a join table called `_users_roles` with the following attributes:
