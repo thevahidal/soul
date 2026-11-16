@@ -1,5 +1,4 @@
 const { WebSocketServer } = require('ws');
-const cookie = require('cookie');
 
 const db = require('./db/index');
 const config = require('./config/index');
@@ -50,7 +49,9 @@ wss.on('connection', async function (ws, request) {
   // REST API -- unauthenticated/unauthorized clients must not be able to
   // subscribe to row changes on a table they can't read via the REST API.
   if (config.auth) {
-    const cookies = cookie.parse(request.headers.cookie || '');
+    // cookie v2 is ESM-only, so it is loaded lazily here.
+    const { parseCookie } = await import('cookie');
+    const cookies = parseCookie(request.headers.cookie || '');
     const accessToken = cookies.accessToken;
 
     if (!accessToken) {
