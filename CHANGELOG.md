@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.12.0](https://github.com/thevahidal/soul/compare/soul-cli-v0.11.0...soul-cli-v0.12.0) (2026-11-16)
+
+
+### Features
+
+* add anonymous role for requests without a token ([2bb7f2e](https://github.com/thevahidal/soul/commit/2bb7f2edfc72363ad83dc6677319efc14c066d8c))
+* add atomic batch endpoint for row writes ([#275](https://github.com/thevahidal/soul/issues/275)) ([760bd39](https://github.com/thevahidal/soul/commit/760bd397b98837dee72264223e8ad1d9f6493b9e))
+
+
+### Bug Fixes
+
+* allow read-only access to auth tables when auth is off ([5428103](https://github.com/thevahidal/soul/commit/54281030d0f11a3df7a0cb14c397dc7d2e24c9c3))
+
 ## [0.11.0](https://github.com/thevahidal/soul/compare/soul-cli-v0.10.0...soul-cli-v0.11.0) (2026-11-16)
 
 
