@@ -10,20 +10,34 @@ jest.mock('../config', () => ({
 
 const { processRowRequest } = require('./api');
 
+const run = async (method) => {
+  const req = { params: { name: '_users' }, method };
+  const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
+  const next = jest.fn();
+  await processRowRequest(req, res, next);
+  return { res, next };
+};
+
 describe('processRowRequest', () => {
-  it('returns 403 when an auth-endpoint table is requested with AUTH disabled', async () => {
-    const req = { params: { name: '_users' }, method: 'GET' };
-    const res = { status: jest.fn().mockReturnThis(), send: jest.fn() };
-    const next = jest.fn();
+  it('allows GET on an auth-endpoint table with AUTH disabled', async () => {
+    const { res, next } = await run('GET');
 
-    await processRowRequest(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(403);
-    expect(res.send).toHaveBeenCalledWith(
-      expect.objectContaining({
-        message: expect.stringContaining('AUTH'),
-      }),
-    );
-    expect(next).not.toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalled();
   });
+
+  it.each(['POST', 'PUT', 'DELETE'])(
+    'returns 403 on %s to an auth-endpoint table with AUTH disabled',
+    async (method) => {
+      const { res, next } = await run(method);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('AUTH'),
+        }),
+      );
+      expect(next).not.toHaveBeenCalled();
+    },
+  );
 });

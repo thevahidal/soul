@@ -23,7 +23,7 @@ module.exports = {
     PERMISSION_NOT_DEFINED_ERROR: 'Permission not defined for this role',
     ROLE_NOT_FOUND_ERROR: 'Role not found for this user',
     AUTH_SET_TO_FALSE_ERROR:
-      'You can not access this endpoint while AUTH is set to false',
+      'Auth tables are read-only while AUTH is set to false',
     RESERVED_TABLE_NAME_ERROR:
       'The table name is reserved. Please choose a different name for the table.',
     SERVER_ERROR: 'Server error',
