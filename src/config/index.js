@@ -37,6 +37,7 @@ const envVarsSchema = Joi.object()
     INITIAL_USER_PASSWORD: Joi.string(),
 
     TOKEN_SECRET: Joi.string(),
+    ANON_ROLE: Joi.string(),
     ACCESS_TOKEN_EXPIRATION_TIME: Joi.string(),
     REFRESH_TOKEN_EXPIRATION_TIME: Joi.string(),
   })
@@ -80,6 +81,10 @@ if (argv.accesstokenexpirationtime) {
 
 if (argv.refreshtokenexpirationtime) {
   env.REFRESH_TOKEN_EXPIRATION_TIME = argv.refreshtokenexpirationtime;
+}
+
+if (argv.anonrole) {
+  env.ANON_ROLE = argv.anonrole;
 }
 
 if (argv.initialuserusername) {
@@ -126,6 +131,8 @@ module.exports = {
     argv.refreshtokenexpirationtime ||
     envVars.REFRESH_TOKEN_EXPIRATION_TIME ||
     '3D',
+
+  anonRole: argv.anonrole || envVars.ANON_ROLE || null,
 
   initialUserUsername:
     argv.initialuserusername || envVars.INITIAL_USER_USERNAME,

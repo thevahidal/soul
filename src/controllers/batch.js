@@ -65,7 +65,7 @@ const prepareOperation = ({ method, path, body = {} }, user) => {
   if (
     config.auth &&
     !authService.hasTablePermission({
-      payload: user,
+      payload: user || null,
       tableName: name,
       verb: method,
     })

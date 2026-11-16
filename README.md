@@ -73,6 +73,7 @@ Options:
   --iup,     --initialuserpassword                   Initial user password                               [string]
 
   --ts,      --tokensecret                           Token Secret                                        [string]
+  --ar,      --anonrole                              Role name for requests without a token              [string]
   --atet,    --accesstokenexpirationtime             Access Token Expiration Time    (Default: 5H)       [string]
   --rtet,    --refreshtokenexpirationtime            Refresh Token Expiration Time   (Default: 1D)       [string]
   -S,       --studio                                 Start Soul Studio in parallel
@@ -101,6 +102,8 @@ Run the Soul command with the necessary parameters:
   soul -d foobar.db -a --ts=<your_jwt_secret_value> --atet=4H --rtet=3D --iuu=john --iup=<your_password>
 
 ```
+
+> Note: Without `-a`, the auth tables (`_users`, `_roles`, `_roles_permissions`, `_users_roles`) are read-only.
 
 > Note: When configuring your JWT Secret, it is recommended to use a long string value for enhanced security. It is advisable to use a secret that is at least 10 characters in length.
 

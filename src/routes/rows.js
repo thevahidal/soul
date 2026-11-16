@@ -44,6 +44,7 @@ router.delete(
   '/:name/rows/:pks',
   hasAccess,
   validator(schema.deleteRowInTableByPK),
+  processRowRequest,
   controllers.deleteRowInTableByPK,
   broadcast,
 );

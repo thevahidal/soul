@@ -4,6 +4,7 @@ const {
   assertValidTableName,
   assertValidColumnName,
   assertValidOperator,
+  assertValidAggregate,
   quoteIdentifier,
   quoteLiteral,
   operators,
@@ -78,6 +79,19 @@ describe('sql utils', () => {
       expect(() => assertValidOperator('DROP TABLE')).toThrow(
         /Invalid field operator/,
       );
+    });
+  });
+
+  describe('assertValidAggregate', () => {
+    it('returns the SQL function for a known aggregate', () => {
+      expect(assertValidAggregate('sum')).toBe('SUM');
+    });
+
+    it('throws for an unknown aggregate', () => {
+      expect(() => assertValidAggregate('median')).toThrow(
+        /Invalid aggregate function/,
+      );
+      expect(() => assertValidAggregate('toString')).toThrow();
     });
   });
 

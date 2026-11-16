@@ -54,19 +54,21 @@ wss.on('connection', async function (ws, request) {
     const cookies = parseCookie(request.headers.cookie || '');
     const accessToken = cookies.accessToken;
 
-    if (!accessToken) {
+    if (!accessToken && !config.anonRole) {
       ws.send(JSON.stringify({ message: 'Missing access token' }));
       ws.close();
       return;
     }
 
-    let payload;
-    try {
-      payload = await decodeToken(accessToken, config.tokenSecret);
-    } catch {
-      ws.send(JSON.stringify({ message: 'Invalid access token' }));
-      ws.close();
-      return;
+    let payload = null;
+    if (accessToken) {
+      try {
+        payload = await decodeToken(accessToken, config.tokenSecret);
+      } catch {
+        ws.send(JSON.stringify({ message: 'Invalid access token' }));
+        ws.close();
+        return;
+      }
     }
 
     if (!authService.hasTablePermission({ payload, tableName, verb: 'GET' })) {
