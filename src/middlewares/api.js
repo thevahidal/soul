@@ -22,8 +22,12 @@ const processRowRequest = async (req, res, next) => {
   const resource = req.params.name;
   const { method } = req;
 
-  // If the user sends a request to the auth tables while AUTH is set to false, throw an error
-  if (apiConstants.authEndpoints.includes(resource) && !config.auth) {
+  // Auth tables are read-only while AUTH is set to false
+  if (
+    apiConstants.authEndpoints.includes(resource) &&
+    !config.auth &&
+    method !== httpVerbs.GET
+  ) {
     return res.status(403).send({
       message: errorMessage.AUTH_SET_TO_FALSE_ERROR,
     });

@@ -102,6 +102,8 @@ Run the Soul command with the necessary parameters:
 
 ```
 
+> Note: Without `-a`, the auth tables (`_users`, `_roles`, `_roles_permissions`, `_users_roles`) are read-only.
+
 > Note: When configuring your JWT Secret, it is recommended to use a long string value for enhanced security. It is advisable to use a secret that is at least 10 characters in length.
 
 In this example:
