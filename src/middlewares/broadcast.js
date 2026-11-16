@@ -1,18 +1,14 @@
 const { websocketSubscribers } = require('../websocket');
 
-const broadcast = (req) => {
-  const data = req.broadcast;
-  const { name: tableName } = req.params;
-
-  const subscribers = websocketSubscribers?.get(tableName);
-
-  if (subscribers) {
-    subscribers.forEach(({ ws }) => {
-      ws.send(JSON.stringify(data));
-    });
-  }
+const broadcastToTable = (tableName, data) => {
+  websocketSubscribers?.get(tableName)?.forEach(({ ws }) => {
+    ws.send(JSON.stringify(data));
+  });
 };
+
+const broadcast = (req) => broadcastToTable(req.params.name, req.broadcast);
 
 module.exports = {
   broadcast,
+  broadcastToTable,
 };
