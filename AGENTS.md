@@ -27,5 +27,5 @@ Request flow: `routes/` → `middlewares/` (+ `schemas/` Joi validation) → `co
 
 - Single quotes, 2-space indent, prettier-formatted. Few comments.
 - Add or update tests with every change; keep coverage above the thresholds.
-- Commits and PR titles use conventional prefixes: `feat:`, `fix:`, `perf:`, `docs:`, `chore:`, `ci:`, `test:`, `refactor:`. Breaking changes use `feat!:` or a `BREAKING CHANGE:` footer. These drive the version bump.
+- Commits and PR titles use conventional prefixes: `feat:`, `fix:`, `perf:`, `docs:`, `chore:`, `ci:`, `test:`, `refactor:`. Breaking changes use `feat!:` or a `BREAKING CHANGE:` footer. These drive the version bump; `pr-title.yml` checks PR titles (squash-merge commit message).
 - Don't edit `version` in `package.json` by hand. release-please opens a release PR from merged commits; merging it tags, creates the GitHub Release and publishes to npm (`.github/workflows/release.yml`). Force a version with a `Release-As: x.y.z` commit footer.
