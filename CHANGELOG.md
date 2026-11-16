@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.11.0](https://github.com/thevahidal/soul/compare/soul-cli-v0.10.0...soul-cli-v0.11.0) (2026-11-16)
+
+
+### Features
+
+* add distinct, group/aggregate, new filter operators, OR groups and NOT to rows query ([95b70e4](https://github.com/thevahidal/soul/commit/95b70e4984fca5377b71b41e6736afb13a65083f))
+
+
+### Bug Fixes
+
+* reject repeated query params in row query helpers ([41f1cce](https://github.com/thevahidal/soul/commit/41f1cce2dc6d1a4467018612e31b285fe540c924))
+
 ## [0.10.0](https://github.com/thevahidal/soul/compare/soul-cli-v0.9.4...soul-cli-v0.10.0) (2026-11-16)
 
 
