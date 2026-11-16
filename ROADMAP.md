@@ -1,126 +1,35 @@
 # Soul Roadmap
 
-This document captures where Soul is today and the direction agreed on for
-what comes next. Written to hand off to a fresh session — it should be
-enough context to start executing without re-deriving the "why."
-
-## Where Soul is today
-
-Soul started as a lighter, JS-based take on PocketBase: point it at a
-SQLite file and get an instant REST + realtime API, with auth/authorization
-and an extensions mechanism. It picked up some attention via Hacker News
-and Reddit early on.
-
-As of `main` (merged PR #240, tagged `v0.9.0`), Soul just went through a
-full production-hardening pass:
-
-- Fixed `npm install` failing outright on modern Node (better-sqlite3/bcrypt
-  had no prebuilds for Node 20+; both bumped, `engines` now `22.x–26.x`).
-- Closed a real, exploitable SQL injection surface across the rows/tables
-  endpoints (identifiers are now allowlist-validated against the live
-  schema; values are always parameter-bound; regression tests prove
-  injection payloads are neutralized).
-- Added WebSocket auth (previously anyone could subscribe to realtime
-  changes on any table regardless of the REST permission model), graceful
-  shutdown, a global error handler that doesn't leak stack traces, CORS/
-  helmet hardening.
-- Found and fixed several real latent bugs along the way: revoked-refresh-
-  token cleanup silently never worked (comparing an INTEGER timestamp
-  against a TEXT `CURRENT_TIMESTAMP` never matched), `authService` ignored
-  its own dependency-injection parameter, extension `POST`/`PUT`/`DELETE`
-  handlers never received `db` (only `GET` did, contradicting the docs),
-  a broken rate-limit config key mismatch.
-- CI now runs lint + tests across a Node 22/24/26 × ubuntu/macos matrix,
-  plus CodeQL.
-- Test coverage went from ~83% to ~94% (branches ~70% → ~88%), with a
-  coverage-threshold gate enforced in CI so it can't regress silently.
-
-**Net effect: the core (rows/tables REST API, auth, realtime, permissions)
-is now solid and reasonably well-defended.** That's the foundation the
-rest of this roadmap builds on — it wasn't true before this pass.
-
-Soul Studio (a Prisma-Studio-like data browser, separate repo) exists but
-is pre-alpha — the main README still says "not useful to work with yet."
-
-## Strategic direction
-
-Considered and **rejected**: pivoting Soul + Soul Studio into a broad
-business-app suite (CRM/inventory/accounting/etc. on a shared framework).
-Reasoning: that market's moat is years of vertical business-app logic, not
-infrastructure, and it means competing head-on with incumbents that are
-15+ years in with large module ecosystems and paid-support businesses.
-It would mean abandoning Soul's current, real niche to restart as a much
-larger, much slower-to-differentiate project — and Soul Studio is nowhere
-near ready to be the UI layer for that anyway.
-
-**Decided direction instead: lean into Soul as the safe, instant backend
-for AI-agent-built apps.** This niche got more relevant, not less, as
-agents write more backend code — the bug list above (SQL injection, a
-missing auth check, a silently-broken rate limiter) is exactly the class
-of mistake an LLM writing bespoke CRUD+auth code from scratch tends to
-ship. A tool that turns "here's a SQLite file" into a safe, permissioned,
-realtime API removes that entire failure surface.
+Ordered by importance. Each item should be scoped and planned when picked up;
+this is direction, not a detailed spec.
 
 ## Done
 
 - Query capabilities: `_distinct`, `_group_by`/`_aggregate`, more filter
   operators, OR groups, multi-column `_ordering` (`95b70e4`).
+- MCP server: `soul-mcp` exposes the REST API as MCP tools (`docs/mcp.md`).
 
-## Roadmap
+## Next
 
-Ordered by importance / leverage. Each item should be scoped and planned
-properly (via `/plan` or similar) when picked up — this is direction, not
-a detailed spec.
+### 1. Row-level permissions
 
-### 1. MCP server
+Permissions today are per table and per verb only. Add rules like
+`user_id = :current_user` per table/verb so users only see and edit their own
+rows. Foundation for item 2.
 
-Highest signal for where Soul's actual users increasingly are. Expose the
-already-hardened service layer as MCP tools so agents (Claude Code, Cursor,
-etc.) can attach to a Soul-backed DB directly instead of hand-rolling HTTP
-calls.
+### 2. Scoped agent credentials
 
-Tools to expose (mirroring existing REST semantics):
+Give an agent a key that can only read/write specific tables (see
+`authService.hasTablePermission`). Needs a lighter API-key auth mode alongside
+username/password + JWT, scoped at creation to tables/verbs (and rows, once
+item 1 lands).
 
-- `list_tables`, `get_schema`
-- `query_rows` (reuse the existing `_filters`/`_search`/`_ordering`/
-  `_schema`/`_extend`/`_group_by`/`_aggregate` semantics from `rows.js`)
-- `insert_row`, `update_row`, `delete_row`
-- `create_table` (JSON schema in, same shape as the existing REST
-  `POST /tables`)
+### 3. Schema evolution
 
-Should sit directly on `src/services/rowService.js` /
-`src/services/tableService.js` / `src/utils/sql.js` — no new validation
-logic needed, just a transport layer. Open question to resolve when
-starting: ship as a separate package, or a mode on the existing CLI
-(e.g. `soul --mcp`)?
+Add an alter-table / add-column endpoint so a schema can change after
+creation. Consider migration history if it sees real use.
 
-### 2. Row-level permissions
-
-Permissions today are per table and per verb only. Most real apps need
-"users only see/edit their own rows" (e.g. a `user_id = :current_user`
-rule per table/verb). Biggest gap between "works" and "production-ready"
-for multi-user apps, and the natural foundation for item 3.
-
-### 3. Scoped agent credentials
-
-Package the existing per-table CRUD permission/role system (see
-`authService.hasTablePermission`) as a named feature: give an agent a key
-that can only read/write specific tables. Likely needs a lighter API-key
-auth mode alongside the current username/password + JWT flow, scoped at
-key-creation time to specific tables/verbs (and rows, once item 2 lands).
-Addresses a real, currently annoying problem in agentic products
-(over-broad tool access).
-
-### 4. Schema evolution (LLM-native schema workflows)
-
-Soul's `createTable` API already takes a JSON schema description rather
-than raw DDL — lean into that explicitly ("describe your schema, don't
-write SQL"). Add incremental schema evolution (an alter-table / add-column
-endpoint) so an agent can iterate on a schema across a conversation
-instead of only create-once. Consider migration history/versioning if
-this sees real use.
-
-### 5. Write-path hardening
+### 4. Write-path hardening
 
 - `bulkWrite` is a single `INSERT ... VALUES`; large batches will hit
   SQLite's bound-variable limit. Chunk inside a transaction.
@@ -128,71 +37,43 @@ this sees real use.
 - Upsert (`ON CONFLICT`).
 - Multi-operation transactions.
 
-### 6. Production operations
+### 5. Production operations
 
 - Health/readiness endpoint and basic metrics.
 - Backup story documented in `docs/self-hosting.md` (e.g. Litestream).
 - Structured logging and deployment guidance (Docker, reverse proxy).
 
-### 7. Auth completeness
+### 6. Auth completeness
 
-Audit `docs/auth.md` against what real apps need and fill gaps: password
-reset, email verification, API keys (overlaps item 3), optional OAuth.
-Verify what exists before scoping.
+Audit `docs/auth.md` and fill gaps: password reset, email verification, API
+keys (overlaps item 2), optional OAuth. Verify what exists before scoping.
 
-### 8. Make the safety properties part of the pitch
+### 7. Adversarial test suite
 
-Write up the specific bug classes found and fixed in the hardening pass
-(injection via unvalidated identifiers, the WS auth gap, the rate-limit
-bug) as the actual argument for "safe to let an agent drive this." The
-regression tests added during that work are the receipts.
+Fuzz the filter/ordering/table-name inputs (random or generated payloads),
+including `_group_by`, `_aggregate` and OR groups, as a regression guard
+against injection.
 
-Consider: an ongoing adversarial/fuzz test suite (random or LLM-generated
-filter/ordering/table-name payloads) as both a visible regression guard
-and something to point to. Cover the newer query params (`_group_by`, `_aggregate`, OR groups).
+### 8. Soul Studio v1
 
-### 9. Soul Studio v1 — scoped, not full-featured
+Table/row browser and inline edit, respecting the same permission model as
+the API. Not in scope for v1: dashboards, complex relation UIs.
 
-Target workflow: agent writes to the DB via Soul, human opens Studio to
-inspect and correct it. Not a general-purpose admin framework.
-
-Needs: table/row browser, inline edit, respecting the same permission
-model as the API. Explicitly **not** in scope for v1: dashboards, complex
-relation UIs, anything Retool-shaped — get the core loop solid first.
-
-### 10. Search and pagination
+### 9. Search and pagination
 
 - Full-text search via FTS5 instead of `LIKE` across every column in
   `_search`.
 - Cursor (keyset) pagination; offset pagination gets slow on deep pages.
 
-### 11. File storage
+### 10. File storage
 
-Attach files to rows (local disk first, S3-compatible later). Not needed
-for the agent-backend niche, so lowest priority.
+Attach files to rows (local disk first, S3-compatible later).
 
-### Cheap wins (do anytime, alongside the above)
+### Cheap wins
 
 - Ship an `llms.txt`.
-- Explicitly point agents at the already-generated OpenAPI/Swagger spec
-  (`npm run swagger-autogen`) — "give this file to your coding agent and
-  it knows how to drive the API." Most of the work already exists.
+- Point agents at the generated OpenAPI spec (`npm run swagger-autogen`).
 
-## Explicitly out of scope (for now)
+## Out of scope
 
-- ERP-style business-app suite.
-- General-purpose no-code app builder.
-- Multi-database support (Postgres/MySQL) — SQLite-native is a feature of
-  this niche, not a limitation to fix.
-
-## Starting a new session
-
-- Codebase state: `main` is current as of `v0.9.0` / PR #240 merge.
-- Test commands: `npm test` (fast, no coverage) / `npm run test:coverage`
-  (enforces the coverage threshold — this is what CI runs).
-- CI: Node 22/24/26 × ubuntu/macos, plus CodeQL, on push/PR.
-- Key files for MCP work specifically: `src/services/rowService.js`,
-  `src/services/tableService.js`, `src/utils/sql.js` (identifier
-  validation — reuse this, don't reinvent it), `src/controllers/rows.js` /
-  `src/controllers/tables.js` (existing REST-layer patterns to mirror for
-  parameter semantics).
+- Multi-database support (Postgres/MySQL).
