@@ -31,6 +31,14 @@ const { runCLICommands } = require('./commands');
 const app = express();
 
 app.use(bodyParser.json());
+// body-parser v2 leaves req.body undefined when there is no body (v1 set {}).
+// The request validators expect `body` to be present, so keep the v1 behaviour.
+app.use((req, res, next) => {
+  if (req.body === undefined) {
+    req.body = {};
+  }
+  next();
+});
 app.use(cookieParser());
 app.use(helmet());
 
