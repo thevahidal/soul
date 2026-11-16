@@ -9,6 +9,14 @@ const {
 
 const likeOperators = ['like', 'contains', 'startswith'];
 
+// Express turns a repeated query param (?a=1&a=2) into an array.
+const assertString = (value, name) => {
+  if (typeof value !== 'string') {
+    throw invalidRequestError(`${name} must be a single value`);
+  }
+  return value;
+};
+
 // A quoted value ("a, b") is only quoted if the closing quote ends the value.
 const readQuoted = (s, i, stops) => {
   let value = '';
@@ -194,7 +202,7 @@ const buildCondition = (db, tableName, condition) => {
 const buildFilterClause = (db, tableName, filters) => {
   const values = [];
 
-  const clause = parseFilters(filters)
+  const clause = parseFilters(assertString(filters, '_filters'))
     .map((term) => {
       const parts = term.alternatives.map((condition) => {
         const built = buildCondition(db, tableName, condition);
@@ -213,22 +221,29 @@ const buildFilterClause = (db, tableName, filters) => {
 };
 
 const buildDistinct = (db, tableName, distinct) => {
-  const columns = distinct.split(',').map((column) => {
-    assertValidColumnName(db, tableName, column);
-    return `${tableName}.${column}`;
-  });
+  const columns = assertString(distinct, '_distinct')
+    .split(',')
+    .map((column) => {
+      assertValidColumnName(db, tableName, column);
+      return `${tableName}.${column}`;
+    });
 
   return columns.join(', ');
 };
 
 // _group_by=category&_aggregate=count,sum:price
 const buildGroupedSelect = (db, tableName, groupBy, aggregate) => {
-  const groupColumns = groupBy ? groupBy.split(',') : [];
+  const groupColumns = groupBy
+    ? assertString(groupBy, '_group_by').split(',')
+    : [];
   groupColumns.forEach((column) =>
     assertValidColumnName(db, tableName, column),
   );
 
-  const aggregates = (aggregate ? aggregate.split(',') : []).map((spec) => {
+  const specs = aggregate
+    ? assertString(aggregate, '_aggregate').split(',')
+    : [];
+  const aggregates = specs.map((spec) => {
     const [fn, column, ...extra] = spec.split(':');
     const sqlFunction = assertValidAggregate(fn);
 
