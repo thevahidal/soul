@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.8.2",
+    "version": "0.10.0",
     "title": "Soul API",
     "description": "API Documentation for <b>Soul</b>, a SQLite REST and realtime server. "
   },
@@ -237,7 +237,25 @@
           },
           {
             "name": "_filters",
-            "description": "Filter rows. e.g. ?_filters=name:John,age:20 will return rows where name is John and age is 20.",
+            "description": "Filter rows. e.g. ?_filters=name:John,age:20 will return rows where name is John and age is 20. Operators: __eq, __neq, __lt, __gt, __lte, __gte, __null, __notnull, __like, __contains, __startswith, __between, __in, __notin. Lists use brackets, e.g. id:[1,2]. Wrap a value in double quote characters to use , : | in it. (a:1|b:2) is an OR group and ! negates a filter or group.",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "_distinct",
+            "description": "Return unique combinations of these columns. e.g. ?_distinct=category,price",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "_group_by",
+            "description": "Group rows by these columns. e.g. ?_group_by=category",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "_aggregate",
+            "description": "Aggregates: count, sum:col, avg:col, min:col, max:col. e.g. ?_group_by=category&_aggregate=count,sum:price. Results are named count, sum_price, ...",
             "in": "query",
             "type": "string"
           },

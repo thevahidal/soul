@@ -32,11 +32,19 @@ Response
 - `_page` e.g. `?_page=2`, to get the second page of results.
 - `_limit` e.g. `?_limit=20`, to get 20 results per page.
 - `_search` e.g. `?_search=rock`, to search across all fields.
-- `_ordering` e.g. `?_ordering=-Title`, to order rows by title descending, or without `-` to sort ascending, e.g. `?_ordering=Title`
+- `_ordering` e.g. `?_ordering=-Title`, to order rows by title descending, or without `-` to sort ascending, e.g. `?_ordering=Title`. Use commas to order by several columns, e.g. `?_ordering=ArtistId,-Title`.
 - `_schema` e.g. `?_schema=Title,ArtistId`, to get only the Title and ArtistId columns.
 - `_extend` e.g. `?_extend=ArtistId`, to get the Artist object related to the Album.
+- `_distinct` e.g. `?_distinct=ArtistId`, to get the unique values of a column (or unique combinations, e.g. `?_distinct=ArtistId,Title`). Can't be combined with `_schema`, `_extend`, `_group_by` or `_aggregate`.
+- `_group_by` and `_aggregate` e.g. `?_group_by=ArtistId&_aggregate=count,max:Milliseconds`, to group rows and aggregate them. Aggregates are `count`, `count:col`, `sum:col`, `avg:col`, `min:col`, `max:col` and are returned as `count`, `max_Milliseconds`, ... `_aggregate` alone returns a single row. `_filters` apply before grouping, `_ordering` can use a grouped column or an aggregate name (e.g. `-count`), and `total` is the number of groups.
 - `_filters` e.g. `?_filters=ArtistId:[1,2,3],Title:Rock`, to get only the rows where the ArtistId can be 1,2 or 3 and the Title is Rock.
-  NOTE: If you want to use comparison operators in the filter, you can use these operators after the field: `__eq, __neq, __lt, __gt, __lte, __gte, __null, __notnull` . For example, you can use `/invoices/rows?_filters=InvoiceId__neq:1,Total__gte:5,BillingPostalCode__notnull`
+  NOTE: If you want to use comparison operators in the filter, you can use these operators after the field: `__eq, __neq, __lt, __gt, __lte, __gte, __null, __notnull, __like, __contains, __startswith, __between, __in, __notin` . For example, you can use `/invoices/rows?_filters=InvoiceId__neq:1,Total__gte:5,BillingPostalCode__notnull`
+
+  - `__like:A%` uses SQL `LIKE` wildcards; `__contains:rock` and `__startswith:Rock` match literally.
+  - `__between:[1,10]` is inclusive. `__in:[1,2]` and `__notin:[1,2]` take a list.
+  - Wrap a value in double quotes to use `,` `:` `|` `(` `)` in it, e.g. `Title:"Rock, Paper"`; write `""` for a literal quote. Quotes only count when the closing quote ends the value.
+  - An OR group is written in parentheses: `(Total__gt:5|BillingPostalCode__null),Country:USA`. Groups and other filters are ANDed.
+  - `!` negates a filter or a group: `!Country:USA`, `!(Total__gt:5|Total__null)`. Like `__neq`, a negated filter skips rows where the column is NULL.
 
 Example with query params
 

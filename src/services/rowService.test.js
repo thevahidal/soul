@@ -149,5 +149,42 @@ describe('rowService', () => {
       });
       expect(total).toBe(2);
     });
+
+    it('supports distinct, group by and their totals', () => {
+      rowService.save({ tableName: 'authors', fields: { name: 'Ada' } });
+      rowService.save({ tableName: 'authors', fields: { name: 'Beta' } });
+      const base = {
+        tableName: 'authors',
+        whereString: '',
+        whereStringValues: [],
+        schemaString: 'authors.name',
+      };
+
+      const distinct = rowService.get({ ...base, distinct: true });
+      expect(distinct).toHaveLength(2);
+      expect(
+        rowService.getCount({
+          ...base,
+          distinctString: 'authors.name',
+        }),
+      ).toBe(2);
+
+      const grouped = rowService.get({
+        ...base,
+        schemaString: 'authors.name, COUNT(*) AS "count"',
+        groupString: 'GROUP BY authors.name',
+        orderString: ' ORDER BY authors.name ASC',
+      });
+      expect(grouped).toEqual([
+        { name: 'Ada', count: 2 },
+        { name: 'Beta', count: 1 },
+      ]);
+      expect(
+        rowService.getCount({
+          ...base,
+          groupString: 'GROUP BY authors.name',
+        }),
+      ).toBe(2);
+    });
   });
 });
