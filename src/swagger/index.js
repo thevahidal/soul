@@ -42,20 +42,6 @@ const doc = {
       name: 'users',
     },
     Row: {},
-    Query: {
-      query: 'SELECT * FROM users',
-    },
-    Statement: {
-      statement:
-        'INSERT INTO users (id, firstName, lastName) VALUES (:id, :firstName, :lastName)',
-      values: { id: 1, firstName: 'John', lastName: 'Doe' },
-    },
-    Transaction: {
-      transaction: [
-        { $ref: '#/definitions/Query' },
-        { $ref: '#/definitions/Statement' },
-      ],
-    },
     ForeignKey: {
       table: 'users',
       column: 'id',
@@ -123,8 +109,20 @@ const doc = {
       pks: [1, 2, 3],
     },
 
-    TransactionRequestBody: {
-      $ref: '#/definitions/Transaction',
+    BatchRequestBody: {
+      operations: [
+        {
+          method: 'POST',
+          path: '/api/tables/users/rows',
+          body: { fields: { firstName: 'John', lastName: 'Doe' } },
+        },
+        {
+          method: 'PUT',
+          path: '/api/tables/users/rows/1',
+          body: { fields: { lastName: 'Smith' } },
+        },
+        { method: 'DELETE', path: '/api/tables/users/rows/2' },
+      ],
     },
     ObtainAccessTokenRequestBody: {
       fields: {

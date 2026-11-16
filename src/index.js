@@ -16,6 +16,7 @@ const logger = require('./utils/logger');
 const rootRoutes = require('./routes/index');
 const tablesRoutes = require('./routes/tables');
 const rowsRoutes = require('./routes/rows');
+const batchRoutes = require('./routes/batch');
 const authRoutes = require('./routes/auth');
 
 const swaggerFile = require('./swagger/swagger.json');
@@ -107,6 +108,7 @@ runCLICommands();
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 app.use('/api', rootRoutes);
+app.use('/api', batchRoutes);
 app.use('/api/tables', tablesRoutes);
 app.use('/api/tables', rowsRoutes);
 
