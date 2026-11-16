@@ -4,11 +4,11 @@ const { quoteIdentifier } = require('../utils/sql');
 module.exports = (db) => {
   return {
     get(data) {
-      const query = `SELECT ${data.schemaString || '*'} FROM ${
-        data.tableName
-      } ${data.extendString || ''} ${data.whereString || ''} ${
-        data.orderString || ''
-      } LIMIT ? OFFSET ?`;
+      const query = `SELECT ${data.distinct ? 'DISTINCT ' : ''}${
+        data.schemaString || '*'
+      } FROM ${data.tableName} ${data.extendString || ''} ${
+        data.whereString || ''
+      } ${data.groupString || ''} ${data.orderString || ''} LIMIT ? OFFSET ?`;
 
       const statement = db.prepare(query);
       const result = statement.all(
@@ -30,7 +30,13 @@ module.exports = (db) => {
     },
 
     getCount(data) {
-      const query = `SELECT COUNT(*) as total FROM ${data.tableName} ${data.whereString}`;
+      const from = `FROM ${data.tableName} ${data.whereString}`;
+      let query = `SELECT COUNT(*) as total ${from}`;
+      if (data.groupString) {
+        query = `SELECT COUNT(*) as total FROM (SELECT 1 ${from} ${data.groupString})`;
+      } else if (data.distinctString) {
+        query = `SELECT COUNT(*) as total FROM (SELECT DISTINCT ${data.distinctString} ${from})`;
+      }
       const statement = db.prepare(query);
       const result = statement.get(...data.whereStringValues).total;
       return result;

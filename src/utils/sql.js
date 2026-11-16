@@ -14,6 +14,20 @@ const operators = {
   neq: '!=',
   null: 'IS NULL',
   notnull: 'IS NOT NULL',
+  like: 'LIKE',
+  contains: 'LIKE',
+  startswith: 'LIKE',
+  between: 'BETWEEN',
+  in: 'IN',
+  notin: 'NOT IN',
+};
+
+const aggregates = {
+  count: 'COUNT',
+  sum: 'SUM',
+  avg: 'AVG',
+  min: 'MIN',
+  max: 'MAX',
 };
 
 const invalidRequestError = (message, status = 400) => {
@@ -99,8 +113,18 @@ const assertValidOperator = (operator) => {
   return operators[operator];
 };
 
+const assertValidAggregate = (fn) => {
+  if (!Object.prototype.hasOwnProperty.call(aggregates, fn)) {
+    throw invalidRequestError(`Invalid aggregate function '${fn}'`);
+  }
+
+  return aggregates[fn];
+};
+
 module.exports = {
   operators,
+  aggregates,
+  assertValidAggregate,
   invalidRequestError,
   quoteIdentifier,
   quoteLiteral,

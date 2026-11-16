@@ -3,8 +3,14 @@ const { rowService } = require('../services');
 const {
   assertValidTableName,
   assertValidColumnName,
-  assertValidOperator,
+  invalidRequestError,
+  quoteIdentifier,
 } = require('../utils/sql');
+const {
+  buildFilterClause,
+  buildDistinct,
+  buildGroupedSelect,
+} = require('../utils/query');
 
 // Return paginated rows of a table
 const listTableRows = async (req, res, next) => {
@@ -41,7 +47,19 @@ const listTableRows = async (req, res, next) => {
       in: 'query',
     }
     #swagger.parameters['_filters'] = {
-      description: 'Filter rows. e.g. ?_filters=name:John,age:20 will return rows where name is John and age is 20.',
+      description: 'Filter rows. e.g. ?_filters=name:John,age:20 will return rows where name is John and age is 20. Operators: __eq, __neq, __lt, __gt, __lte, __gte, __null, __notnull, __like, __contains, __startswith, __between, __in, __notin. Lists use brackets, e.g. id:[1,2]. Wrap a value in double quote characters to use , : | in it. (a:1|b:2) is an OR group and ! negates a filter or group.',
+      in: 'query',
+    }
+    #swagger.parameters['_distinct'] = {
+      description: 'Return unique combinations of these columns. e.g. ?_distinct=category,price',
+      in: 'query',
+    }
+    #swagger.parameters['_group_by'] = {
+      description: 'Group rows by these columns. e.g. ?_group_by=category',
+      in: 'query',
+    }
+    #swagger.parameters['_aggregate'] = {
+      description: 'Aggregates: count, sum:col, avg:col, min:col, max:col. e.g. ?_group_by=category&_aggregate=count,sum:price. Results are named count, sum_price, ...',
       in: 'query',
     }
   */
@@ -55,6 +73,9 @@ const listTableRows = async (req, res, next) => {
     _schema,
     _extend,
     _filters = '',
+    _distinct,
+    _group_by,
+    _aggregate,
   } = req.query;
 
   const page = parseInt(_page);
@@ -70,76 +91,22 @@ const listTableRows = async (req, res, next) => {
   }
 
   // if _filters are provided, filter rows by them
-  // _filters consists of fields to filter by
-  // filtering is case insensitive
-  // e.g. ?_filters=name:John,age:20
-  // will filter by name like '%John%' and age like '%20%'
-  let filters;
-
-  // split the filters by comma(,) except when in an array
-  const re = /,(?![^[]*?\])/;
-  try {
-    filters =
-      _filters === ''
-        ? []
-        : _filters.split(re).map((filter) => {
-            //NOTE: When using the _filter parameter, the values are split using the ":" sign, like this (_filters=Total__eq:1). However, if the user sends a date value, such as (_filters=InvoiceDate__eq:2010-01-08 00:00:00), there will be additional colon (":") signs present.
-            let [key, ...value] = filter.split(':');
-            if (value.length === 1) {
-              value = value[0];
-            } else {
-              value = value.map((element) => element).join(':');
-            }
-
-            let field = key.split('__')[0];
-            let fieldOperator = key.split('__')[1] || 'eq';
-
-            assertValidColumnName(db, tableName, field);
-            let operator;
-            try {
-              operator = assertValidOperator(fieldOperator);
-            } catch {
-              throw new Error(
-                `Invalid field operator '${fieldOperator}' for field '${field}'. You can only use the following operators after the '${field}' field: __lt, __gt, __lte, __gte, __eq, __neq.`,
-              );
-            }
-
-            if (['null', 'notnull'].includes(fieldOperator)) {
-              value = null;
-            }
-
-            return { field, operator, value };
-          });
-  } catch (error) {
-    return res.status(error.status || 400).json({
-      message: error.message,
-      error: error,
-    });
-  }
-
+  // e.g. ?_filters=name:John,age__gte:20 (filters are ANDed)
+  // e.g. ?_filters=id:[1,2],(name:John|age__null),!city:Paris,note:"a, b"
   let whereString = '';
   const whereStringValues = [];
 
   if (_filters !== '') {
-    whereString += ' WHERE ';
-    whereString += filters
-      .map((filter) => {
-        if (filter.value) {
-          if (filter.value.startsWith('[') && filter.value.endsWith(']')) {
-            const arrayValues = filter.value.slice(1, -1).split(',');
-            whereStringValues.push(...arrayValues);
-            return `${tableName}.${filter.field} IN (${arrayValues
-              .map(() => '?')
-              .join(', ')})`;
-          } else {
-            whereStringValues.push(filter.value);
-            return `${tableName}.${filter.field} ${filter.operator} ?`;
-          }
-        } else {
-          return `${tableName}.${filter.field} ${filter.operator}`;
-        }
-      })
-      .join(' AND ');
+    try {
+      const { clause, values } = buildFilterClause(db, tableName, _filters);
+      whereString = ` WHERE ${clause}`;
+      whereStringValues.push(...values);
+    } catch (error) {
+      return res.status(error.status || 400).json({
+        message: error.message,
+        error: error,
+      });
+    }
     params = `_filters=${_filters}&`;
   }
 
@@ -174,38 +141,88 @@ const listTableRows = async (req, res, next) => {
     }
   }
 
+  // _distinct=col1,col2 returns unique combinations of those columns
+  // _group_by=col&_aggregate=count,sum:price groups rows and aggregates them
+  const isGrouped = Boolean(_group_by || _aggregate);
+  let schemaString = '';
+  let groupString = '';
+  let distinctString = '';
+  let grouped = { groupColumns: [], aliases: [] };
+
+  try {
+    if (
+      (_distinct || isGrouped) &&
+      (_schema || _extend || (_distinct && isGrouped))
+    ) {
+      throw invalidRequestError(
+        "_distinct and _group_by/_aggregate can't be combined with each other or with _schema/_extend",
+      );
+    }
+
+    if (_distinct) {
+      distinctString = buildDistinct(db, tableName, _distinct);
+      schemaString = distinctString;
+      params += `_distinct=${_distinct}&`;
+    } else if (isGrouped) {
+      grouped = buildGroupedSelect(db, tableName, _group_by, _aggregate);
+      ({ schemaString, groupString } = grouped);
+      params += _group_by ? `_group_by=${_group_by}&` : '';
+      params += _aggregate ? `_aggregate=${_aggregate}&` : '';
+    }
+  } catch (error) {
+    return res.status(error.status || 400).json({
+      message: error.message,
+      error: error,
+    });
+  }
+
   // if _ordering is provided, order rows by it
   // e.g. ?_ordering=name will order by name
   // e.g. ?_ordering=-name will order by name descending
+  // e.g. ?_ordering=category,-price orders by several columns
   // e.g. ?_ordering=publisher.name will order by publisher name, considering that publisher is a foreign key to publishers table
   let orderString = '';
   let extendString = '';
   let joins = {};
 
   if (_ordering) {
-    const isDesc = _ordering.startsWith('-');
-    const cleanOrder = _ordering.replace('-', '');
-
     try {
-      if (cleanOrder.includes('.')) {
-        // Handle foreign key sort, e.g. publisher.name
-        const [relation, field] = cleanOrder.split('.');
+      const orderTerms = _ordering.split(',').map((term) => {
+        const isDesc = term.startsWith('-');
+        const cleanOrder = isDesc ? term.slice(1) : term;
+        const direction = isDesc ? 'DESC' : 'ASC';
 
-        const { foreignKey, joinedTableName, joinedTableFields } =
-          rowService.getForeignKeyInfo(tableName, relation);
+        if (isGrouped) {
+          if (grouped.aliases.includes(cleanOrder)) {
+            return `${quoteIdentifier(cleanOrder)} ${direction}`;
+          }
+          if (!grouped.groupColumns.includes(cleanOrder)) {
+            throw invalidRequestError(
+              `Can only order by a _group_by column or an aggregate: '${cleanOrder}'`,
+            );
+          }
+          return `${tableName}.${cleanOrder} ${direction}`;
+        }
 
-        assertValidColumnName(db, joinedTableName, field);
+        if (cleanOrder.includes('.')) {
+          // Handle foreign key sort, e.g. publisher.name
+          const [relation, field] = cleanOrder.split('.');
 
-        extendString += ` LEFT JOIN ${joinedTableName} ON ${joinedTableName}.${foreignKey.to} = ${tableName}.${relation}`;
-        joins[relation] = { foreignKey, joinedTableName, joinedTableFields };
-        orderString += ` ORDER BY ${joinedTableName}.${field} ${
-          isDesc ? 'DESC' : 'ASC'
-        }`;
-      } else {
+          if (!joins[relation]) {
+            joins[relation] = rowService.getForeignKeyInfo(tableName, relation);
+            extendString += ` LEFT JOIN ${joins[relation].joinedTableName} ON ${joins[relation].joinedTableName}.${joins[relation].foreignKey.to} = ${tableName}.${relation}`;
+          }
+
+          assertValidColumnName(db, joins[relation].joinedTableName, field);
+          return `${joins[relation].joinedTableName}.${field} ${direction}`;
+        }
+
         // regular field sort
         assertValidColumnName(db, tableName, cleanOrder);
-        orderString += ` ORDER BY ${cleanOrder} ${isDesc ? 'DESC' : 'ASC'}`;
-      }
+        return `${cleanOrder} ${direction}`;
+      });
+
+      orderString = ` ORDER BY ${orderTerms.join(', ')}`;
     } catch (error) {
       return res.status(error.status || 400).json({
         message: error.message,
@@ -219,7 +236,6 @@ const listTableRows = async (req, res, next) => {
   // if _schema is provided, return only those fields
   // e.g. ?_schema=name,age will return only name and age fields
   // if _schema is not provided, return all fields
-  let schemaString = '';
   if (_schema) {
     const schemaFields = _schema.split(',');
     try {
@@ -234,7 +250,7 @@ const listTableRows = async (req, res, next) => {
       });
     }
     params += `_schema=${_schema}&`;
-  } else {
+  } else if (!_distinct && !isGrouped) {
     schemaString = `${tableName}.*`;
   }
 
@@ -330,7 +346,9 @@ const listTableRows = async (req, res, next) => {
       tableName,
       extendString,
       whereString,
+      groupString,
       orderString,
+      distinct: Boolean(_distinct),
       limit,
       page: limit * (page - 1),
       whereStringValues,
@@ -350,11 +368,16 @@ const listTableRows = async (req, res, next) => {
     }
 
     // get total number of rows
-    const total = rowService.getCount({
-      tableName,
-      whereString,
-      whereStringValues,
-    });
+    const total =
+      isGrouped && !groupString
+        ? 1
+        : rowService.getCount({
+            tableName,
+            whereString,
+            whereStringValues,
+            groupString,
+            distinctString,
+          });
 
     const nextPage =
       data.length === limit
