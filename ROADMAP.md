@@ -63,22 +63,41 @@ realtime API removes that entire failure surface.
 
 ## Roadmap
 
-Ordered by priority / leverage. Each item should be scoped and planned
+Ordered by importance / leverage. Each item should be scoped and planned
 properly (via `/plan` or similar) when picked up — this is direction, not
 a detailed spec.
 
-### 1. MCP server (start here)
+### 1. Query capabilities
 
-Smallest scope, highest signal for where Soul's actual users increasingly
-are. Expose the already-hardened service layer as MCP tools so agents
-(Claude Code, Cursor, etc.) can attach to a Soul-backed DB directly instead
-of hand-rolling HTTP calls.
+Small, user-requested, and everything downstream (MCP `query_rows`, Studio)
+inherits it, so do it first. Every identifier stays allowlist-validated via
+`src/utils/sql.js`; values stay `?`-bound.
+
+- `_distinct=col1,col2` → `SELECT DISTINCT`.
+- `_group_by=col` + `_aggregate=count,sum:price,avg:price,min:x,max:x`
+  (aggregate function is an allowlist, like `operators`). Optional
+  `having`-style filters on aggregates later. Keep `getCount` correct for
+  pagination totals.
+- More filter operators: `like`/`contains`/`startswith`, `between`,
+  `not in`, and OR groups (today all filters are ANDed).
+- Multi-column `_ordering`.
+- Make `_filters` parsing robust to values containing `,` and `:`.
+
+Workaround until then: SQLite views are already queryable through the rows
+API (`assertValidTableName` accepts views), so a view with `GROUP BY` works.
+
+### 2. MCP server
+
+Highest signal for where Soul's actual users increasingly are. Expose the
+already-hardened service layer as MCP tools so agents (Claude Code, Cursor,
+etc.) can attach to a Soul-backed DB directly instead of hand-rolling HTTP
+calls.
 
 Tools to expose (mirroring existing REST semantics):
 
 - `list_tables`, `get_schema`
 - `query_rows` (reuse the existing `_filters`/`_search`/`_ordering`/
-  `_schema`/`_extend` semantics from `rows.js`)
+  `_schema`/`_extend` semantics from `rows.js`, plus item 1)
 - `insert_row`, `update_row`, `delete_row`
 - `create_table` (JSON schema in, same shape as the existing REST
   `POST /tables`)
@@ -89,18 +108,24 @@ logic needed, just a transport layer. Open question to resolve when
 starting: ship as a separate package, or a mode on the existing CLI
 (e.g. `soul --mcp`)?
 
-### 2. Make the safety properties part of the pitch
+### 3. Row-level permissions
 
-Write up the specific bug classes found and fixed in the hardening pass
-(injection via unvalidated identifiers, the WS auth gap, the rate-limit
-bug) as the actual argument for "safe to let an agent drive this." The
-regression tests added during that work are the receipts.
+Permissions today are per table and per verb only. Most real apps need
+"users only see/edit their own rows" (e.g. a `user_id = :current_user`
+rule per table/verb). Biggest gap between "works" and "production-ready"
+for multi-user apps, and the natural foundation for item 4.
 
-Consider: an ongoing adversarial/fuzz test suite (random or LLM-generated
-filter/ordering/table-name payloads) as both a visible regression guard
-and something to point to.
+### 4. Scoped agent credentials
 
-### 3. LLM-native schema workflows
+Package the existing per-table CRUD permission/role system (see
+`authService.hasTablePermission`) as a named feature: give an agent a key
+that can only read/write specific tables. Likely needs a lighter API-key
+auth mode alongside the current username/password + JWT flow, scoped at
+key-creation time to specific tables/verbs (and rows, once item 3 lands).
+Addresses a real, currently annoying problem in agentic products
+(over-broad tool access).
+
+### 5. Schema evolution (LLM-native schema workflows)
 
 Soul's `createTable` API already takes a JSON schema description rather
 than raw DDL — lean into that explicitly ("describe your schema, don't
@@ -109,7 +134,38 @@ endpoint) so an agent can iterate on a schema across a conversation
 instead of only create-once. Consider migration history/versioning if
 this sees real use.
 
-### 4. Soul Studio v1 — scoped, not full-featured
+### 6. Write-path hardening
+
+- `bulkWrite` is a single `INSERT ... VALUES`; large batches will hit
+  SQLite's bound-variable limit. Chunk inside a transaction.
+- Bulk update/delete by filter.
+- Upsert (`ON CONFLICT`).
+- Multi-operation transactions.
+
+### 7. Production operations
+
+- Health/readiness endpoint and basic metrics.
+- Backup story documented in `docs/self-hosting.md` (e.g. Litestream).
+- Structured logging and deployment guidance (Docker, reverse proxy).
+
+### 8. Auth completeness
+
+Audit `docs/auth.md` against what real apps need and fill gaps: password
+reset, email verification, API keys (overlaps item 4), optional OAuth.
+Verify what exists before scoping.
+
+### 9. Make the safety properties part of the pitch
+
+Write up the specific bug classes found and fixed in the hardening pass
+(injection via unvalidated identifiers, the WS auth gap, the rate-limit
+bug) as the actual argument for "safe to let an agent drive this." The
+regression tests added during that work are the receipts.
+
+Consider: an ongoing adversarial/fuzz test suite (random or LLM-generated
+filter/ordering/table-name payloads) as both a visible regression guard
+and something to point to. Extend it to the new query params from item 1.
+
+### 10. Soul Studio v1 — scoped, not full-featured
 
 Target workflow: agent writes to the DB via Soul, human opens Studio to
 inspect and correct it. Not a general-purpose admin framework.
@@ -118,16 +174,18 @@ Needs: table/row browser, inline edit, respecting the same permission
 model as the API. Explicitly **not** in scope for v1: dashboards, complex
 relation UIs, anything Retool-shaped — get the core loop solid first.
 
-### 5. Scoped agent credentials
+### 11. Search and pagination
 
-Package the existing per-table CRUD permission/role system (see
-`authService.hasTablePermission`) as a named feature: give an agent a key
-that can only read/write specific tables. Likely needs a lighter API-key
-auth mode alongside the current username/password + JWT flow, scoped at
-key-creation time to specific tables/verbs. Addresses a real, currently
-annoying problem in agentic products (over-broad tool access).
+- Full-text search via FTS5 instead of `LIKE` across every column in
+  `_search`.
+- Cursor (keyset) pagination; offset pagination gets slow on deep pages.
 
-### 6. Cheap wins
+### 12. File storage
+
+Attach files to rows (local disk first, S3-compatible later). Not needed
+for the agent-backend niche, so lowest priority.
+
+### Cheap wins (do anytime, alongside the above)
 
 - Ship an `llms.txt`.
 - Explicitly point agents at the already-generated OpenAPI/Swagger spec
