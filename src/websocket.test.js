@@ -6,6 +6,7 @@ const app = require('./index');
 const { wss } = require('./websocket');
 const { generateToken } = require('./utils');
 const config = require('./config');
+const db = require('./db');
 
 describe('websocket', () => {
   let server;
@@ -117,5 +118,56 @@ describe('websocket', () => {
     });
 
     ws.close();
+  });
+
+  describe('anonymous role', () => {
+    let roleId;
+
+    beforeAll(() => {
+      roleId = db
+        .prepare(`INSERT INTO _roles (name) VALUES ('ws_public')`)
+        .run().lastInsertRowid;
+      db.prepare(
+        `INSERT INTO _roles_permissions (role_id, table_name, "create", read, "update", "delete") VALUES (?, 'users', 0, 1, 0, 0)`,
+      ).run(roleId);
+    });
+
+    afterAll(() => {
+      db.prepare(`DELETE FROM _roles_permissions WHERE role_id = ?`).run(
+        roleId,
+      );
+      db.prepare(`DELETE FROM _roles WHERE id = ?`).run(roleId);
+    });
+
+    beforeEach(() => {
+      config.anonRole = 'ws_public';
+    });
+
+    afterEach(() => {
+      config.anonRole = null;
+    });
+
+    it('lets a client without a token subscribe to a table the anon role can read', async () => {
+      const ws = new WebSocket(wsUrl('/ws/tables/users'));
+
+      const message = await new Promise((resolve) => {
+        ws.on('message', (msg) => resolve(JSON.parse(msg.toString())));
+      });
+
+      expect(message.message).toContain('Subscribed to table "users"');
+      ws.close();
+    });
+
+    it('rejects a client without a token on a table the anon role cannot read', (done) => {
+      const ws = new WebSocket(wsUrl('/ws/tables/posts'));
+
+      ws.on('message', (message) => {
+        expect(JSON.parse(message.toString()).message).toContain(
+          'Not authorized',
+        );
+      });
+
+      ws.on('close', () => done());
+    });
   });
 });
