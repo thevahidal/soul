@@ -38,6 +38,7 @@ soul -d ./Chinook_Sqlite.sqlite -p 8000
 3. [/api/auth/](api/auth-examples.md) Examples for Authentication / Authorization endpoints
    1. [/api/{table-name}/rows/](api/rows-auth-examples.md) Examples for Rows endpoints in Auth mode
 4. [/api/](api/root-examples.md) Examples for Root endpoints
+5. [/api/batch](api/batch-examples.md) Examples for atomic batches of row writes
 
 ## Handling Errors
 
