@@ -1,8 +1,4 @@
-const yargsModule = require('yargs');
-const yargsFactory = yargsModule.default || yargsModule;
-const { hideBin } = require('yargs/helpers');
-
-const yargs = yargsFactory(hideBin(process.argv));
+const yargs = require('yargs');
 
 const usage = `
 Soul | REST and realtime server for SQLite
