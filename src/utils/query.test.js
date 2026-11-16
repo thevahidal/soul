@@ -98,6 +98,20 @@ describe('query utils', () => {
     });
   });
 
+  describe('repeated query params', () => {
+    it('rejects an array instead of a string', () => {
+      const repeated = ['id:1', 'id:2'];
+      expect(() => buildFilterClause(db, 'items', repeated)).toThrow(
+        expect.objectContaining({ status: 400 }),
+      );
+      expect(() => buildDistinct(db, 'items', repeated)).toThrow(/single/);
+      expect(() => buildGroupedSelect(db, 'items', repeated)).toThrow(/single/);
+      expect(() =>
+        buildGroupedSelect(db, 'items', undefined, repeated),
+      ).toThrow(/single/);
+    });
+  });
+
   describe('buildDistinct', () => {
     it('qualifies validated columns', () => {
       expect(buildDistinct(db, 'items', 'name,price')).toEqual(
