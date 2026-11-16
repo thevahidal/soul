@@ -97,7 +97,12 @@ const obtainAccessToken = async (req, res) => {
     );
 
     // set the token in the cookie
-    let cookieOptions = { httpOnly: true, secure: false, Path: '/' };
+    let cookieOptions = {
+      httpOnly: true,
+      secure: config.cookie.secure,
+      sameSite: config.cookie.sameSite,
+      Path: '/',
+    };
     res.cookie(authConstants.ACCESS_TOKEN_SUBJECT, accessToken, cookieOptions);
     res.cookie(
       authConstants.REFRESH_TOKEN_SUBJECT,
@@ -206,7 +211,12 @@ const refreshAccessToken = async (req, res) => {
     );
 
     // set the token in the cookie
-    let cookieOptions = { httpOnly: true, secure: false, Path: '/' };
+    let cookieOptions = {
+      httpOnly: true,
+      secure: config.cookie.secure,
+      sameSite: config.cookie.sameSite,
+      Path: '/',
+    };
     res.cookie(authConstants.ACCESS_TOKEN_SUBJECT, accessToken, cookieOptions);
     res.cookie(
       authConstants.REFRESH_TOKEN_SUBJECT,

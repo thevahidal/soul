@@ -238,8 +238,17 @@ const getTableSchema = async (req, res) => {
       .prepare('SELECT * FROM pragma_table_info(?)')
       .all(tableName);
 
+    // Additive alongside `data` -- lets clients (e.g. Soul Studio) render
+    // foreign-key-aware widgets without probing `_extend` on the rows
+    // endpoint, which throws on a non-FK column instead of reporting what
+    // the FK columns actually are.
+    const foreignKeys = db
+      .prepare('SELECT * FROM pragma_foreign_key_list(?)')
+      .all(tableName);
+
     res.json({
       data: schema,
+      foreignKeys,
     });
   } catch (error) {
     res.status(error.status || 400).json({

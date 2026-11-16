@@ -182,17 +182,36 @@ describe('createInitialUser / updateSuperuser (CLI-only paths)', () => {
       expect(rowService.update).not.toHaveBeenCalled();
     });
 
-    it('updates only is_superuser when no password is given', async () => {
+    it('updates only is_superuser when no password is given, coerced to a string for SQLite binding', async () => {
       await updateSuperuser({ id: 1, password: undefined, is_superuser: true });
 
+      // better-sqlite3 can't bind a native boolean; every other write path
+      // for this column (createInitialUser/registerUser) stores the string
+      // 'true'/'false', so this must match that convention, not the raw
+      // boolean the CLI's yargs `type: 'boolean'` parsing hands in.
       expect(rowService.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          fields: { is_superuser: true },
+          fields: { is_superuser: 'true' },
           pks: '1',
         }),
       );
       expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining('updated successfully'),
+      );
+    });
+
+    it('coerces is_superuser: false to the string "false"', async () => {
+      await updateSuperuser({
+        id: 1,
+        password: undefined,
+        is_superuser: false,
+      });
+
+      expect(rowService.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fields: { is_superuser: 'false' },
+          pks: '1',
+        }),
       );
     });
 

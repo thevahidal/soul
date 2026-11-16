@@ -35,8 +35,12 @@ const updateSuperuser = async (fields) => {
     }
 
     // check if the is_superuser field is passed
+    // stored as the string 'true'/'false' (matching every other write path
+    // for this column, e.g. createInitialUser/registerUser below) --
+    // better-sqlite3 can't bind a native JS boolean, which is what the CLI's
+    // yargs `type: 'boolean'` parsing hands us here.
     if (is_superuser !== undefined) {
-      updateFields[tableFields.IS_SUPERUSER] = is_superuser;
+      updateFields[tableFields.IS_SUPERUSER] = String(is_superuser);
     }
 
     // if the password is sent from the CLI, update it

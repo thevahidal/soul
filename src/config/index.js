@@ -28,6 +28,9 @@ const envVarsSchema = Joi.object()
 
     EXTENSIONS: Joi.string().default(null),
 
+    COOKIE_SAMESITE: Joi.string().valid('lax', 'strict', 'none').default('lax'),
+    COOKIE_SECURE: Joi.boolean().default(false),
+
     START_WITH_STUDIO: Joi.boolean().default(false),
 
     INITIAL_USER_USERNAME: Joi.string(),
@@ -137,6 +140,11 @@ module.exports = {
 
   extensions: {
     path: argv.extensions || envVars.EXTENSIONS,
+  },
+
+  cookie: {
+    sameSite: envVars.COOKIE_SAMESITE,
+    secure: envVars.COOKIE_SECURE,
   },
 
   startWithStudio: argv.studio || envVars.START_WITH_STUDIO,

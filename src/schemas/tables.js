@@ -7,10 +7,16 @@ const listTables = Joi.object({
   }).required(),
   params: Joi.object().required(),
   body: Joi.object().required(),
+  // .unknown(true): the browser sends every cookie for the domain,
+  // including ones unrelated to Soul (other local apps/extensions sharing
+  // the same hostname, e.g. `localhost` cookies aren't scoped by port) --
+  // without this, Joi rejects the whole request with e.g.
+  // `"cookies.csrftoken" is not allowed` the moment an unrecognized cookie
+  // is present, regardless of whether Soul's own auth cookies are valid.
   cookies: Joi.object({
     refreshToken: Joi.string().optional(),
     accessToken: Joi.string().optional(),
-  }),
+  }).unknown(true),
 });
 
 const createTable = Joi.object({
@@ -75,10 +81,16 @@ const createTable = Joi.object({
       )
       .required(),
   }),
+  // .unknown(true): the browser sends every cookie for the domain,
+  // including ones unrelated to Soul (other local apps/extensions sharing
+  // the same hostname, e.g. `localhost` cookies aren't scoped by port) --
+  // without this, Joi rejects the whole request with e.g.
+  // `"cookies.csrftoken" is not allowed` the moment an unrecognized cookie
+  // is present, regardless of whether Soul's own auth cookies are valid.
   cookies: Joi.object({
     refreshToken: Joi.string().optional(),
     accessToken: Joi.string().optional(),
-  }),
+  }).unknown(true),
 });
 
 const getTableSchema = Joi.object({
@@ -91,10 +103,16 @@ const getTableSchema = Joi.object({
       .required(),
   }),
   body: Joi.object().required(),
+  // .unknown(true): the browser sends every cookie for the domain,
+  // including ones unrelated to Soul (other local apps/extensions sharing
+  // the same hostname, e.g. `localhost` cookies aren't scoped by port) --
+  // without this, Joi rejects the whole request with e.g.
+  // `"cookies.csrftoken" is not allowed` the moment an unrecognized cookie
+  // is present, regardless of whether Soul's own auth cookies are valid.
   cookies: Joi.object({
     refreshToken: Joi.string().optional(),
     accessToken: Joi.string().optional(),
-  }),
+  }).unknown(true),
 });
 
 const deleteTable = Joi.object({
@@ -107,10 +125,16 @@ const deleteTable = Joi.object({
       .required(),
   }),
   body: Joi.object().required(),
+  // .unknown(true): the browser sends every cookie for the domain,
+  // including ones unrelated to Soul (other local apps/extensions sharing
+  // the same hostname, e.g. `localhost` cookies aren't scoped by port) --
+  // without this, Joi rejects the whole request with e.g.
+  // `"cookies.csrftoken" is not allowed` the moment an unrecognized cookie
+  // is present, regardless of whether Soul's own auth cookies are valid.
   cookies: Joi.object({
     refreshToken: Joi.string().optional(),
     accessToken: Joi.string().optional(),
-  }),
+  }).unknown(true),
 });
 
 module.exports = {

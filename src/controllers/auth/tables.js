@@ -40,7 +40,7 @@ const createDefaultTables = async () => {
       {
         multipleUniqueConstraints: {
           name: constraints.UNIQUE_USERS_ROLE,
-          fields: [tableFields.USER_ID, tableFields.USER_ID],
+          fields: [tableFields.USER_ID, tableFields.ROLE_ID],
         },
       },
     );
