@@ -98,22 +98,20 @@ const createTable = async (req, res) => {
       `;
   }
 
-  let indicesString = indices
-    .map((field) => {
-      return `
+  let indicesQueries = indices.map((field) => {
+    return `
       CREATE INDEX ${tableName}_${field}_index
       ON ${tableName} (${field})
     `;
-    })
-    .join(';');
+  });
 
   const query = `CREATE TABLE ${tableName} (${schemaString})`;
 
   try {
     db.prepare(query).run();
 
-    if (indicesString) {
-      db.prepare(indicesString).run();
+    for (const indexQuery of indicesQueries) {
+      db.prepare(indexQuery).run();
     }
 
     const generatedSchema = db

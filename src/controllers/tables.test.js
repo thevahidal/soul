@@ -3,6 +3,7 @@ const supertest = require('supertest');
 const app = require('../index');
 const { generateToken } = require('../utils');
 const config = require('../config');
+const db = require('../db/index');
 
 const requestWithSupertest = supertest(app);
 
@@ -107,6 +108,35 @@ describe('Tables Endpoints', () => {
     expect(res.body.data.schema).toEqual(expect.any(Array));
     expect(res.body.data.schema[0]).toHaveProperty('name');
     expect(res.body.data.schema[0]).toHaveProperty('cid');
+  });
+
+  it('POST /tables should create an index for every field with index: true', async () => {
+    const accessToken = await generateToken(
+      { username: 'John', isSuperuser: true },
+      config.tokenSecret,
+      '1H',
+    );
+
+    const res = await requestWithSupertest
+      .post('/api/tables')
+      .set('Cookie', [`accessToken=${accessToken}`])
+      .send({
+        name: 'multi_index_items',
+        schema: [
+          { name: 'title', type: 'TEXT', index: true },
+          { name: 'price', type: 'INTEGER', index: true },
+        ],
+      });
+
+    expect(res.status).toEqual(201);
+
+    const indexedColumns = db
+      .prepare(
+        'SELECT ii.name FROM pragma_index_list(?) AS il, pragma_index_info(il.name) AS ii',
+      )
+      .all('multi_index_items')
+      .map((row) => row.name);
+    expect(indexedColumns).toEqual(expect.arrayContaining(['title', 'price']));
   });
 
   it('GET /tables/:name should return schema of the table', async () => {
