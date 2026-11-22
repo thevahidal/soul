@@ -139,6 +139,35 @@ describe('Tables Endpoints', () => {
     expect(indexedColumns).toEqual(expect.arrayContaining(['title', 'price']));
   });
 
+  it('POST /tables should not leave the table behind when an index fails', async () => {
+    const accessToken = await generateToken(
+      { username: 'John', isSuperuser: true },
+      config.tokenSecret,
+      '1H',
+    );
+
+    await requestWithSupertest
+      .post('/api/tables')
+      .set('Cookie', [`accessToken=${accessToken}`])
+      .send({
+        name: 'rb_x',
+        schema: [{ name: 'yy', type: 'TEXT', index: true }],
+      });
+
+    const res = await requestWithSupertest
+      .post('/api/tables')
+      .set('Cookie', [`accessToken=${accessToken}`])
+      .send({
+        name: 'rb',
+        schema: [{ name: 'x_yy', type: 'TEXT', index: true }],
+      });
+
+    expect(res.status).toEqual(400);
+    expect(
+      db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'rb'").get(),
+    ).toBeUndefined();
+  });
+
   it('GET /tables/:name should return schema of the table', async () => {
     const accessToken = await generateToken(
       { username: 'John', isSuperuser: true },

@@ -108,11 +108,13 @@ const createTable = async (req, res) => {
   const query = `CREATE TABLE ${tableName} (${schemaString})`;
 
   try {
-    db.prepare(query).run();
+    db.transaction(() => {
+      db.prepare(query).run();
 
-    for (const indexQuery of indicesQueries) {
-      db.prepare(indexQuery).run();
-    }
+      for (const indexQuery of indicesQueries) {
+        db.prepare(indexQuery).run();
+      }
+    })();
 
     const generatedSchema = db
       .prepare('SELECT * FROM pragma_table_info(?)')
