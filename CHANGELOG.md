@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.1](https://github.com/thevahidal/soul/compare/soul-cli-v0.12.0...soul-cli-v0.12.1) (2026-11-22)
+
+
+### Bug Fixes
+
+* create every index when a table has multiple indexed fields ([#279](https://github.com/thevahidal/soul/issues/279)) ([acae1a8](https://github.com/thevahidal/soul/commit/acae1a8cfbfc39271cac6354bd0db208b4be3756))
+
 ## [0.12.0](https://github.com/thevahidal/soul/compare/soul-cli-v0.11.0...soul-cli-v0.12.0) (2026-11-16)
 
 
