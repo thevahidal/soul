@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.2](https://github.com/thevahidal/soul/compare/soul-cli-v0.12.1...soul-cli-v0.12.2) (2026-11-27)
+
+
+### Bug Fixes
+
+* prevent privilege escalation when creating users (GHSA-mcwj-fcv7-w2wc) ([b06f672](https://github.com/thevahidal/soul/commit/b06f672b1f83961b4019cdeb5e2cf10b4a931cb6))
+
 ## [0.12.1](https://github.com/thevahidal/soul/compare/soul-cli-v0.12.0...soul-cli-v0.12.1) (2026-11-22)
 
 
