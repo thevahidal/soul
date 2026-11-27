@@ -679,6 +679,33 @@ describe('Auth Endpoints', () => {
       expect(after.body.data[0].is_superuser).toEqual(originalIsSuperuser);
     });
 
+    it.each([true, 'true', 'TRUE', 1])(
+      'POST /tables/_users/rows strips is_superuser (%p)/hashed_password/salt from the request body',
+      async (isSuperuser) => {
+        const username = `NotSuperuser${typeof isSuperuser}${isSuperuser}`;
+
+        const res = await requestWithSupertest
+          .post('/api/tables/_users/rows')
+          .set('Cookie', [`accessToken=${superuserToken}`])
+          .send({
+            fields: {
+              username,
+              password: testData.strongPassword,
+              is_superuser: isSuperuser,
+              hashed_password: 'attacker-controlled',
+              salt: 'attacker-controlled',
+            },
+          });
+
+        expect(res.status).toEqual(201);
+
+        const [user] = authService.getUsersByUsername({ username });
+        expect(user.is_superuser).toEqual('false');
+        expect(user.hashed_password).not.toEqual('attacker-controlled');
+        expect(user.salt).not.toEqual('attacker-controlled');
+      },
+    );
+
     it('removeRevokedRefreshTokens deletes only expired revoked tokens', () => {
       const expiredToken = 'expired-revoked-token';
       const freshToken = 'fresh-revoked-token';

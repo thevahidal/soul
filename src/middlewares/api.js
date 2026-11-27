@@ -33,21 +33,19 @@ const processRowRequest = async (req, res, next) => {
     });
   }
 
-  // Redirect this request to the registerUser controller => POST /api/tables/_users/rows
-  if (resource === USERS_TABLE && method === httpVerbs.POST) {
-    return registerUser(req, res);
-  }
-
-  // Remove some fields for this request and check the username field => PUT /api/tables/_users/rows
-  if (resource === USERS_TABLE && method === httpVerbs.PUT) {
-    /**
-     * remove some user fields from the request like (is_superuser, hashed_password, salt).
-     * NOTE: password can be updated via the /change-password API and superuser status can be only updated from the CLI
-     */
+  if (
+    resource === USERS_TABLE &&
+    (method === httpVerbs.POST || method === httpVerbs.PUT)
+  ) {
+    // Password changes go through /change-password; superuser status only via the CLI.
     removeFields(
       [req.body.fields],
       [tableFields.SALT, tableFields.IS_SUPERUSER, tableFields.HASHED_PASSWORD],
     );
+  }
+
+  if (resource === USERS_TABLE && method === httpVerbs.POST) {
+    return registerUser(req, res);
   }
 
   // Validate fields for the _roles_permission API on POST and PUT requests
